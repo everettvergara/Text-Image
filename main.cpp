@@ -24,6 +24,7 @@ auto main(int argc, char **argv) -> int {
 
     // text_image.xlat_rotate_left(10, ALL);
     // text_image.gfx_line(0,0,29,29, 'x', 1, OFF);
+    
     // text_image.gfx_line(29,0,0,29, '-', 2, OFF);
     text_image.gfx_circle(15, 15, 14, 'o', 3, OFF);
     text_image.gfx_fill_with_text_border(15, 15, 'o', 4, ON);
