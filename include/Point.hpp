@@ -27,6 +27,9 @@ namespace g80 {
     struct Point {
         Dim x;
         Dim y;
+        auto operator==(const Point &rhs) -> bool {
+            return x == rhs.x && y == rhs.y;
+        }
     };
 
 }
