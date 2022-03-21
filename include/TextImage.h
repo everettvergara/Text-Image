@@ -67,26 +67,26 @@ namespace g80 {
             auto size_of_mask8bit() -> Sizeof_mask8bit;
 
             // Text functions
-            auto set_text(const Dim &col, const Dim &row, const Text &text) -> void;
+            auto set_text(const Point &point, const Text &text) -> void;
             auto set_text(const Dim &ix, const Text &text) -> void;
-            auto get_text(const Dim &col, const Dim &row) const -> Text;
+            auto get_text(const Point &point) const -> Text;
             auto get_text(const Dim &ix) const -> Text;
             auto show_text() const -> void;
             auto fill_text(const Text &text) -> void;
             auto fill_text(const String &text) -> void;
 
             // Color functions
-            auto set_color(const Dim &col, const Dim &row, const Color &color) -> void;
+            auto set_color(const Point &point, const Color &color) -> void;
             auto set_color(const Dim &ix, const Color &color) -> void;
-            auto get_color(const Dim &col, const Dim &row) const -> Color;
+            auto get_color(const Point &point) const -> Color;
             auto get_color(const Dim &ix) const -> Color;
             auto show_color() const -> void;
             auto fill_color(const Color &color) const -> void;
 
             // Mask functions
-            auto set_mask(const Dim &col, const Dim &row, MASK_BIT mask_bit) -> void;
+            auto set_mask(const Point &point, MASK_BIT mask_bit) -> void;
             auto set_mask(const Dim &ix, MASK_BIT mask_bit) -> void;
-            auto get_mask(const Dim &col, const Dim &row) const -> MASK_BIT;
+            auto get_mask(const Point &point) const -> MASK_BIT;
             auto get_mask(const Dim &ix) const -> MASK_BIT;
             auto set_all_mask8bit() -> void;  
             auto clear_all_mask8bit() -> void;
@@ -98,11 +98,11 @@ namespace g80 {
 
             // Text Image functions
             auto get_image(const Rect &rect) const -> TextImage;
-            auto put_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void;
-            auto and_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void;
-            auto or_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void;
-            auto xor_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void;
-            auto put_text_color(const String &text, const Color &color, const Dim &col, const Dim &row) -> void;
+            auto put_image(const TextImage &text_image, const Point &point) -> void;
+            auto and_image(const TextImage &text_image, const Point &point) -> void;
+            auto or_image(const TextImage &text_image, const Point &point) -> void;
+            auto xor_image(const TextImage &text_image, const Point &point) -> void;
+            auto put_text_color(const String &text, const Color &color, const Point &point) -> void;
             auto show() const -> void;
 
             // Translate Functions
@@ -116,19 +116,19 @@ namespace g80 {
             auto xlat_flip_vertical(TextImageAttribute tia) -> void;
 
             // Graphics
-            auto gfx_point(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            auto gfx_line(const Dim &col1, const Dim &row1, const Dim &col2, const Dim &row2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            auto gfx_circle(const Dim &col, const Dim &row, const Dim &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            auto gfx_fill_with_text_border(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            auto gfx_fill_with_color_border(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            auto gfx_fill_with_mask_border(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_point(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_circle(const Point &point, const Dim &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_fill_with_color_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_fill_with_mask_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
 
             // Save and Load
             auto save(const String &filename) const -> void;
             auto load(const String &filename) -> void;
             
             // Helper functions
-            auto index(const Dim &col, const Dim &row) const -> Dim;
+            auto index(const Point &point) const -> Dim;
 
         protected:
             Area area_{0,0};

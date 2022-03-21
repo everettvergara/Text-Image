@@ -24,10 +24,6 @@
 
 #include "TextImage.h"
 
-// Temp includes
-#include <cassert>
-#include <iomanip>
-
 
 g80::TextImage::TextImage() {
 
@@ -294,44 +290,44 @@ auto g80::TextImage::show_mask_value() const -> void {
     std::cout << std::endl;
 }
 
-auto g80::TextImage::index(const Dim &col, const Dim &row) const -> Dim {
-    return row * area_.w + col;
+auto g80::TextImage::index(const Point &point) const -> Dim {
+    return point.y * area_.w + point.x;
 }
             
-auto g80::TextImage::set_text(const Dim &col, const Dim &row, const Text &text) -> void {
-    set_text(index(col, row), text);
+auto g80::TextImage::set_text(const Point &point, const Text &text) -> void {
+    set_text(index(point), text);
 }
      
 auto g80::TextImage::set_text(const Dim &ix, const Text &text) -> void {
     text_[ix] = text;
 }
 
-auto g80::TextImage::get_text(const Dim &col, const Dim &row) const -> Text {
-    return get_text(index(col, row));
+auto g80::TextImage::get_text(const Point &point) const -> Text {
+    return get_text(index(point));
 }
 
 auto g80::TextImage::get_text(const Dim &ix) const -> Text {
     return text_[ix];
 }
 
-auto g80::TextImage::set_color(const Dim &col, const Dim &row, const Color &color) -> void {
-    set_color(index(col, row), color);
+auto g80::TextImage::set_color(const Point &point, const Color &color) -> void {
+    set_color(index(point), color);
 }
      
 auto g80::TextImage::set_color(const Dim &ix, const Color &color) -> void {
     color_[ix] = color;
 }
 
-auto g80::TextImage::get_color(const Dim &col, const Dim &row) const -> Color {
-    return get_color(index(col, row));
+auto g80::TextImage::get_color(const Point &point) const -> Color {
+    return get_color(index(point));
 }
 
 auto g80::TextImage::get_color(const Dim &ix) const -> Color {
     return color_[ix];
 }
 
-auto g80::TextImage::set_mask(const Dim &col, const Dim &row, MASK_BIT mask_bit) -> void {
-    set_mask(index(col, row), mask_bit);
+auto g80::TextImage::set_mask(const Point &point, MASK_BIT mask_bit) -> void {
+    set_mask(index(point), mask_bit);
 }
      
 auto g80::TextImage::set_mask(const Dim &ix, MASK_BIT mask_bit) -> void {
@@ -342,8 +338,8 @@ auto g80::TextImage::set_mask(const Dim &ix, MASK_BIT mask_bit) -> void {
     mask8bit_[ix / 8] |= or_mask;
 }
 
-auto g80::TextImage::get_mask(const Dim &col, const Dim &row) const -> MASK_BIT {
-    return get_mask(index(col, row));
+auto g80::TextImage::get_mask(const Point &point) const -> MASK_BIT {
+    return get_mask(index(point));
 }
 
 auto g80::TextImage::get_mask(const Dim &ix) const -> MASK_BIT {
@@ -358,7 +354,7 @@ auto g80::TextImage::get_image(const Rect &rect) const -> TextImage {
     Text *text_ptr = dest_text_image.raw_text().get();
     Color *color_ptr = dest_text_image.raw_color().get();
 
-    Dim start = index(rect.p.x, rect.p.y);
+    Dim start = index(rect.p);
     for (Dim row = 0; row < rect.a.h; ++row) {
         Dim ix = start + row * area_.w;
         memcpy(text_ptr, &text_[ix], sizeof(Text) * rect.a.w);
@@ -390,10 +386,10 @@ auto g80::TextImage::get_image(const Rect &rect) const -> TextImage {
     return dest_text_image;
 }
 
-auto g80::TextImage::put_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void {
+auto g80::TextImage::put_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index(col, row + r); 
-        for (Dim six = text_image.index(0, r), sixm = six + text_image.area_.w; six < sixm; ++six) {           
+        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             text_[tix] = text_image.craw_text().get()[six];
             color_[tix] = text_image.craw_color().get()[six];
             ++tix;
@@ -401,10 +397,10 @@ auto g80::TextImage::put_image(const TextImage &text_image, const Dim &col, cons
     }
 }
 
-auto g80::TextImage::and_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void {
+auto g80::TextImage::and_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index(col, row + r); 
-        for (Dim six = text_image.index(0, r), sixm = six + text_image.area_.w; six < sixm; ++six) {           
+        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             if ((get_mask(tix) & text_image.get_mask(six)) == ON) {
                 text_[tix] = text_image.craw_text().get()[six];
                 color_[tix] = text_image.craw_color().get()[six];
@@ -414,10 +410,10 @@ auto g80::TextImage::and_image(const TextImage &text_image, const Dim &col, cons
     }
 }
 
-auto g80::TextImage::or_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void {
+auto g80::TextImage::or_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index(col, row + r); 
-        for (Dim six = text_image.index(0, r), sixm = six + text_image.area_.w; six < sixm; ++six) {           
+        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             if ((get_mask(tix) | text_image.get_mask(six)) == ON) {
                 text_[tix] = text_image.craw_text().get()[six];
                 color_[tix] = text_image.craw_color().get()[six];
@@ -427,10 +423,10 @@ auto g80::TextImage::or_image(const TextImage &text_image, const Dim &col, const
     }
 }
 
-auto g80::TextImage::xor_image(const TextImage &text_image, const Dim &col, const Dim &row) -> void {
+auto g80::TextImage::xor_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index(col, row + r); 
-        for (Dim six = text_image.index(0, r), sixm = six + text_image.area_.w; six < sixm; ++six) {           
+        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             if ((get_mask(tix) ^ text_image.get_mask(six)) == ON) {
                 text_[tix] = text_image.craw_text().get()[six];
                 color_[tix] = text_image.craw_color().get()[six];
@@ -440,8 +436,8 @@ auto g80::TextImage::xor_image(const TextImage &text_image, const Dim &col, cons
     }
 }
 
-auto g80::TextImage::put_text_color(const String &text, const Color &color, const Dim &col, const Dim &row) -> void {
-    Dim start = index(col, row);
+auto g80::TextImage::put_text_color(const String &text, const Color &color, const Point &point) -> void {
+    Dim start = index(point);
     for (int i = 0; i < text.size(); ++i) {
         text_[(start + i) % area_()] = text[i];
         color_[(start + i) % area_()] = color;
@@ -618,7 +614,7 @@ auto g80::TextImage::xlat_rotate_right(Dim rotate, TextImageAttribute tia) -> vo
 
 auto g80::TextImage::xlat_flip_horizontal(TextImageAttribute tia) -> void {
     for (Dim i = 0; i < area_.h; ++i) {
-        Dim j = index(0, i);
+        Dim j = index({0, i});
         xlat_reverse(j, j + area_.w - 1, tia);
     }
 }
@@ -629,9 +625,9 @@ auto g80::TextImage::xlat_flip_vertical(TextImageAttribute tia) -> void {
         Dim i = 0;
         Dim j = area_.h - 1;
         while (i < j) {
-            Dim k = index(0, i++);
+            Dim k = index({0, i++});
             Dim kmax = k + area_.w;
-            Dim l = index(0, j--);
+            Dim l = index({0, j--});
             while (k < kmax)
                 std::swap(text_[k++], text_[l++]);
         }
@@ -641,9 +637,9 @@ auto g80::TextImage::xlat_flip_vertical(TextImageAttribute tia) -> void {
         Dim i = 0;
         Dim j = area_.h - 1;
         while (i < j) {
-            Dim k = index(0, i++);
+            Dim k = index({0, i++});
             Dim kmax = k + area_.w;
-            Dim l = index(0, j--);
+            Dim l = index({0, j--});
             while (k < kmax)
                 std::swap(color_[k++], color_[l++]);
         }
@@ -653,9 +649,9 @@ auto g80::TextImage::xlat_flip_vertical(TextImageAttribute tia) -> void {
         Dim i = 0;
         Dim j = area_.h - 1;
         while (i < j) {
-            Dim k = index(0, i++);
+            Dim k = index({0, i++});
             Dim kmax = k + area_.w;
-            Dim l = index(0, j--);
+            Dim l = index({0, j--});
             while (k < kmax) {
                 MASK_BIT t = get_mask(l);
                 set_mask(l, get_mask(k));
@@ -668,21 +664,21 @@ auto g80::TextImage::xlat_flip_vertical(TextImageAttribute tia) -> void {
     }
 }
 
-auto g80::TextImage::gfx_point(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
-    Dim ix = index(col, row);
+auto g80::TextImage::gfx_point(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+    Dim ix = index(point);
     text_[ix] = text;
     color_[ix] = color;
     set_mask(ix, mask_bit);
 }
 
-auto g80::TextImage::gfx_line(const Dim &col1, const Dim &row1, const Dim &col2, const Dim &row2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
-    Dim dx = col2 - col1;
-    Dim dy = row2 - row1;
+auto g80::TextImage::gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+    Dim dx = point2.x - point1.x;
+    Dim dy = point2.y - point1.y;
     Dim sdx = dx < 0 ? -1 : 1;
     Dim sdy = dy < 0 ? -area_.w : area_.w;
     Dim adx = dx < 0 ? dx * -1 : dx;
     Dim ady = dy < 0 ? dy * -1 : dy;
-    Dim curr_point = index(col1, row1);
+    Dim curr_point = index(point1);
     if (adx >= ady) {    
         for (Dim i = 0, t = ady; i <= adx; ++i, t += ady) {
             text_[curr_point] = text;
@@ -708,9 +704,9 @@ auto g80::TextImage::gfx_line(const Dim &col1, const Dim &row1, const Dim &col2,
     }
 }
 
-auto g80::TextImage::gfx_circle(const Dim &col, const Dim &row, const Dim &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
     
-    Dim center_point = index(col, row);
+    Dim center_point = index(point);
 
     Dim x = radius;
     Dim y = 0;
@@ -768,7 +764,7 @@ auto g80::TextImage::gfx_circle(const Dim &col, const Dim &row, const Dim &radiu
     }
 }
 
-auto g80::TextImage::gfx_fill_with_text_border(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
 
     // The preferential method of fill is always stack over recursion, to prevent stackoverflow
     // 
@@ -776,36 +772,35 @@ auto g80::TextImage::gfx_fill_with_text_border(const Dim &col, const Dim &row, c
     // Since this is known, it is better to use a std::vector instead of std::stack
     // to represent a stack
 
-    struct Point {Dim c, r;};
-    std::vector<Point> points((col - 1) * (row - 1) + 1);
+    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
     int si = -1;
 
-    if (text_[index(col, row)] != text)
-        points[++si] = {col, row};
+    if (text_[index(point)] != text)
+        points[++si] = point;
 
     while (si >= 0) {
         Point p = points[si--];
 
-        Dim ix = index(p.c, p.r);
+        Dim ix = index(p);
         text_[ix] = text;
         color_[ix] = color;
         set_mask(ix, mask_bit);
 
-        if (p.r - 1 >= 0 && text_[index(p.c, p.r - 1)] != text)
-            points[++si] = {p.c, static_cast<Dim>(p.r - 1)};
+        if (p.y - 1 >= 0 && text_[index({p.x, static_cast<Dim>(p.y - 1)})] != text)
+            points[++si] = {p.x, static_cast<Dim>(p.y - 1)};
 
-        if (p.r + 1 < area_.h && text_[index(p.c, p.r + 1)] != text)
-            points[++si] = {p.c, static_cast<Dim>(p.r + 1)};
+        if (p.y + 1 < area_.h && text_[index({p.x, static_cast<Dim>(p.y + 1)})] != text)
+            points[++si] = {p.x, static_cast<Dim>(p.y + 1)};
 
-        if (p.c - 1 >= 0 && text_[index(p.c - 1, p.r)] != text)
-            points[++si] = {static_cast<Dim>(p.c - 1), p.r};
+        if (p.x - 1 >= 0 && text_[index({static_cast<Dim>(p.x - 1), p.y})] != text)
+            points[++si] = {static_cast<Dim>(p.x - 1), p.y};
 
-        if (p.c + 1 < area_.w && text_[index(p.c + 1, p.r)] != text)
-            points[++si] = {static_cast<Dim>(p.c + 1), p.r};
+        if (p.x + 1 < area_.w && text_[index({static_cast<Dim>(p.x + 1), p.y})] != text)
+            points[++si] = {static_cast<Dim>(p.x + 1), p.y};
     }
 }
 
-auto g80::TextImage::gfx_fill_with_color_border(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+auto g80::TextImage::gfx_fill_with_color_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
 
     // The preferential method of fill is always stack over recursion, to prevent stackoverflow
     // 
@@ -813,37 +808,36 @@ auto g80::TextImage::gfx_fill_with_color_border(const Dim &col, const Dim &row, 
     // Since this is known, it is better to use a std::vector instead of std::stack
     // to represent a stack
 
-    struct Point {Dim c, r;};
-    std::vector<Point> points((col - 1) * (row - 1) + 1);
+    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
     int si = -1;
 
-    if (color_[index(col, row)] != color)
-        points[++si] = {col, row};
+    if (color_[index(point)] != color)
+        points[++si] = point;
 
     while (si >= 0) {
         Point p = points[si--];
 
-        Dim ix = index(p.c, p.r);
+        Dim ix = index(p);
         text_[ix] = text;
         color_[ix] = color;
         set_mask(ix, mask_bit);
 
-        if (p.r - 1 >= 0 && color_[index(p.c, p.r - 1)] != color)
-            points[++si] = {p.c, static_cast<Dim>(p.r - 1)};
+        if (p.y - 1 >= 0 && color_[index({p.x, static_cast<Dim>(p.y - 1)})] != color)
+            points[++si] = {p.x, static_cast<Dim>(p.y - 1)};
 
-        if (p.r + 1 < area_.h && color_[index(p.c, p.r + 1)] != color)
-            points[++si] = {p.c, static_cast<Dim>(p.r + 1)};
+        if (p.y + 1 < area_.h && color_[index({p.x, static_cast<Dim>(p.y + 1)})] != color)
+            points[++si] = {p.x, static_cast<Dim>(p.y + 1)};
 
-        if (p.c - 1 >= 0 && color_[index(p.c - 1, p.r)] != color)
-            points[++si] = {static_cast<Dim>(p.c - 1), p.r};
+        if (p.x - 1 >= 0 && color_[index({static_cast<Dim>(p.x - 1), p.y})] != color)
+            points[++si] = {static_cast<Dim>(p.x - 1), p.y};
 
-        if (p.c + 1 < area_.w && color_[index(p.c + 1, p.r)] != color)
-            points[++si] = {static_cast<Dim>(p.c + 1), p.r};
+        if (p.x + 1 < area_.w && color_[index({static_cast<Dim>(p.x + 1), p.y})] != color)
+            points[++si] = {static_cast<Dim>(p.x + 1), p.y};
     }
 }
 
 
-auto g80::TextImage::gfx_fill_with_mask_border(const Dim &col, const Dim &row, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+auto g80::TextImage::gfx_fill_with_mask_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
 
     // The preferential method of fill is always stack over recursion, to prevent stackoverflow
     // 
@@ -851,32 +845,31 @@ auto g80::TextImage::gfx_fill_with_mask_border(const Dim &col, const Dim &row, c
     // Since this is known, it is better to use a std::vector instead of std::stack
     // to represent a stack
 
-    struct Point {Dim c, r;};
-    std::vector<Point> points((col - 1) * (row - 1) + 1);
+    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
     int si = -1;
 
-    if (get_mask(index(col, row)) != mask_bit)
-        points[++si] = {col, row};
+    if (get_mask(index(point)) != mask_bit)
+        points[++si] = point;
 
     while (si >= 0) {
         Point p = points[si--];
 
-        Dim ix = index(p.c, p.r);
+        Dim ix = index(p);
         text_[ix] = text;
         color_[ix] = color;
         set_mask(ix, mask_bit);
 
-        if (p.r - 1 >= 0 && get_mask(index(p.c, p.r - 1)) != mask_bit)
-            points[++si] = {p.c, static_cast<Dim>(p.r - 1)};
+        if (p.y - 1 >= 0 && get_mask(index({p.x, static_cast<Dim>(p.y - 1)})) != mask_bit)
+            points[++si] = {p.x, static_cast<Dim>(p.y - 1)};
 
-        if (p.r + 1 < area_.h && get_mask(index(p.c, p.r + 1)) != mask_bit)
-            points[++si] = {p.c, static_cast<Dim>(p.r + 1)};
+        if (p.y + 1 < area_.h && get_mask(index({p.x, static_cast<Dim>(p.y + 1)})) != mask_bit)
+            points[++si] = {p.x, static_cast<Dim>(p.y + 1)};
 
-        if (p.c - 1 >= 0 && get_mask(index(p.c - 1, p.r)) != mask_bit)
-            points[++si] = {static_cast<Dim>(p.c - 1), p.r};
+        if (p.x - 1 >= 0 && get_mask(index({static_cast<Dim>(p.x - 1), p.y})) != mask_bit)
+            points[++si] = {static_cast<Dim>(p.x - 1), p.y};
 
-        if (p.c + 1 < area_.w && get_mask(index(p.c + 1, p.r)) != mask_bit)
-            points[++si] = {static_cast<Dim>(p.c + 1), p.r};
+        if (p.x + 1 < area_.w && get_mask(index({static_cast<Dim>(p.x + 1), p.y})) != mask_bit)
+            points[++si] = {static_cast<Dim>(p.x + 1), p.y};
     }
 }
 
