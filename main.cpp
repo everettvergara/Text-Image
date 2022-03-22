@@ -20,7 +20,7 @@ auto main(int argc, char **argv) -> int {
     //     // text_image.set_mask(0, i, OFF);
     //     // text_image.set_mask(29, i, OFF);
     // }
-
+    
 
     // text_image.xlat_rotate_left(10, ALL);
     // text_image.gfx_line(0,0,29,29, 'x', 1, OFF);
