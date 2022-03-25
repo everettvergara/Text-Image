@@ -34,7 +34,7 @@ g80::TextImage::TextImage(const String &filename) {
 }
 
 g80::TextImage::TextImage(const String &text, const Color &color, MASK_BIT mask_bit) : 
-    area_({static_cast<Dim>(text.size()), 1}),
+    area_({DIM(text.size()), 1}),
     color_(std::make_unique<Color[]>(area_())),
     text_(std::make_unique<Text[]>(area_())),
     size_of_mask8bit_(area_() % 8 == 0 ? area_() / 8 : area_() / 8 + 1),
@@ -388,7 +388,7 @@ auto g80::TextImage::get_image(const Rect &rect) const -> TextImage {
 
 auto g80::TextImage::put_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        Dim tix = index({point.x, DIM(point.y + r)}); 
         for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             text_[tix] = text_image.craw_text().get()[six];
             color_[tix] = text_image.craw_color().get()[six];
@@ -399,7 +399,7 @@ auto g80::TextImage::put_image(const TextImage &text_image, const Point &point) 
 
 auto g80::TextImage::and_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        Dim tix = index({point.x, DIM(point.y + r)}); 
         for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             if ((get_mask(tix) & text_image.get_mask(six)) == ON) {
                 text_[tix] = text_image.craw_text().get()[six];
@@ -412,7 +412,7 @@ auto g80::TextImage::and_image(const TextImage &text_image, const Point &point) 
 
 auto g80::TextImage::or_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        Dim tix = index({point.x, DIM(point.y + r)}); 
         for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             if ((get_mask(tix) | text_image.get_mask(six)) == ON) {
                 text_[tix] = text_image.craw_text().get()[six];
@@ -425,7 +425,7 @@ auto g80::TextImage::or_image(const TextImage &text_image, const Point &point) -
 
 auto g80::TextImage::xor_image(const TextImage &text_image, const Point &point) -> void {
     for (Dim r = 0; r < text_image.area_.h; ++r) {
-        Dim tix = index({point.x, static_cast<Dim>(point.y + r)}); 
+        Dim tix = index({point.x, DIM(point.y + r)}); 
         for (Dim six = text_image.index({0, r}), sixm = six + text_image.area_.w; six < sixm; ++six) {           
             if ((get_mask(tix) ^ text_image.get_mask(six)) == ON) {
                 text_[tix] = text_image.craw_text().get()[six];
@@ -786,17 +786,17 @@ auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &t
         color_[ix] = color;
         set_mask(ix, mask_bit);
 
-        if (p.y - 1 >= 0 && text_[index({p.x, static_cast<Dim>(p.y - 1)})] != text)
-            points[++si] = {p.x, static_cast<Dim>(p.y - 1)};
+        if (p.y - 1 >= 0 && text_[index({p.x, DIM(p.y - 1)})] != text)
+            points[++si] = {p.x, DIM(p.y - 1)};
 
-        if (p.y + 1 < area_.h && text_[index({p.x, static_cast<Dim>(p.y + 1)})] != text)
-            points[++si] = {p.x, static_cast<Dim>(p.y + 1)};
+        if (p.y + 1 < area_.h && text_[index({p.x, DIM(p.y + 1)})] != text)
+            points[++si] = {p.x, DIM(p.y + 1)};
 
-        if (p.x - 1 >= 0 && text_[index({static_cast<Dim>(p.x - 1), p.y})] != text)
-            points[++si] = {static_cast<Dim>(p.x - 1), p.y};
+        if (p.x - 1 >= 0 && text_[index({DIM(p.x - 1), p.y})] != text)
+            points[++si] = {DIM(p.x - 1), p.y};
 
-        if (p.x + 1 < area_.w && text_[index({static_cast<Dim>(p.x + 1), p.y})] != text)
-            points[++si] = {static_cast<Dim>(p.x + 1), p.y};
+        if (p.x + 1 < area_.w && text_[index({DIM(p.x + 1), p.y})] != text)
+            points[++si] = {DIM(p.x + 1), p.y};
     }
 }
 
@@ -822,17 +822,17 @@ auto g80::TextImage::gfx_fill_with_color_border(const Point &point, const Text &
         color_[ix] = color;
         set_mask(ix, mask_bit);
 
-        if (p.y - 1 >= 0 && color_[index({p.x, static_cast<Dim>(p.y - 1)})] != color)
-            points[++si] = {p.x, static_cast<Dim>(p.y - 1)};
+        if (p.y - 1 >= 0 && color_[index({p.x, DIM(p.y - 1)})] != color)
+            points[++si] = {p.x, DIM(p.y - 1)};
 
-        if (p.y + 1 < area_.h && color_[index({p.x, static_cast<Dim>(p.y + 1)})] != color)
-            points[++si] = {p.x, static_cast<Dim>(p.y + 1)};
+        if (p.y + 1 < area_.h && color_[index({p.x, DIM(p.y + 1)})] != color)
+            points[++si] = {p.x, DIM(p.y + 1)};
 
-        if (p.x - 1 >= 0 && color_[index({static_cast<Dim>(p.x - 1), p.y})] != color)
-            points[++si] = {static_cast<Dim>(p.x - 1), p.y};
+        if (p.x - 1 >= 0 && color_[index({DIM(p.x - 1), p.y})] != color)
+            points[++si] = {DIM(p.x - 1), p.y};
 
-        if (p.x + 1 < area_.w && color_[index({static_cast<Dim>(p.x + 1), p.y})] != color)
-            points[++si] = {static_cast<Dim>(p.x + 1), p.y};
+        if (p.x + 1 < area_.w && color_[index({DIM(p.x + 1), p.y})] != color)
+            points[++si] = {DIM(p.x + 1), p.y};
     }
 }
 
@@ -859,17 +859,17 @@ auto g80::TextImage::gfx_fill_with_mask_border(const Point &point, const Text &t
         color_[ix] = color;
         set_mask(ix, mask_bit);
 
-        if (p.y - 1 >= 0 && get_mask(index({p.x, static_cast<Dim>(p.y - 1)})) != mask_bit)
-            points[++si] = {p.x, static_cast<Dim>(p.y - 1)};
+        if (p.y - 1 >= 0 && get_mask(index({p.x, DIM(p.y - 1)})) != mask_bit)
+            points[++si] = {p.x, DIM(p.y - 1)};
 
-        if (p.y + 1 < area_.h && get_mask(index({p.x, static_cast<Dim>(p.y + 1)})) != mask_bit)
-            points[++si] = {p.x, static_cast<Dim>(p.y + 1)};
+        if (p.y + 1 < area_.h && get_mask(index({p.x, DIM(p.y + 1)})) != mask_bit)
+            points[++si] = {p.x, DIM(p.y + 1)};
 
-        if (p.x - 1 >= 0 && get_mask(index({static_cast<Dim>(p.x - 1), p.y})) != mask_bit)
-            points[++si] = {static_cast<Dim>(p.x - 1), p.y};
+        if (p.x - 1 >= 0 && get_mask(index({DIM(p.x - 1), p.y})) != mask_bit)
+            points[++si] = {DIM(p.x - 1), p.y};
 
-        if (p.x + 1 < area_.w && get_mask(index({static_cast<Dim>(p.x + 1), p.y})) != mask_bit)
-            points[++si] = {static_cast<Dim>(p.x + 1), p.y};
+        if (p.x + 1 < area_.w && get_mask(index({DIM(p.x + 1), p.y})) != mask_bit)
+            points[++si] = {DIM(p.x + 1), p.y};
     }
 }
 
