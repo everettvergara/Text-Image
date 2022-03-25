@@ -26,6 +26,7 @@ namespace g80 {
 
     using Dim = int16_t;
 
+    #define DIM(ex) static_cast<Dim>(ex)
 }
 
 #endif 
