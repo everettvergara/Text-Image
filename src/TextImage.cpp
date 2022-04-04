@@ -790,56 +790,86 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
 
     // Compute boundaries of each octant
     struct OctantBounds {Dim sa, ea, octant, *xy, *bxy, xyn, bxyn;};
-    std::array<OctantBounds, 8> octant_bounds; 
+    std::vector<OctantBounds> octant_bounds; 
     // std::unordered_set<Dim> qualified_octants;
     
-    auto draw_arc = [&](Dim *xy, Dim xyn, Dim *bxy, Dim bxyn) -> void {
-        Dim ix = center_point + (*xy * xyn) + (*bxy * bxyn);
+    auto draw_arc = [&](OctantBounds &ob) -> void { //Dim *xy, Dim xyn, Dim *bxy, Dim bxyn) -> void {
+        Dim ix = center_point + (*ob.xy * ob.xyn) + (*ob.bxy * ob.bxyn);
         text_[ix] = text;
         color_[ix] = color;
         set_mask(ix, mask_bit);
     };
 
-    // Iniatize Octants
-    // Assuming ea <= 359;
+    // Iniatize Octant to be used
     for (Dim i = sa / 45, a = i; i < ea / 45 + 1; ++i, a += 45) {
+        OctantBounds octant_bound;
+        
         Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
         Dim a2 = a >= 0 && a < 180 ? a : a + 45;
-        Dim ix = i - sa / 45;
-        octant_bounds[ix].sa = static_cast<Dim>(cos(a1 * PI / 180) * radius);
-        octant_bounds[ix].ea = static_cast<Dim>(cos(a2 * PI / 180) * radius);
-        octant_bounds[ix].octant = i;
+        //Dim ix = i - sa / 45;
+        octant_bound.sa = static_cast<Dim>(cos(a1 * PI / 180) * radius);
+        octant_bound.ea = static_cast<Dim>(cos(a2 * PI / 180) * radius);
+        octant_bound.octant = i;
 
-        if (i == 0 || i == 3 || i == 4 || i == 7)
-            octant_bounds[ix].xy = &x;
+        if (i == 0 || i == 3 || i == 4 || i == 7) {
+            octant_bound.xy = &x;
+            octant_bound.bxy = &by;
+        } else { 
+            octant_bound.xy = &y;
+            octant_bound.bxy = &bx;
+        }
+        
+        if (i == 0 || i == 1 || i == 4 || i == 5)
+            octant_bound.xyn = 1;
         else 
-            octant_bounds[ix].xy = &y;
+            octant_bound.xyn = -1;
+        
+        if (i < 4)
+            octant_bound.bxyn = -1;
+        else 
+            octant_bound.xyn = 1;
+        
+        octant_bounds.emplace_back(std::move(octant_bound));
 
         // qualified_octants.insert(i);
-        // std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
+        std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bound.sa << " ea: " << octant_bound.ea << "\n";
     }
 
-    // std::cout << "---\n\n";
+    std::cout << "test_start_x: " << test_x_start << " test_end_x: " << test_x_end << "\n";
+    std::cout << "---\n\n";
     // exit(0);
     while (x >= y)
     {
-        std::cout << "x: " << x << "\n";
-        
-        // Octant 0
-        if (x >= octant_bounds[0].sa && x <= octant_bounds[0].ea &&
-            x >= test_x_start && x <= test_x_end) {
-            text_[center_point + x - by] = text;
-            color_[center_point + x - by] = color;
-            set_mask(center_point + x - by, mask_bit);
-        }
+        for (auto &o : octant_bounds) {
+            //if (o.octant == 2) {
 
-        // Octant 1
-        if (y >= octant_bounds[1].sa && y <= octant_bounds[1].ea &&
-            y >= test_x_start && y <= test_x_end) {
-            text_[center_point + y - bx] = text;
-            color_[center_point + y - bx] = color;
-            set_mask(center_point + y - bx, mask_bit);
+                std::cout << "o.xy: " << *o.xy * o.xyn << " - fr: " <<  test_x_start << " to: " << test_x_end;
+
+                if (*o.xy * o.xyn >= test_x_start && *o.xy * o.xyn <= test_x_end) {
+                    std::cout << " ****";
+                    draw_arc(o);
+                }
+                std::cout << "\n";
+           // }
         }
+    
+        
+
+        // // Octant 0
+        // if (x >= octant_bounds[0].sa && x <= octant_bounds[0].ea &&
+        //     x >= test_x_start && x <= test_x_end) {
+        //     text_[center_point + x - by] = text;
+        //     color_[center_point + x - by] = color;
+        //     set_mask(center_point + x - by, mask_bit);
+        // }
+
+        // // Octant 1
+        // if (y >= octant_bounds[1].sa && y <= octant_bounds[1].ea &&
+        //     y >= test_x_start && y <= test_x_end) {
+        //     text_[center_point + y - bx] = text;
+        //     color_[center_point + y - bx] = color;
+        //     set_mask(center_point + y - bx, mask_bit);
+        // }
 
         // text_[center_point - y - bx] = text;
         // text_[center_point - x - by] = text;
