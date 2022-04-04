@@ -774,8 +774,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
 
     Dim x = radius;
     Dim y = 0;
-    // Dim inc = 0;
-
+    
     Dim bx = x * area_.w;
     Dim by = y * area_.w;
 
@@ -790,24 +789,38 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         std::swap(test_x_start, test_x_end);
 
     // Compute boundaries of each octant
-    struct OctantBounds {Dim sa, ea, octant;};
+    struct OctantBounds {Dim sa, ea, octant, *xy, *bxy, xyn, bxyn;};
     std::array<OctantBounds, 8> octant_bounds; 
-    std::unordered_set<Dim> qualified_octants;
+    // std::unordered_set<Dim> qualified_octants;
     
+    auto draw_arc = [&](Dim *xy, Dim xyn, Dim *bxy, Dim bxyn) -> void {
+        Dim ix = center_point + (*xy * xyn) + (*bxy * bxyn);
+        text_[ix] = text;
+        color_[ix] = color;
+        set_mask(ix, mask_bit);
+    };
+
     // Iniatize Octants
     // Assuming ea <= 359;
     for (Dim i = sa / 45, a = i; i < ea / 45 + 1; ++i, a += 45) {
         Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
         Dim a2 = a >= 0 && a < 180 ? a : a + 45;
-        octant_bounds[i - sa / 45].sa = static_cast<Dim>(cos(a1 * PI / 180) * radius);
-        octant_bounds[i - sa / 45].ea = static_cast<Dim>(cos(a2 * PI / 180) * radius);
-        octant_bounds[i - sa / 45].octant = i;
-        qualified_octants.insert(i);
-        std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
+        Dim ix = i - sa / 45;
+        octant_bounds[ix].sa = static_cast<Dim>(cos(a1 * PI / 180) * radius);
+        octant_bounds[ix].ea = static_cast<Dim>(cos(a2 * PI / 180) * radius);
+        octant_bounds[ix].octant = i;
+
+        if (i == 0 || i == 3 || i == 4 || i == 7)
+            octant_bounds[ix].xy = &x;
+        else 
+            octant_bounds[ix].xy = &y;
+
+        // qualified_octants.insert(i);
+        // std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
     }
 
-    std::cout << "---\n\n";
-    exit(0);
+    // std::cout << "---\n\n";
+    // exit(0);
     while (x >= y)
     {
         std::cout << "x: " << x << "\n";
