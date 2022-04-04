@@ -23,6 +23,7 @@
 #include <vector>
 #include <cmath>
 #include <array>
+#include <unordered_set>
 
 #include "TextImage.h"
 
@@ -769,7 +770,6 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
 
 auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
     
-    // index = point.y * area_.w + point.x 
     Dim center_point = index(point);
 
     Dim x = radius;
@@ -790,20 +790,24 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         std::swap(test_x_start, test_x_end);
 
     // Compute boundaries of each octant
-    struct OctantBounds {Dim sa, ea;};
+    struct OctantBounds {Dim sa, ea, octant;};
     std::array<OctantBounds, 8> octant_bounds; 
-
+    std::unordered_set<Dim> qualified_octants;
+    
     // Iniatize Octants
-    for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
-        Dim sa = a >= 0 && a < 180 ? a + 45 : a;
-        Dim ea = a >= 0 && a < 180 ? a : a + 45;
-        octant_bounds[i].sa = static_cast<Dim>(cos(sa * PI / 180) * radius);
-        octant_bounds[i].ea = static_cast<Dim>(cos(ea * PI / 180) * radius);
-        // std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
+    // Assuming ea <= 359;
+    for (Dim i = sa / 45, a = i; i < ea / 45 + 1; ++i, a += 45) {
+        Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
+        Dim a2 = a >= 0 && a < 180 ? a : a + 45;
+        octant_bounds[i - sa / 45].sa = static_cast<Dim>(cos(a1 * PI / 180) * radius);
+        octant_bounds[i - sa / 45].ea = static_cast<Dim>(cos(a2 * PI / 180) * radius);
+        octant_bounds[i - sa / 45].octant = i;
+        qualified_octants.insert(i);
+        std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
     }
 
-    // std::cout << "---\n\n";
-    // exit(0);
+    std::cout << "---\n\n";
+    exit(0);
     while (x >= y)
     {
         std::cout << "x: " << x << "\n";
