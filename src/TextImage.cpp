@@ -21,6 +21,8 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <cmath>
+#include <array>
 
 #include "TextImage.h"
 
@@ -762,6 +764,102 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
         }
         by += area_.w;
     }
+}
+
+
+auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+    
+    // index = point.y * area_.w + point.x 
+    Dim center_point = index(point);
+
+    Dim x = radius;
+    Dim y = 0;
+    Dim inc = 0;
+
+    Dim bx = x * area_.w;
+    Dim by = y * area_.w;
+
+    Dim dx = 1 - (radius << 1);
+    Dim dy = 1;
+    Dim re = 0;
+
+    constexpr double PI = 3.141592653589793238;
+    Dim test_x_start = static_cast<Dim>(cos(sa * PI / 180) * radius);
+    Dim test_x_end = static_cast<Dim>(cos(ea * PI / 180) * radius);
+    if (test_x_start > test_x_end) 
+        std::swap(test_x_start, test_x_end);
+
+    // Compute boundaries of each octant
+    struct OctantBounds {Dim sa, ea;};
+    std::array<OctantBounds, 8> octant_bounds; 
+
+    // Octant 0: Upper right quadrant = 0 to 45
+    octant_bounds[0].sa = static_cast<Dim>(cos(45 * PI / 180) * radius);
+    octant_bounds[0].ea = static_cast<Dim>(cos(0 * PI / 180) * radius);
+
+    // Octant 0: Upper right quadrant = 45 to 90
+    octant_bounds[1].sa = static_cast<Dim>(cos(90 * PI / 180) * radius);
+    octant_bounds[1].ea = static_cast<Dim>(cos(45 * PI / 180) * radius);
+
+    for (int i = 0; i < 2; ++i) {
+        std::cout << "octant: " << i << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
+    }
+    std::cout << "---\n\n";
+    while (x >= y)
+    {
+        std::cout << "x: " << x << "\n";
+        // Octant 0
+        if (x >= octant_bounds[0].sa && x <= octant_bounds[0].ea &&
+            x >= test_x_start && x <= test_x_end) {
+            text_[center_point + x - by] = text;
+            color_[center_point + x - by] = color;
+            set_mask(center_point + x - by, mask_bit);
+        }
+
+        // Octant 1
+        if (y >= octant_bounds[1].sa && y <= octant_bounds[1].ea &&
+            y >= test_x_start && y <= test_x_end) {
+            text_[center_point + y - bx] = text;
+            color_[center_point + y - bx] = color;
+            set_mask(center_point + y - bx, mask_bit);
+        }
+
+        // text_[center_point - y - bx] = text;
+        // text_[center_point - x - by] = text;
+        // text_[center_point + x + by] = text;
+        // text_[center_point + y + bx] = text;
+        // text_[center_point - y + bx] = text;
+        // text_[center_point - x + by] = text;
+
+        // color_[center_point - y - bx] = color;
+        // color_[center_point - x - by] = color;
+        // color_[center_point + x + by] = color;
+        // color_[center_point + y + bx] = color;
+        // color_[center_point - y + bx] = color;
+        // color_[center_point - x + by] = color;
+
+        // set_mask(center_point - y - bx, mask_bit);
+        // set_mask(center_point - x - by, mask_bit);
+        // set_mask(center_point + x + by, mask_bit);
+        // set_mask(center_point + y + bx, mask_bit);
+        // set_mask(center_point - y + bx, mask_bit);
+        // set_mask(center_point - x + by, mask_bit);
+
+        ++y;
+        re += dy;
+        dy += 2;
+        if ((re << 1) + dx > 0)
+        {
+            --x;
+            bx -= area_.w;
+            re += dx;
+            dx += 2;
+        }
+        by += area_.w;
+        
+    }
+
+    //exit(0);
 }
 
 auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
