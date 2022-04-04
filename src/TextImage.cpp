@@ -774,7 +774,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
 
     Dim x = radius;
     Dim y = 0;
-    Dim inc = 0;
+    // Dim inc = 0;
 
     Dim bx = x * area_.w;
     Dim by = y * area_.w;
@@ -793,21 +793,21 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     struct OctantBounds {Dim sa, ea;};
     std::array<OctantBounds, 8> octant_bounds; 
 
-    // Octant 0: Upper right quadrant = 0 to 45
-    octant_bounds[0].sa = static_cast<Dim>(cos(45 * PI / 180) * radius);
-    octant_bounds[0].ea = static_cast<Dim>(cos(0 * PI / 180) * radius);
-
-    // Octant 0: Upper right quadrant = 45 to 90
-    octant_bounds[1].sa = static_cast<Dim>(cos(90 * PI / 180) * radius);
-    octant_bounds[1].ea = static_cast<Dim>(cos(45 * PI / 180) * radius);
-
-    for (int i = 0; i < 2; ++i) {
-        std::cout << "octant: " << i << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
+    // Iniatize Octants
+    for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
+        Dim sa = a >= 0 && a < 180 ? a + 45 : a;
+        Dim ea = a >= 0 && a < 180 ? a : a + 45;
+        octant_bounds[i].sa = static_cast<Dim>(cos(sa * PI / 180) * radius);
+        octant_bounds[i].ea = static_cast<Dim>(cos(ea * PI / 180) * radius);
+        // std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bounds[i].sa << " ea: " << octant_bounds[i].ea << "\n";
     }
-    std::cout << "---\n\n";
+
+    // std::cout << "---\n\n";
+    // exit(0);
     while (x >= y)
     {
         std::cout << "x: " << x << "\n";
+        
         // Octant 0
         if (x >= octant_bounds[0].sa && x <= octant_bounds[0].ea &&
             x >= test_x_start && x <= test_x_end) {
