@@ -770,23 +770,73 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
 
 auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
     
-    // Dim center_point = index(point);
+    constexpr double PI = 3.141592653589793238;
 
-    // Dim x = radius;
-    // Dim y = 0;
+    Dim n_sa, n_ea;
+    if (sa > ea) {
+        n_sa = ea;
+        n_ea = sa;
+    } else {
+        n_sa = sa;
+        n_ea = ea;
+    }
+
+    // Reduce to n_sa < 360 only
+    if (n_sa >= 360 && n_ea >= 360) {
+        Dim t = n_sa / 360;
+        n_sa -= 360 * t;
+        n_ea -= 360 * t;
+    }
+
+    // Add extended angle
+    Dim extended_sa, extended_ea;
+    if (n_ea >= 360) {
+        extended_sa = 0;
+        extended_ea = n_ea % 360;
+    } else {
+        extended_sa = -1;
+        extended_ea = -1;
+    }
+
+    // There are 8 arc octants
+    //
+    //  0: 0 to 45 degress, upper right 
+    //  1: 45 to 90 degress, upper right 
+    //  2: 90 to 135 degress, upper left 
+    //  3: 135 to 180 degress, upper left 
+    //  4: 180 to 225 degress, lower left 
+    //  5: 225 to 270 degress, lower left 
+    //  6: 270 to 315 degress, lower right 
+    //  7: 315 to 360 degress, lower right 
+
+    // Each octant will have the following behavior
+    // 0: Not included in the drawing
+    // 1: within n_sa and e_a
+
+
+
+    Dim center_point = index(point);
+
+    Dim x = radius;
+    Dim y = 0;
     
-    // Dim bx = x * area_.w;
-    // Dim by = y * area_.w;
+    Dim bx = x * area_.w;
+    Dim by = y * area_.w;
 
-    // Dim dx = 1 - (radius << 1);
-    // Dim dy = 1;
-    // Dim re = 0;
+    Dim dx = 1 - (radius << 1);
+    Dim dy = 1;
+    Dim re = 0;
 
-    // constexpr double PI = 3.141592653589793238;
+
+
+    
+
     // Dim test_x_start = static_cast<Dim>(cos(sa * PI / 180) * radius);
     // Dim test_x_end = static_cast<Dim>(cos(ea * PI / 180) * radius);
     // if (test_x_start > test_x_end) 
     //     std::swap(test_x_start, test_x_end);
+
+    // If at this point test_x_start > test_x_end, then previously, test_x_end >= 360 exceeds 
 
     // // Compute boundaries of each octant
     // struct OctantBounds {Dim sa, ea, octant, *xy, *bxy, xyn, bxyn, tsa, tea; };
