@@ -784,10 +784,6 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     Dim dy = 1;
     Dim re = 0;
 
-
-
-    constexpr double PI = 3.141592653589793238;
-    
     Dim n_sa, n_ea;
     if (sa > ea) {
         n_sa = ea;
@@ -820,21 +816,20 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     std::unordered_map<Dim, OctaBound> octa_bounds;
 
     for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
-
         OctaBound octa_bound;
         
         if (a >= n_sa && a + 45 <= n_ea) {
-            octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);    
+            octa_bound.sx = static_cast<Dim>(cos(a * M_PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos((a + 45) * M_PI / 180) * radius);    
         } else if (n_sa >= a && n_ea <= a + 45) {
-            octa_bound.sx = static_cast<Dim>(cos(n_sa * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);
+            octa_bound.sx = static_cast<Dim>(cos(n_sa * M_PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos(n_ea * M_PI / 180) * radius);
         } else if (n_sa >= a && n_sa <= a + 45) {
-            octa_bound.sx = static_cast<Dim>(cos(n_sa * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
+            octa_bound.sx = static_cast<Dim>(cos(n_sa * M_PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos((a + 45) * M_PI / 180) * radius);
         } else if (n_ea > a && n_ea <= a + 45) {
-            octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);     
+            octa_bound.sx = static_cast<Dim>(cos(a * M_PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos(n_ea * M_PI / 180) * radius);     
         } else {
             continue;
         }
@@ -873,7 +868,6 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
             set_mask(ix, mask_bit);
         }
     };
-
 
     while (x >= y)
     {
