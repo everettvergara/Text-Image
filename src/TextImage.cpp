@@ -798,70 +798,14 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         extended_ea = -1;
     }
 
-    // There are 8 arc octants
-    //
-    //  0: 0 to 45 degress, upper right 
-    //  1: 45 to 90 degress, upper right 
-    //  2: 90 to 135 degress, upper left 
-    //  3: 135 to 180 degress, upper left 
-    //  4: 180 to 225 degress, lower left 
-    //  5: 225 to 270 degress, lower left 
-    //  6: 270 to 315 degress, lower right 
-    //  7: 315 to 360 degress, lower right 
-
-    // Each octant will have the following behavior
-    // If extended_sa >= 0, arc draw will be called another time
-    // 0: octant within n_sa and e_a 
-    // 1: n_sa starts at this octant
-    // 2: n_ea ends at this octant
-    // 3: n_sa is here and n_ea is here
-
-
-/*
-    Deciding which octants to use
-
-    Case 1:
-    n_sa ----- n_ea 
-                        a   -------  a+45 
-
-    Case 2: 
-                n_sa ----- n_ea 
-                        a   -------  a+45 
-
-    Case 3:
-            n_sa ----- n_ea 
-        a -------------------  a+45 
-
-    Case 4:
-            n_sa ----- n_ea 
-        a -------  a+45 
-
-    Case 5:
-                        n_sa ----- n_ea 
-        a -------  a+45 
-    
-    Case 6:
-                     n_sa --------------------- n_ea
-                   a ------ a+45
-
-    Case 7:
-
-    Handles 2, 3, 4, 6:
-        n_ea >= a && n_ea <= a + 45 ||
-        n_sa >= a && n_sa <= a + 45 ||
-        a >= n_sa && a <= n_ea
-
-*/
-
-
     struct OctaBound {Dim octant, sx, ex; };
-    std::vector<OctaBound> octant_0_to_3;
-    std::vector<OctaBound> octant_4_to_7;
+    std::vector<OctaBound> octant_top;
+    std::vector<OctaBound> octant_bottom;
 
     for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
-        if (n_sa >= a && n_sa <= a + 45 ||
-            n_ea >= a && n_ea <= a + 45 ||
-            a >= n_sa && a <= n_ea) {
+        if ((n_sa >= a && n_sa <= a + 45) ||
+            (n_ea >= a && n_ea <= a + 45) ||
+            (a >= n_sa && a <= n_ea)) {
 
             OctaBound octa_bound;
             Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
@@ -871,165 +815,83 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
             octa_bound.ex = static_cast<Dim>(cos(a2 * PI / 180) * radius);
 
             if (i <= 3)
-                octant_0_to_3.emplace_back(std::move(octa_bound));
+                octant_top.emplace_back(std::move(octa_bound));
             else 
-                octant_4_to_7.emplace_back(std::move(octa_bound));
+                octant_bottom.emplace_back(std::move(octa_bound));
         }
     }
 
+    auto draw_arc_top = [&](Dim xy, Dim bxy) -> void { 
+        text_[xy - bxy] = text;
+        color_[xy - bxy] = color;
+        set_mask(xy - bxy, mask_bit);
+    };
 
-    // Dim center_point = index(point);
+    auto draw_arc_bottom = [&](Dim xy, Dim bxy) -> void { 
+        text_[xy - bxy] = text;
+        color_[xy - bxy] = color;
+        set_mask(xy - bxy, mask_bit);
+    };
 
-    // Dim x = radius;
-    // Dim y = 0;
+    // Drawing arc proper
+    Dim center_point = index(point);
+
+    Dim x = radius;
+    Dim y = 0;
     
-    // Dim bx = x * area_.w;
-    // Dim by = y * area_.w;
+    Dim bx = x * area_.w;
+    Dim by = y * area_.w;
 
-    // Dim dx = 1 - (radius << 1);
-    // Dim dy = 1;
-    // Dim re = 0;
+    Dim dx = 1 - (radius << 1);
+    Dim dy = 1;
+    Dim re = 0;
 
+    while (x >= y)
+    {
 
+        text_[center_point + x - by] = text;
+        color_[center_point + x - by] = color;
+        set_mask(center_point + x - by, mask_bit);
 
-    
+        text_[center_point + y - bx] = text;
+        color_[center_point + y - bx] = color;
+        set_mask(center_point + y - bx, mask_bit);
 
-    // Dim test_x_start = static_cast<Dim>(cos(sa * PI / 180) * radius);
-    // Dim test_x_end = static_cast<Dim>(cos(ea * PI / 180) * radius);
-    // if (test_x_start > test_x_end) 
-    //     std::swap(test_x_start, test_x_end);
+        text_[center_point - y - bx] = text;
+        text_[center_point - x - by] = text;
 
-    // If at this point test_x_start > test_x_end, then previously, test_x_end >= 360 exceeds 
+        text_[center_point + x + by] = text;
+        text_[center_point + y + bx] = text;
+        text_[center_point - y + bx] = text;
+        text_[center_point - x + by] = text;
 
-    // // Compute boundaries of each octant
-    // struct OctantBounds {Dim sa, ea, octant, *xy, *bxy, xyn, bxyn, tsa, tea; };
-    // std::vector<OctantBounds> octant_bounds; 
-    // // std::unordered_set<Dim> qualified_octants;
-    
-    // auto draw_arc = [&](OctantBounds &ob) -> void { //Dim *xy, Dim xyn, Dim *bxy, Dim bxyn) -> void {
-    //     Dim ix = center_point + (*ob.xy * ob.xyn) + (*ob.bxy * ob.bxyn);
-    //     text_[ix] = text;
-    //     color_[ix] = color;
-    //     set_mask(ix, mask_bit);
-    // };
+        color_[center_point - y - bx] = color;
+        color_[center_point - x - by] = color;
+        color_[center_point + x + by] = color;
+        color_[center_point + y + bx] = color;
+        color_[center_point - y + bx] = color;
+        color_[center_point - x + by] = color;
 
-    // // Iniatize Octant to be used
-    // for (Dim i = sa / 45, a = i; i < ea / 45 + 1; ++i, a += 45) {
-    //     OctantBounds octant_bound;
+        set_mask(center_point - y - bx, mask_bit);
+        set_mask(center_point - x - by, mask_bit);
+        set_mask(center_point + x + by, mask_bit);
+        set_mask(center_point + y + bx, mask_bit);
+        set_mask(center_point - y + bx, mask_bit);
+        set_mask(center_point - x + by, mask_bit);
+
+        ++y;
+        re += dy;
+        dy += 2;
+        if ((re << 1) + dx > 0)
+        {
+            --x;
+            bx -= area_.w;
+            re += dx;
+            dx += 2;
+        }
+        by += area_.w;
         
-    //     Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
-    //     Dim a2 = a >= 0 && a < 180 ? a : a + 45;
-    //     //Dim ix = i - sa / 45;
-    //     octant_bound.sa = static_cast<Dim>(cos(a1 * PI / 180) * radius);
-    //     octant_bound.ea = static_cast<Dim>(cos(a2 * PI / 180) * radius);
-    //     octant_bound.octant = i;
-
-    //     if (i == 0 || i == 3 || i == 4 || i == 7) {
-    //         octant_bound.xy = &x;
-    //         octant_bound.bxy = &by;
-    //     } else { 
-    //         octant_bound.xy = &y;
-    //         octant_bound.bxy = &bx;
-    //     }
-        
-    //     if (i == 0 || i == 1 || i == 4 || i == 5)
-    //         octant_bound.xyn = 1;
-    //     else 
-    //         octant_bound.xyn = -1;
-        
-    //     if (i < 4) {
-    //         octant_bound.bxyn = -1;
-    //         octant_bound.tsa = test_x_start;
-    //         if (test_x_end <= 180)
-    //             octant_bound.tea = test_x_end;
-    //         else 
-    //             octant_bound.tea = static_cast<Dim>(cos(180 * PI / 180) * radius);
-
-    //     } else { 
-    //         octant_bound.bxyn = 1;
-    //         if (test_x_start <= 180)
-    //             octant_bound.tsa = static_cast<Dim>(cos(180 * PI / 180) * radius);
-    //         else 
-    //             octant_bound.tsa = test_x_start;
-    //         octant_bound.tea = test_x_end;
-    //     }
-        
-    //     octant_bounds.emplace_back(std::move(octant_bound));
-
-    //     std::cout << "octant: " << i << " angle: " << a << " sa: " << octant_bound.sa << " ea: " << octant_bound.ea << "\n";
-    // }
-
-    // std::cout << "test_start_x: " << test_x_start << " test_end_x: " << test_x_end << "\n";
-    // std::cout << "---\n\n";
-    // // exit(0);
-    // while (x >= y)
-    // {
-    //     for (auto &o : octant_bounds) {
-    //         //if (o.octant == 2) {
-
-    //             std::cout << "o.xy: " << *o.xy * o.xyn << " - fr: " <<  o.tsa << " to: " << o.tea;
-
-    //             if (*o.xy * o.xyn >= o.tsa && 
-    //                 *o.xy * o.xyn <= o.tea) {
-    //                 std::cout << " ****";
-    //                 draw_arc(o);
-    //             }
-    //             std::cout << "\n";
-    //        // }
-    //     }
-    
-        
-
-    //     // // Octant 0
-    //     // if (x >= octant_bounds[0].sa && x <= octant_bounds[0].ea &&
-    //     //     x >= test_x_start && x <= test_x_end) {
-    //     //     text_[center_point + x - by] = text;
-    //     //     color_[center_point + x - by] = color;
-    //     //     set_mask(center_point + x - by, mask_bit);
-    //     // }
-
-    //     // // Octant 1
-    //     // if (y >= octant_bounds[1].sa && y <= octant_bounds[1].ea &&
-    //     //     y >= test_x_start && y <= test_x_end) {
-    //     //     text_[center_point + y - bx] = text;
-    //     //     color_[center_point + y - bx] = color;
-    //     //     set_mask(center_point + y - bx, mask_bit);
-    //     // }
-
-    //     // text_[center_point - y - bx] = text;
-    //     // text_[center_point - x - by] = text;
-    //     // text_[center_point + x + by] = text;
-    //     // text_[center_point + y + bx] = text;
-    //     // text_[center_point - y + bx] = text;
-    //     // text_[center_point - x + by] = text;
-
-    //     // color_[center_point - y - bx] = color;
-    //     // color_[center_point - x - by] = color;
-    //     // color_[center_point + x + by] = color;
-    //     // color_[center_point + y + bx] = color;
-    //     // color_[center_point - y + bx] = color;
-    //     // color_[center_point - x + by] = color;
-
-    //     // set_mask(center_point - y - bx, mask_bit);
-    //     // set_mask(center_point - x - by, mask_bit);
-    //     // set_mask(center_point + x + by, mask_bit);
-    //     // set_mask(center_point + y + bx, mask_bit);
-    //     // set_mask(center_point - y + bx, mask_bit);
-    //     // set_mask(center_point - x + by, mask_bit);
-
-    //     ++y;
-    //     re += dy;
-    //     dy += 2;
-    //     if ((re << 1) + dx > 0)
-    //     {
-    //         --x;
-    //         bx -= area_.w;
-    //         re += dx;
-    //         dx += 2;
-    //     }
-    //     by += area_.w;
-        
-    // }
+    }
 
     // //exit(0);
 }
