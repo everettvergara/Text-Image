@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <map>
 #include <vector>
 #include <cmath>
 #include <array>
@@ -799,15 +800,13 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         extended_ea = -1;
     }
 
-    struct OctaBound {Dim octant, sx, ex; };
-    std::vector<OctaBound> octa_top;
-    std::vector<OctaBound> octa_bottom;
-
+    struct OctaBound {Dim sx, ex; };
+    std::map<Dim, OctaBound> octa_top;
+    std::map<Dim, OctaBound> octa_bottom;
 
     for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
         OctaBound octa_bound;
-        octa_bound.octant = i;
-
+        
         if (a >= n_sa && a + 45 <= n_ea) {
             octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
             octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
@@ -828,9 +827,9 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         // Dim te = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
         // std::cout << "i-" << i << ": " << octa_bound.sx << " to " << octa_bound.ex << " octant range: " << ts << " to " << te << "\n";
         if (i < 4)
-            octa_top.emplace_back(std::move(octa_bound));
+            octa_top.insert({i, std::move(octa_bound)});
         else 
-            octa_bottom.emplace_back(std::move(octa_bound));
+            octa_bottom.insert({i, std::move(octa_bound)});
     }
 
     auto draw_arc_top = [&](const Dim &center_point, const Dim &xy, const Dim &bxy, const OctaBound &octa_bound) -> void { 
@@ -866,27 +865,27 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     while (x >= y)
     {
         for (auto &o : octa_top) {
-            if(o.octant == 0) 
-                draw_arc_top(center_point, +x, by, o);
-            else if (o.octant == 1)
-                draw_arc_top(center_point, +y, bx, o);
-            else if (o.octant == 2)
-                draw_arc_top(center_point, -y, bx, o);
+            if(o.first == 0) 
+                draw_arc_top(center_point, +x, by, o.second);
+            else if (o.first == 1)
+                draw_arc_top(center_point, +y, bx, o.second);
+            else if (o.first == 2)
+                draw_arc_top(center_point, -y, bx, o.second);
             else
-                draw_arc_top(center_point, -x, by, o);
+                draw_arc_top(center_point, -x, by, o.second);
         }
         
         for (auto &o : octa_bottom) {
-            if(o.octant == 4) {
-                std::cout << "-x: " << -x << " sx: " << o.sx << " - " << o.ex << "\n";
-                draw_arc_bottom(center_point, -x, by, o);
+            if(o.first == 4) {
+                //std::cout << "-x: " << -x << " sx: " << o.sx << " - " << o.ex << "\n";
+                draw_arc_bottom(center_point, -x, by, o.second);
             }
-            else if (o.octant == 5)
-                draw_arc_bottom(center_point, -y, bx, o);
-            else if (o.octant == 6)
-                draw_arc_bottom(center_point, +y, bx, o);
+            else if (o.first == 5)
+                draw_arc_bottom(center_point, -y, bx, o.second);
+            else if (o.first == 6)
+                draw_arc_bottom(center_point, +y, bx, o.second);
             else
-                draw_arc_bottom(center_point, +x, by, o);
+                draw_arc_bottom(center_point, +x, by, o.second);
         }
 
         ++y;
