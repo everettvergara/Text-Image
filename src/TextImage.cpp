@@ -782,7 +782,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     }
 
     // Reduce to n_sa < 360 only
-    if (n_sa >= 360 && n_ea >= 360) {
+    if (n_sa > 360 && n_ea > 360) {
         Dim t = n_sa / 360;
         n_sa -= 360 * t;
         n_ea -= 360 * t;
@@ -790,7 +790,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
 
     // Add extended angle
     Dim extended_sa, extended_ea;
-    if (n_ea >= 360) {
+    if (n_ea > 360) {
         extended_sa = 0;
         extended_ea = n_ea % 360;
     } else {
@@ -810,22 +810,85 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     //  7: 315 to 360 degress, lower right 
 
     // Each octant will have the following behavior
-    // 0: Not included in the drawing
-    // 1: within n_sa and e_a
+    // If extended_sa >= 0, arc draw will be called another time
+    // 0: octant within n_sa and e_a 
+    // 1: n_sa starts at this octant
+    // 2: n_ea ends at this octant
+    // 3: n_sa is here and n_ea is here
 
 
+/*
+    Deciding which octants to use
 
-    Dim center_point = index(point);
+    Case 1:
+    n_sa ----- n_ea 
+                        a   -------  a+45 
 
-    Dim x = radius;
-    Dim y = 0;
+    Case 2: 
+                n_sa ----- n_ea 
+                        a   -------  a+45 
+
+    Case 3:
+            n_sa ----- n_ea 
+        a -------------------  a+45 
+
+    Case 4:
+            n_sa ----- n_ea 
+        a -------  a+45 
+
+    Case 5:
+                        n_sa ----- n_ea 
+        a -------  a+45 
     
-    Dim bx = x * area_.w;
-    Dim by = y * area_.w;
+    Case 6:
+                     n_sa --------------------- n_ea
+                   a ------ a+45
 
-    Dim dx = 1 - (radius << 1);
-    Dim dy = 1;
-    Dim re = 0;
+    Case 7:
+
+    Handles 2, 3, 4, 6:
+        n_ea >= a && n_ea <= a + 45 ||
+        n_sa >= a && n_sa <= a + 45 ||
+        a >= n_sa && a <= n_ea
+
+*/
+
+
+    struct OctaBound {Dim octant, sx, ex; };
+    std::vector<OctaBound> octant_0_to_3;
+    std::vector<OctaBound> octant_4_to_7;
+
+    for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
+        if (n_sa >= a && n_sa <= a + 45 ||
+            n_ea >= a && n_ea <= a + 45 ||
+            a >= n_sa && a <= n_ea) {
+
+            OctaBound octa_bound;
+            Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
+            Dim a2 = a >= 0 && a < 180 ? a : a + 45;
+            octa_bound.octant = i;
+            octa_bound.sx = static_cast<Dim>(cos(a1 * PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos(a2 * PI / 180) * radius);
+
+            if (i <= 3)
+                octant_0_to_3.emplace_back(std::move(octa_bound));
+            else 
+                octant_4_to_7.emplace_back(std::move(octa_bound));
+        }
+    }
+
+
+    // Dim center_point = index(point);
+
+    // Dim x = radius;
+    // Dim y = 0;
+    
+    // Dim bx = x * area_.w;
+    // Dim by = y * area_.w;
+
+    // Dim dx = 1 - (radius << 1);
+    // Dim dy = 1;
+    // Dim re = 0;
 
 
 
