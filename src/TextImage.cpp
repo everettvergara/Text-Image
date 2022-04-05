@@ -799,8 +799,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     }
 
     struct OctaBound {Dim octant, sx, ex; };
-    std::vector<OctaBound> octant_top;
-    std::vector<OctaBound> octant_bottom;
+    std::vector<OctaBound> octa_bounds;
 
     for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
         if ((n_sa >= a && n_sa <= a + 45) ||
@@ -814,23 +813,17 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
             octa_bound.sx = static_cast<Dim>(cos(a1 * PI / 180) * radius);
             octa_bound.ex = static_cast<Dim>(cos(a2 * PI / 180) * radius);
 
-            if (i <= 3)
-                octant_top.emplace_back(std::move(octa_bound));
-            else 
-                octant_bottom.emplace_back(std::move(octa_bound));
+            octa_bounds.emplace_back(std::move(octa_bound));
         }
     }
 
-    auto draw_arc_top = [&](Dim xy, Dim bxy) -> void { 
-        text_[xy - bxy] = text;
-        color_[xy - bxy] = color;
-        set_mask(xy - bxy, mask_bit);
-    };
-
-    auto draw_arc_bottom = [&](Dim xy, Dim bxy) -> void { 
-        text_[xy - bxy] = text;
-        color_[xy - bxy] = color;
-        set_mask(xy - bxy, mask_bit);
+    auto draw_arc = [&](const Dim &center_point, const Dim xy, const Dim &bxy, const Dim &sx, const Dim &ex) -> void { 
+        if (xy >= sx && xy <= ex) {
+            Dim ix = center_point + xy + bxy;
+            text_[ix] = text;
+            color_[ix] = color;
+            set_mask(ix, mask_bit);
+        }
     };
 
     // Drawing arc proper
@@ -848,36 +841,35 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
 
     while (x >= y)
     {
+        for (auto &o : octa_bounds) {
+            switch(o.octant) {
+                case 0:
+                    draw_arc(center_point, +x, -by, o.sx, o.ex);
+                    break;
+                case 1:
+                    draw_arc(center_point, +y, -bx, o.sx, o.ex);
+                    break;
+                case 2:
+                    draw_arc(center_point, -y, -bx, o.sx, o.ex);
+                    break;
+                case 3:
+                    draw_arc(center_point, -x, -by, o.sx, o.ex);
+                    break;
+                case 4:
+                    draw_arc(center_point, +x, +by, o.sx, o.ex);
+                    break;
+                case 5:
+                    draw_arc(center_point, +y, +bx, o.sx, o.ex);
+                    break;
+                case 6:
+                    draw_arc(center_point, -y, +bx, o.sx, o.ex);
+                    break;
+                case 7:
+                    draw_arc(center_point, -x, +by, o.sx, o.ex);
+                    break;
+            }
 
-        text_[center_point + x - by] = text;
-        color_[center_point + x - by] = color;
-        set_mask(center_point + x - by, mask_bit);
-
-        text_[center_point + y - bx] = text;
-        color_[center_point + y - bx] = color;
-        set_mask(center_point + y - bx, mask_bit);
-
-        text_[center_point - y - bx] = text;
-        text_[center_point - x - by] = text;
-
-        text_[center_point + x + by] = text;
-        text_[center_point + y + bx] = text;
-        text_[center_point - y + bx] = text;
-        text_[center_point - x + by] = text;
-
-        color_[center_point - y - bx] = color;
-        color_[center_point - x - by] = color;
-        color_[center_point + x + by] = color;
-        color_[center_point + y + bx] = color;
-        color_[center_point - y + bx] = color;
-        color_[center_point - x + by] = color;
-
-        set_mask(center_point - y - bx, mask_bit);
-        set_mask(center_point - x - by, mask_bit);
-        set_mask(center_point + x + by, mask_bit);
-        set_mask(center_point + y + bx, mask_bit);
-        set_mask(center_point - y + bx, mask_bit);
-        set_mask(center_point - x + by, mask_bit);
+        }
 
         ++y;
         re += dy;
