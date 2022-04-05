@@ -812,12 +812,10 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     struct OctaBound {Dim sx, ex, *xy, xy_mul, *bxy, bxy_mul, type; };
     std::unordered_map<Dim, OctaBound> octa_bounds;
 
-
     Dim t_sa = n_sa;
     Dim t_ea = n_ea;
     for (Dim j = 0; j <= 8; j += 8) {
         for (Dim i = j, a = 0; i < j + 8; ++i, a += 45) {
-
             OctaBound octa_bound;
             
             // 0: n_sa ----| a  ------ a45 | ------- n_ea 
