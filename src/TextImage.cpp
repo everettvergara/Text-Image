@@ -24,7 +24,7 @@
 #include <vector>
 #include <cmath>
 #include <array>
-#include <unordered_set>
+#include <unordered_map>
 
 #include "TextImage.h"
 
@@ -772,8 +772,22 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
 
 auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
     
-    constexpr double PI = 3.141592653589793238;
+    Dim center_point = index(point);
 
+    Dim x = radius;
+    Dim y = 0;
+    
+    Dim bx = x * area_.w;
+    Dim by = y * area_.w;
+
+    Dim dx = 1 - (radius << 1);
+    Dim dy = 1;
+    Dim re = 0;
+
+
+
+    constexpr double PI = 3.141592653589793238;
+    
     Dim n_sa, n_ea;
     if (sa > ea) {
         n_sa = ea;
@@ -800,93 +814,71 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         extended_ea = -1;
     }
 
-    struct OctaBound {Dim sx, ex; };
-    std::map<Dim, OctaBound> octa_top;
-    std::map<Dim, OctaBound> octa_bottom;
+    struct OctaBound {Dim sx, ex, *xy, xy_mul, *bxy, bxy_mul; };
+    std::unordered_map<Dim, OctaBound> octa_top;
+    std::unordered_map<Dim, OctaBound> octa_bottom;
+    std::unordered_map<Dim, OctaBound> octa_bounds;
 
     for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
+
         OctaBound octa_bound;
         
         if (a >= n_sa && a + 45 <= n_ea) {
             octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);    
         } else if (n_sa >= a && n_ea <= a + 45) {
             octa_bound.sx = static_cast<Dim>(cos(n_sa * PI / 180) * radius);
             octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);
         } else if (n_sa >= a && n_sa <= a + 45) {
             octa_bound.sx = static_cast<Dim>(cos(n_sa * PI / 180) * radius);
             octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
-        } else if (n_ea >= a && n_ea <= a + 45) {
+        } else if (n_ea > a && n_ea <= a + 45) {
             octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);                
+            octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);     
         } else {
             continue;
         }
 
+        if (i < 4) {
+            octa_bound.bxy_mul = -1;
+
+            // TODO: Optimize this so there's no need for a swap
+            std::swap(octa_bound.sx, octa_bound.ex);
+        } else octa_bound.bxy_mul = +1;
+
         // Dim ts = static_cast<Dim>(cos(a * PI / 180) * radius);
         // Dim te = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
         // std::cout << "i-" << i << ": " << octa_bound.sx << " to " << octa_bound.ex << " octant range: " << ts << " to " << te << "\n";
-        if (i < 4)
-            octa_top.insert({i, std::move(octa_bound)});
-        else 
-            octa_bottom.insert({i, std::move(octa_bound)});
+        
+        if (i == 0 || i == 1 || i == 6 || i == 7) octa_bound.xy_mul = +1;
+        else octa_bound.xy_mul = -1;
+
+        if (i == 0 || i == 3 || i == 4 || i == 7) {
+            octa_bound.xy = &x;
+            octa_bound.bxy = &by;
+        } else {
+            octa_bound.xy = &y;
+            octa_bound.bxy = &bx;
+        }
+
+        octa_bounds.insert({i, octa_bound});
     }
 
-    auto draw_arc_top = [&](const Dim &center_point, const Dim &xy, const Dim &bxy, const OctaBound &octa_bound) -> void { 
-        if (xy >= octa_bound.ex && xy <= octa_bound.sx) {
-            Dim ix = center_point + xy - bxy;
-            text_[ix] = text;
-            color_[ix] = color;
-            set_mask(ix, mask_bit);
-        }
-    };
-    
-    auto draw_arc_bottom = [&](const Dim &center_point, const Dim &xy, const Dim &bxy, const OctaBound &octa_bound) -> void { 
-        if (xy >= octa_bound.sx && xy <= octa_bound.ex) {
-            Dim ix = center_point + xy + bxy;
+    auto draw_arc = [&](const OctaBound &octa_bound) -> void { 
+        if (*octa_bound.xy * octa_bound.xy_mul >= octa_bound.sx && 
+            *octa_bound.xy * octa_bound.xy_mul <= octa_bound.ex) {
+            Dim ix = center_point + (*octa_bound.xy * octa_bound.xy_mul) + (*octa_bound.bxy * octa_bound.bxy_mul);
             text_[ix] = text;
             color_[ix] = color;
             set_mask(ix, mask_bit);
         }
     };
 
-    Dim center_point = index(point);
-
-    Dim x = radius;
-    Dim y = 0;
-    
-    Dim bx = x * area_.w;
-    Dim by = y * area_.w;
-
-    Dim dx = 1 - (radius << 1);
-    Dim dy = 1;
-    Dim re = 0;
 
     while (x >= y)
     {
-        for (auto &o : octa_top) {
-            if(o.first == 0) 
-                draw_arc_top(center_point, +x, by, o.second);
-            else if (o.first == 1)
-                draw_arc_top(center_point, +y, bx, o.second);
-            else if (o.first == 2)
-                draw_arc_top(center_point, -y, bx, o.second);
-            else
-                draw_arc_top(center_point, -x, by, o.second);
-        }
-        
-        for (auto &o : octa_bottom) {
-            if(o.first == 4) {
-                //std::cout << "-x: " << -x << " sx: " << o.sx << " - " << o.ex << "\n";
-                draw_arc_bottom(center_point, -x, by, o.second);
-            }
-            else if (o.first == 5)
-                draw_arc_bottom(center_point, -y, bx, o.second);
-            else if (o.first == 6)
-                draw_arc_bottom(center_point, +y, bx, o.second);
-            else
-                draw_arc_bottom(center_point, +x, by, o.second);
-        }
+        for (auto &o : octa_bounds)
+            draw_arc(o.second);
 
         ++y;
         re += dy;
@@ -900,7 +892,6 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         }
         by += area_.w;
     }
-
 }
 
 auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
