@@ -800,7 +800,6 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         n_ea -= 360 * t;
     }
 
-    // Add extended angle
     Dim extended_sa, extended_ea;
     if (n_ea > 360) {
         extended_sa = 0;
@@ -810,55 +809,79 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         extended_ea = -1;
     }
 
-    struct OctaBound {Dim sx, ex, *xy, xy_mul, *bxy, bxy_mul; };
-    std::unordered_map<Dim, OctaBound> octa_top;
-    std::unordered_map<Dim, OctaBound> octa_bottom;
+    struct OctaBound {Dim sx, ex, *xy, xy_mul, *bxy, bxy_mul, type; };
     std::unordered_map<Dim, OctaBound> octa_bounds;
 
-    for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
-        OctaBound octa_bound;
-        
-        if (a >= n_sa && a + 45 <= n_ea) {
-            octa_bound.sx = static_cast<Dim>(cos(a * M_PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos((a + 45) * M_PI / 180) * radius);    
-        } else if (n_sa >= a && n_ea <= a + 45) {
-            octa_bound.sx = static_cast<Dim>(cos(n_sa * M_PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos(n_ea * M_PI / 180) * radius);
-        } else if (n_sa >= a && n_sa <= a + 45) {
-            octa_bound.sx = static_cast<Dim>(cos(n_sa * M_PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos((a + 45) * M_PI / 180) * radius);
-        } else if (n_ea > a && n_ea <= a + 45) {
-            octa_bound.sx = static_cast<Dim>(cos(a * M_PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos(n_ea * M_PI / 180) * radius);     
-        } else {
-            continue;
+    for (Dim j = 0; j < 2; ++j) {
+        for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
+            OctaBound octa_bound;
+            
+            // 0: n_sa ----| a  ------ a45 | ------- n_ea 
+            if (a >= n_sa && a + 45 <= n_ea) {
+                octa_bound.sx = static_cast<Dim>(cos(a * M_PI / 180) * radius);
+                octa_bound.ex = static_cast<Dim>(cos((a + 45) * M_PI / 180) * radius);
+                octa_bound.type = 0;
+            
+            // 1: a ----| n_sa  ------ n_ea | ------- a45 
+            } else if (n_sa >= a && n_ea <= a + 45) {
+                octa_bound.sx = static_cast<Dim>(cos(n_sa * M_PI / 180) * radius);
+                octa_bound.ex = static_cast<Dim>(cos(n_ea * M_PI / 180) * radius);
+                octa_bound.type = 1;
+            
+            // 2: a ----| n_sa  ------ a45 | ------- n_ea 
+            } else if (n_sa >= a && n_sa <= a + 45) {
+                octa_bound.sx = static_cast<Dim>(cos(n_sa * M_PI / 180) * radius);
+                octa_bound.ex = static_cast<Dim>(cos((a + 45) * M_PI / 180) * radius);
+                octa_bound.type = 2;
+            
+            // 3: n_sa ---- | a ---- n_ea  ------ | a45 
+            } else if (n_ea > a && n_ea <= a + 45) {
+                octa_bound.sx = static_cast<Dim>(cos(a * M_PI / 180) * radius);
+                octa_bound.ex = static_cast<Dim>(cos(n_ea * M_PI / 180) * radius);
+                octa_bound.type = 3;
+            } else {
+                continue;
+            }
+
+            Dim ix = i % 8;
+            if (ix < 4) {
+                octa_bound.bxy_mul = -1;
+
+                // TODO: Optimize this so there's no need for a swap
+                std::swap(octa_bound.sx, octa_bound.ex);
+            } else octa_bound.bxy_mul = +1;
+
+            // Dim ts = static_cast<Dim>(cos(a * PI / 180) * radius);
+            // Dim te = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
+            // std::cout << "i-" << i << ": " << octa_bound.sx << " to " << octa_bound.ex << " octant range: " << ts << " to " << te << "\n";
+            
+            if (ix == 0 || ix == 1 || ix == 6 || ix == 7) octa_bound.xy_mul = +1;
+            else octa_bound.xy_mul = -1;
+
+            if (ix == 0 || ix == 3 || ix == 4 || ix == 7) {
+                octa_bound.xy = &x;
+                octa_bound.bxy = &by;
+            } else {
+                octa_bound.xy = &y;
+                octa_bound.bxy = &bx;
+            }
+
+            auto f = octa_bounds.find(ix);
+            if (f == octa_bounds.end())
+                octa_bounds.insert({ix, octa_bound});
+            else {
+
+                // will hapen only in extended angles
+                // check the case of previous 
+                if (f->second.type == 1 || f->second.type == 2) {
+                    octa_bounds.insert({i, octa_bound});
+                    break;
+                }
+            }
         }
-
-        if (i < 4) {
-            octa_bound.bxy_mul = -1;
-
-            // TODO: Optimize this so there's no need for a swap
-            std::swap(octa_bound.sx, octa_bound.ex);
-        } else octa_bound.bxy_mul = +1;
-
-        // Dim ts = static_cast<Dim>(cos(a * PI / 180) * radius);
-        // Dim te = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
-        // std::cout << "i-" << i << ": " << octa_bound.sx << " to " << octa_bound.ex << " octant range: " << ts << " to " << te << "\n";
-        
-        if (i == 0 || i == 1 || i == 6 || i == 7) octa_bound.xy_mul = +1;
-        else octa_bound.xy_mul = -1;
-
-        if (i == 0 || i == 3 || i == 4 || i == 7) {
-            octa_bound.xy = &x;
-            octa_bound.bxy = &by;
-        } else {
-            octa_bound.xy = &y;
-            octa_bound.bxy = &bx;
-        }
-
-        octa_bounds.insert({i, octa_bound});
+        if (extended_sa < 0) break;
     }
-
+    
     auto draw_arc = [&](const OctaBound &octa_bound) -> void { 
         if (*octa_bound.xy * octa_bound.xy_mul >= octa_bound.sx && 
             *octa_bound.xy * octa_bound.xy_mul <= octa_bound.ex) {
