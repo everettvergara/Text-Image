@@ -732,6 +732,7 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
         text_[center_point + y - bx] = text;
         text_[center_point - y - bx] = text;
         text_[center_point - x - by] = text;
+
         text_[center_point + x + by] = text;
         text_[center_point + y + bx] = text;
         text_[center_point - y + bx] = text;
@@ -799,26 +800,50 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     }
 
     struct OctaBound {Dim octant, sx, ex; };
-    std::vector<OctaBound> octa_bounds;
+    std::vector<OctaBound> octa_top;
+    std::vector<OctaBound> octa_bottom;
+
 
     for (Dim i = 0, a = 0; i < 8; ++i, a += 45) {
-        if ((n_sa >= a && n_sa <= a + 45) ||
-            (n_ea >= a && n_ea <= a + 45) ||
-            (a >= n_sa && a <= n_ea)) {
+        OctaBound octa_bound;
+        octa_bound.octant = i;
 
-            OctaBound octa_bound;
-            Dim a1 = a >= 0 && a < 180 ? a + 45 : a;
-            Dim a2 = a >= 0 && a < 180 ? a : a + 45;
-            octa_bound.octant = i;
-            octa_bound.sx = static_cast<Dim>(cos(a1 * PI / 180) * radius);
-            octa_bound.ex = static_cast<Dim>(cos(a2 * PI / 180) * radius);
-
-            octa_bounds.emplace_back(std::move(octa_bound));
+        if (a >= n_sa && a + 45 <= n_ea) {
+            octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
+        } else if (n_sa >= a && n_ea <= a + 45) {
+            octa_bound.sx = static_cast<Dim>(cos(n_sa * PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);
+        } else if (n_sa >= a && n_sa <= a + 45) {
+            octa_bound.sx = static_cast<Dim>(cos(n_sa * PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
+        } else if (n_ea >= a && n_ea <= a + 45) {
+            octa_bound.sx = static_cast<Dim>(cos(a * PI / 180) * radius);
+            octa_bound.ex = static_cast<Dim>(cos(n_ea * PI / 180) * radius);                
+        } else {
+            continue;
         }
+
+        // Dim ts = static_cast<Dim>(cos(a * PI / 180) * radius);
+        // Dim te = static_cast<Dim>(cos((a + 45) * PI / 180) * radius);
+        // std::cout << "i-" << i << ": " << octa_bound.sx << " to " << octa_bound.ex << " octant range: " << ts << " to " << te << "\n";
+        if (i < 4)
+            octa_top.emplace_back(std::move(octa_bound));
+        else 
+            octa_bottom.emplace_back(std::move(octa_bound));
     }
 
-    auto draw_arc = [&](const Dim &center_point, const Dim xy, const Dim &bxy, const Dim &sx, const Dim &ex) -> void { 
-        if (xy >= sx && xy <= ex) {
+    auto draw_arc_top = [&](const Dim &center_point, const Dim &xy, const Dim &bxy, const OctaBound &octa_bound) -> void { 
+        if (xy >= octa_bound.ex && xy <= octa_bound.sx) {
+            Dim ix = center_point + xy - bxy;
+            text_[ix] = text;
+            color_[ix] = color;
+            set_mask(ix, mask_bit);
+        }
+    };
+    
+    auto draw_arc_bottom = [&](const Dim &center_point, const Dim &xy, const Dim &bxy, const OctaBound &octa_bound) -> void { 
+        if (xy >= octa_bound.sx && xy <= octa_bound.ex) {
             Dim ix = center_point + xy + bxy;
             text_[ix] = text;
             color_[ix] = color;
@@ -826,7 +851,6 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         }
     };
 
-    // Drawing arc proper
     Dim center_point = index(point);
 
     Dim x = radius;
@@ -841,34 +865,28 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
 
     while (x >= y)
     {
-        for (auto &o : octa_bounds) {
-            switch(o.octant) {
-                case 0:
-                    draw_arc(center_point, +x, -by, o.sx, o.ex);
-                    break;
-                case 1:
-                    draw_arc(center_point, +y, -bx, o.sx, o.ex);
-                    break;
-                case 2:
-                    draw_arc(center_point, -y, -bx, o.sx, o.ex);
-                    break;
-                case 3:
-                    draw_arc(center_point, -x, -by, o.sx, o.ex);
-                    break;
-                case 4:
-                    draw_arc(center_point, +x, +by, o.sx, o.ex);
-                    break;
-                case 5:
-                    draw_arc(center_point, +y, +bx, o.sx, o.ex);
-                    break;
-                case 6:
-                    draw_arc(center_point, -y, +bx, o.sx, o.ex);
-                    break;
-                case 7:
-                    draw_arc(center_point, -x, +by, o.sx, o.ex);
-                    break;
+        for (auto &o : octa_top) {
+            if(o.octant == 0) 
+                draw_arc_top(center_point, +x, by, o);
+            else if (o.octant == 1)
+                draw_arc_top(center_point, +y, bx, o);
+            else if (o.octant == 2)
+                draw_arc_top(center_point, -y, bx, o);
+            else
+                draw_arc_top(center_point, -x, by, o);
+        }
+        
+        for (auto &o : octa_bottom) {
+            if(o.octant == 4) {
+                std::cout << "-x: " << -x << " sx: " << o.sx << " - " << o.ex << "\n";
+                draw_arc_bottom(center_point, -x, by, o);
             }
-
+            else if (o.octant == 5)
+                draw_arc_bottom(center_point, -y, bx, o);
+            else if (o.octant == 6)
+                draw_arc_bottom(center_point, +y, bx, o);
+            else
+                draw_arc_bottom(center_point, +x, by, o);
         }
 
         ++y;
@@ -882,10 +900,8 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
             dx += 2;
         }
         by += area_.w;
-        
     }
 
-    // //exit(0);
 }
 
 auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
