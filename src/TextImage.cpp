@@ -62,6 +62,9 @@ g80::TextImage::TextImage(const Area &area, MASK_BIT mask_bit) :
     size_of_mask8bit_(area_() % 8 == 0 ? area_() / 8 : area_() / 8 + 1),
     mask8bit_(std::make_unique<Mask8bit[]>(size_of_mask8bit_)) {
     
+    fill_text(' ');
+    fill_color(7);
+    
     if (mask_bit)
         set_all_mask8bit();
     else 
