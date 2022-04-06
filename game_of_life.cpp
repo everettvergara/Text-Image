@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -14,7 +15,7 @@
 
 // Game of Life Automata
 using namespace g80;
-using Creatures = std::vector<Point>;
+using Creatures = std::unordered_set<Dim>;
 
 constexpr int FPS = 15;
 constexpr int MSPF = 1000 / FPS;
@@ -25,6 +26,7 @@ using SysClock = chr::system_clock;
 
 auto is_key_pressed() -> int;
 auto spawner(const Area &area, const Dim &N) -> Creatures;
+auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area) -> void;
 
 auto main(int argc, char **argv) -> int {
 
@@ -32,30 +34,74 @@ auto main(int argc, char **argv) -> int {
     Area area({140, 50});
     TextImage screen(area);
     Creatures creatures = spawner(area, N);
-
-    // Plot Creatures to Screen
-
-
-    screen.show();
     
-     do {
+    do {
         TimePointSysClock start {SysClock::now()};
 
-        screen.fill_text(' ');
         for (auto &c : creatures) {
-            screen.set_text(c, 'x');
-            screen.set_color(c, 1);
+            
+            // Erase Previous
+            screen.set_text(c, ' ');
+
+            // Execute Policies
+            kill_creatures_with_single_neighbors(creatures, area);
         }
 
+        // Render
+        for (auto &c : creatures) {
+            screen.set_text(c, 'x');
+            screen.set_color(c, rand() % 8);
+        }
+
+        screen.show();
         TimePointSysClock end = SysClock::now();
         int delay = MSPF - chr::duration_cast<chr::milliseconds>(end - start).count();
         if (delay > 0) 
             this_thread::sleep_for(chr::milliseconds(delay));
 
-    } while(!is_key_pressed());
-
+    } while(!is_key_pressed() && creatures.size() > 0);
 }
 
+
+auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area) -> void {
+    for (auto &c : creatures) {
+        Dim neighbor = 0;
+
+        // Check upper left exists
+        Dim top = c - area.w;
+        Dim upper_left = top - 1;
+        Dim upper_right = top + 1;
+        Dim left = c - 1;
+        Dim right = c + 1;
+        Dim bottom = c + area.w;
+        Dim bottom_left = bottom - 1;
+        Dim bottom_right = bottom + 1;        
+        
+        if (creatures.find(upper_left) != creatures.end()) ++neighbor;
+        if (creatures.find(top) != creatures.end()) ++neighbor;
+
+        if (neighbor >= 2) continue;
+        if (creatures.find(upper_right) != creatures.end()) ++neighbor;
+        
+        if (neighbor >= 2) continue;
+        if (creatures.find(left) != creatures.end()) ++neighbor;
+        
+        if (neighbor >= 2) continue;
+        if (creatures.find(right) != creatures.end()) ++neighbor;
+        
+        if (neighbor >= 2) continue;
+        if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
+        
+        if (neighbor >= 2) continue;
+        if (creatures.find(bottom) != creatures.end()) ++neighbor;
+        
+        if (neighbor >= 2) continue;
+        if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
+
+        // delete
+        creatures.erase(c);
+    }
+}
 
 auto spawner(const Area &area, const Dim &N) -> Creatures {
     
@@ -68,15 +114,9 @@ auto spawner(const Area &area, const Dim &N) -> Creatures {
         std::swap(creature_ixs[i], creature_ixs[rand() % area()]);
 
     Creatures creatures;
-    for (Dim i = 0; i < N; ++i) {
-        std::cout << "x: " << static_cast<Dim>(creature_ixs[i] % area.w) << " y: " << static_cast<Dim>(creature_ixs[i] / area.w) << "\n";
-        creatures.emplace_back(
-            Point{
-                static_cast<Dim>(creature_ixs[i] % area.w), 
-                static_cast<Dim>(creature_ixs[i] / area.w)});
-    }
-    
-    //exit(0);
+    for (Dim i = 0; i < N; ++i)
+        creatures.insert(creature_ixs[i]);
+
     return creatures;
 }
 
