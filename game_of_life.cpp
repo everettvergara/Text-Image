@@ -64,6 +64,9 @@ auto main(int argc, char **argv) -> int {
 
 
 auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area) -> void {
+
+
+    std::cout << creatures.size() << " before....\n";
     for (auto &c : creatures) {
         Dim neighbor = 0;
 
@@ -98,9 +101,11 @@ auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area
         if (neighbor >= 2) continue;
         if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
 
-        // delete
-        creatures.erase(c);
+        if (neighbor >= 2) continue;
+        std::cout << "erasing c: " << c << ", erased count: " << creatures.erase(c) << " size: " << creatures.size() << "\n";
     }
+
+    std::cout << creatures.size() << " xxxxx....\n"; exit(0);
 }
 
 auto spawner(const Area &area, const Dim &N) -> Creatures {
