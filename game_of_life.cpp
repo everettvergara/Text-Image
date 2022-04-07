@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <tuple>
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -15,7 +16,8 @@
 
 // Game of Life Automata
 using namespace g80;
-using Creatures = std::unordered_set<Dim>;
+using Creature = Dim;
+using Creatures = std::unordered_set<Creature>;
 
 constexpr int FPS = 15;
 constexpr int MSPF = 1000 / FPS;
@@ -26,7 +28,7 @@ using SysClock = chr::system_clock;
 
 auto is_key_pressed() -> int;
 auto spawner(const Area &area, const Dim &N) -> Creatures;
-auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area) -> void;
+auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area, const Dim &at_most_neighbors = 2) -> Creatures;
 
 auto main(int argc, char **argv) -> int {
 
@@ -38,20 +40,19 @@ auto main(int argc, char **argv) -> int {
     do {
         TimePointSysClock start {SysClock::now()};
 
-        for (auto &c : creatures) {
-            
-            // Erase Previous
+        // Erase previous
+        for (auto &c : creatures)
             screen.set_text(c, ' ');
 
-            // Execute Policies
-            kill_creatures_with_single_neighbors(creatures, area);
-        }
+        // Execute Policies
+        Creatures to_kill = kill_creatures_with_single_neighbors(creatures, area, 2);
+    
 
-        // Render
-        for (auto &c : creatures) {
-            screen.set_text(c, 'x');
-            screen.set_color(c, rand() % 8);
-        }
+        // // Render
+        // for (auto &c : creatures) {
+        //     screen.set_text(c, 'x');
+        //     screen.set_color(c, rand() % 8);
+        // }
 
         screen.show();
         TimePointSysClock end = SysClock::now();
@@ -63,14 +64,13 @@ auto main(int argc, char **argv) -> int {
 }
 
 
-auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area) -> void {
+auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area, const Dim &at_most_neighbors) -> Creatures {
 
+    Creatures to_kill;
 
-    std::cout << creatures.size() << " before....\n";
-    for (auto &c : creatures) {
+    auto neighbor_count = [&](const Creature &c) -> Dim {
         Dim neighbor = 0;
 
-        // Check upper left exists
         Dim top = c - area.w;
         Dim upper_left = top - 1;
         Dim upper_right = top + 1;
@@ -78,34 +78,25 @@ auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area
         Dim right = c + 1;
         Dim bottom = c + area.w;
         Dim bottom_left = bottom - 1;
-        Dim bottom_right = bottom + 1;        
-        
-        if (creatures.find(upper_left) != creatures.end()) ++neighbor;
-        if (creatures.find(top) != creatures.end()) ++neighbor;
+        Dim bottom_right = bottom + 1;    
 
-        if (neighbor >= 2) continue;
+        if (creatures.find(top) != creatures.end()) ++neighbor;
+        if (creatures.find(upper_left) != creatures.end()) ++neighbor;
         if (creatures.find(upper_right) != creatures.end()) ++neighbor;
-        
-        if (neighbor >= 2) continue;
         if (creatures.find(left) != creatures.end()) ++neighbor;
-        
-        if (neighbor >= 2) continue;
         if (creatures.find(right) != creatures.end()) ++neighbor;
-        
-        if (neighbor >= 2) continue;
-        if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
-        
-        if (neighbor >= 2) continue;
         if (creatures.find(bottom) != creatures.end()) ++neighbor;
-        
-        if (neighbor >= 2) continue;
+        if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
         if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
 
-        if (neighbor >= 2) continue;
-        std::cout << "erasing c: " << c << ", erased count: " << creatures.erase(c) << " size: " << creatures.size() << "\n";
-    }
+        return neighbor;
+    };
 
-    std::cout << creatures.size() << " xxxxx....\n"; exit(0);
+    for (auto &c : creatures)
+        if (neighbor_count(c) <= at_most_neighbors) 
+            to_kill.insert(c);
+    
+    return to_kill;
 }
 
 auto spawner(const Area &area, const Dim &N) -> Creatures {
