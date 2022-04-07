@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 #include <unordered_map>
+#include <array>
 #include <tuple>
 #include <algorithm>
 #include <chrono>
@@ -18,7 +20,16 @@
 using namespace g80;
 using Creature = Dim;
 using Count = Dim;
-using Creatures = std::unordered_map<Creature, Count>;
+
+// Creatures, Count
+using CreaturesCount = std::unordered_map<Creature, Count>;
+
+// Count, Creatures
+using CountCreatures = std::array<std::unordered_set<Creature>, 9>;
+
+// Creatures and Count
+using CreaturesCountTuple = std::tuple<CreaturesCount, CountCreatures>;
+
 
 constexpr int FPS = 5;
 constexpr int MSPF = 1000 / FPS;
@@ -28,11 +39,12 @@ using TimePointSysClock = chr::time_point<chr::system_clock>;
 using SysClock = chr::system_clock;
 
 auto is_key_pressed() -> int;
-auto spawner(const Area &area, const Dim &N) -> Creatures;
+auto init(const Area &area, const Dim &N) -> CreaturesCountTuple;
+
 
 auto point_to_index(const Point &point, const Area &area) -> Dim;
-auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim;
-auto execute_rules(Creatures &creatures, const Area &area) -> void;
+// auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim;
+// auto execute_rules(Creatures &creatures, const Area &area) -> void;
 // auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures;
 // auto find_creatures_with_three(Creatures &creatures, const Area &area) -> Creatures;
 // auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void;
@@ -43,50 +55,55 @@ auto main(int argc, char **argv) -> int {
     const Dim N = 5;
     Area area({140, 30});
     TextImage screen(area);
-    Creatures creatures = spawner(area, N);
-    
-    // Render
-    for (auto &c : creatures) {
-        screen.set_text(c.first, '0' + c.second);
-        screen.set_color(c.first, rand() % 8);
-    }
+    auto [creatures_count, count_creatures] = init(area, N);
 
-    screen.show();
-    do {
-        TimePointSysClock start {SysClock::now()};
 
-        // Erase previous
-        for (auto &c : creatures)
-            screen.set_text(c.first, ' ');
+    // // // Render
+    // // for (auto &c : creatures) {
+    // //     screen.set_text(c.first, '0' + c.second);
+    // //     screen.set_color(c.first, rand() % 8);
+    // // }
+
+    // screen.show();
+    // do {
+    //     TimePointSysClock start {SysClock::now()};
+
+    //     // // Erase previous
+    //     // for (auto &c : creatures)
+    //     //     screen.set_text(c.first, ' ');
 
         
-        execute_rules(creatures, area);
-        // // Execute Policies
-        // Creatures to_kill = find_creatures_with_single_or_ge_four(creatures, area);
-        // kill_creatures(to_kill, creatures);
+    //     //execute_rules(creatures, area);
+    //     // // Execute Policies
+    //     // Creatures to_kill = find_creatures_with_single_or_ge_four(creatures, area);
+    //     // kill_creatures(to_kill, creatures);
 
-        // Creatures to_spawn = find_creatures_with_three(creatures, area);
-        // spawn_creatures(to_spawn, creatures);
+    //     // Creatures to_spawn = find_creatures_with_three(creatures, area);
+    //     // spawn_creatures(to_spawn, creatures);
 
-        // // Render
-        // for (auto &c : creatures) {
-        //     screen.set_text(c, 'x');
-        //     screen.set_color(c, rand() % 8);
-        // }
+    //     // // Render
+    //     // for (auto &c : creatures) {
+    //     //     screen.set_text(c, 'x');
+    //     //     screen.set_color(c, rand() % 8);
+    //     // }
 
-        screen.show();
-        TimePointSysClock end = SysClock::now();
-        int delay = MSPF - chr::duration_cast<chr::milliseconds>(end - start).count();
-        if (delay > 0) 
-            this_thread::sleep_for(chr::milliseconds(delay));
+    //     screen.show();
+    //     TimePointSysClock end = SysClock::now();
+    //     int delay = MSPF - chr::duration_cast<chr::milliseconds>(end - start).count();
+    //     if (delay > 0) 
+    //         this_thread::sleep_for(chr::milliseconds(delay));
 
-        exit(0);
-    } while(creatures.size() > 0);
+    //     exit(0);
+    // } while(creatures.size() > 0);
 }
 
-auto execute_rules(Creatures &creatures, const Area &area) -> void {
+// auto execute_rules(Creatures &creatures, const Area &area) -> void {
     
-}
+//     // CreatureList to_kill;
+//     // to_kill.reserve(area());    // Can be optimized, because we know how many are creatures with x neigbors
+    
+//     // for ()
+// }
 
 // auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void {
 //     for (auto &c : creatures_to_kill)
@@ -98,7 +115,8 @@ auto execute_rules(Creatures &creatures, const Area &area) -> void {
 //         creatures.insert(c);
 // }
 
-auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim {
+auto neighbor_count(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> Dim {
+    
     Dim neighbor = 0;
 
     Dim top = creature - area.w;
@@ -110,14 +128,14 @@ auto neighbor_count(const Creatures &creatures, const Area &area, const Creature
     Dim bottom_left = bottom - 1;
     Dim bottom_right = bottom + 1;    
 
-    if (creatures.find(top) != creatures.end()) ++neighbor;
-    if (creatures.find(upper_left) != creatures.end()) ++neighbor;
-    if (creatures.find(upper_right) != creatures.end()) ++neighbor;
-    if (creatures.find(left) != creatures.end()) ++neighbor;
-    if (creatures.find(right) != creatures.end()) ++neighbor;
-    if (creatures.find(bottom) != creatures.end()) ++neighbor;
-    if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
-    if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
+    if (creatures_count.find(top) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(upper_left) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(upper_right) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(left) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(right) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(bottom) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(bottom_left) != creatures_count.end()) ++neighbor;
+    if (creatures_count.find(bottom_right) != creatures_count.end()) ++neighbor;
 
     return neighbor;
 }
@@ -176,8 +194,21 @@ auto point_to_index(const Point &point, const Area &area) -> Dim {
     return point.y * area.w + point.x;
 } 
 
-auto spawner(const Area &area, const Dim &N) -> Creatures {
+auto init(const Area &area, const Dim &N) -> CreaturesCountTuple {
     
+    CreaturesCount creatures_count;
+    CountCreatures count_creatures; 
+
+    creatures_count.reserve(area());
+    creatures_count.insert({point_to_index({1, 1}, area), 0});
+    creatures_count.insert({point_to_index({2, 2}, area), 0});
+    creatures_count.insert({point_to_index({2, 3}, area), 0});
+    creatures_count.insert({point_to_index({3, 1}, area), 0});
+    creatures_count.insert({point_to_index({3, 2}, area), 0});
+
+    return {creatures_count, count_creatures};
+
+
     /*
     std::vector<Dim> creature_ixs;
     
@@ -194,18 +225,27 @@ auto spawner(const Area &area, const Dim &N) -> Creatures {
         creatures.insert(creature_ixs[i]);
     */
 
-    Creatures creatures;
-    creatures.insert({point_to_index({1,1}, area), 0});
-    creatures.insert({point_to_index({2,2}, area), 0});
-    creatures.insert({point_to_index({2,3}, area), 0});
-    creatures.insert({point_to_index({3,1}, area), 0});
-    creatures.insert({point_to_index({3,2}, area), 0});
+    // Creatures creatures;
+    // for (Dim i = 0; i < 9; ++i)
+    //     creatures[i].reserve(area());
 
-    for (auto &creature : creatures)
-        creatures.find(creature.first)->second = 
-            neighbor_count(creatures, area, creature.first);
+    // creatures[0].insert(point_to_index({1,1}, area));
+    // creatures[0].insert(point_to_index({2,2}, area));
+    // creatures[0].insert(point_to_index({2,3}, area));
+    // creatures[0].insert(point_to_index({3,1}, area));
+    // creatures[0].insert(point_to_index({3,2}, area));
 
-    return creatures;
+    // creatures.insert({point_to_index({1,1}, area), 0});
+    // creatures.insert({point_to_index({2,2}, area), 0});
+    // creatures.insert({point_to_index({2,3}, area), 0});
+    // creatures.insert({point_to_index({3,1}, area), 0});
+    // creatures.insert({point_to_index({3,2}, area), 0});
+
+    // for (auto &creature : creatures)
+    //     creatures.find(creature.first)->second = 
+    //         neighbor_count(creatures, area, creature.first);
+
+    //return creatures;
 }
 
 auto is_key_pressed() -> int {
