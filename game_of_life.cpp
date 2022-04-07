@@ -206,46 +206,16 @@ auto init(const Area &area, const Dim &N) -> CreaturesCountTuple {
     creatures_count.insert({point_to_index({3, 1}, area), 0});
     creatures_count.insert({point_to_index({3, 2}, area), 0});
 
+    creatures_count.find(point_to_index({1, 1}, area))->second = neighbor_count(creatures_count, area, point_to_index({1, 1}, area));
+    creatures_count.find(point_to_index({2, 2}, area))->second = neighbor_count(creatures_count, area, point_to_index({2, 2}, area));
+    creatures_count.find(point_to_index({2, 3}, area))->second = neighbor_count(creatures_count, area, point_to_index({2, 3}, area));
+    creatures_count.find(point_to_index({3, 1}, area))->second = neighbor_count(creatures_count, area, point_to_index({3, 1}, area));
+    creatures_count.find(point_to_index({3, 2}, area))->second = neighbor_count(creatures_count, area, point_to_index({3, 2}, area));
+
+    for (auto &cc : creatures_count)
+        count_creatures[cc.second].insert(cc.first);
+
     return {creatures_count, count_creatures};
-
-
-    /*
-    std::vector<Dim> creature_ixs;
-    
-    creature_ixs.reserve(area());
-    for (Dim i = 0; i < area(); ++i)
-        creature_ixs.push_back(i);
-
-    for (Dim i = 0; i < area(); ++i)
-        std::swap(creature_ixs[i], creature_ixs[rand() % area()]);
-
-    Creatures creatures;
-    creatures.reserve(N);
-    for (Dim i = 0; i < N; ++i)
-        creatures.insert(creature_ixs[i]);
-    */
-
-    // Creatures creatures;
-    // for (Dim i = 0; i < 9; ++i)
-    //     creatures[i].reserve(area());
-
-    // creatures[0].insert(point_to_index({1,1}, area));
-    // creatures[0].insert(point_to_index({2,2}, area));
-    // creatures[0].insert(point_to_index({2,3}, area));
-    // creatures[0].insert(point_to_index({3,1}, area));
-    // creatures[0].insert(point_to_index({3,2}, area));
-
-    // creatures.insert({point_to_index({1,1}, area), 0});
-    // creatures.insert({point_to_index({2,2}, area), 0});
-    // creatures.insert({point_to_index({2,3}, area), 0});
-    // creatures.insert({point_to_index({3,1}, area), 0});
-    // creatures.insert({point_to_index({3,2}, area), 0});
-
-    // for (auto &creature : creatures)
-    //     creatures.find(creature.first)->second = 
-    //         neighbor_count(creatures, area, creature.first);
-
-    //return creatures;
 }
 
 auto is_key_pressed() -> int {
