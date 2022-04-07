@@ -31,8 +31,8 @@ auto is_key_pressed() -> int;
 auto spawner(const Area &area, const Dim &N) -> Creatures;
 
 auto point_to_index(const Point &point, const Area &area) -> Dim;
-// auto neighbor_count(Creatures &creatures, Creature &creature) -> Dim;
-// auto execute_rules(Creatures &creatures, const Area &area) -> void;
+auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim;
+auto execute_rules(Creatures &creatures, const Area &area) -> void;
 // auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures;
 // auto find_creatures_with_three(Creatures &creatures, const Area &area) -> Creatures;
 // auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void;
@@ -44,20 +44,23 @@ auto main(int argc, char **argv) -> int {
     Area area({140, 30});
     TextImage screen(area);
     Creatures creatures = spawner(area, N);
-    // // Render
-    // for (auto &c : creatures) {
-    //     screen.set_text(c, 'x');
-    //     screen.set_color(c, rand() % 8);
-    // }
-    //screen.show();
+    
+    // Render
+    for (auto &c : creatures) {
+        screen.set_text(c.first, '0' + c.second);
+        screen.set_color(c.first, rand() % 8);
+    }
+
+    screen.show();
     do {
         TimePointSysClock start {SysClock::now()};
 
-        // // Erase previous
-        // for (auto &c : creatures)
-        //     screen.set_text(c, ' ');
+        // Erase previous
+        for (auto &c : creatures)
+            screen.set_text(c.first, ' ');
 
-        //execute_rules(creatures, area);
+        
+        execute_rules(creatures, area);
         // // Execute Policies
         // Creatures to_kill = find_creatures_with_single_or_ge_four(creatures, area);
         // kill_creatures(to_kill, creatures);
@@ -77,13 +80,13 @@ auto main(int argc, char **argv) -> int {
         if (delay > 0) 
             this_thread::sleep_for(chr::milliseconds(delay));
 
-        //exit(0);
+        exit(0);
     } while(creatures.size() > 0);
 }
 
-// auto execute_rules(Creatures &creatures, const Area &area) -> void {
-
-// }
+auto execute_rules(Creatures &creatures, const Area &area) -> void {
+    
+}
 
 // auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void {
 //     for (auto &c : creatures_to_kill)
@@ -95,29 +98,29 @@ auto main(int argc, char **argv) -> int {
 //         creatures.insert(c);
 // }
 
-// auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim {
-//     Dim neighbor = 0;
+auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim {
+    Dim neighbor = 0;
 
-//     Dim top = creature - area.w;
-//     Dim upper_left = top - 1;
-//     Dim upper_right = top + 1;
-//     Dim left = creature - 1;
-//     Dim right = creature + 1;
-//     Dim bottom = creature + area.w;
-//     Dim bottom_left = bottom - 1;
-//     Dim bottom_right = bottom + 1;    
+    Dim top = creature - area.w;
+    Dim upper_left = top - 1;
+    Dim upper_right = top + 1;
+    Dim left = creature - 1;
+    Dim right = creature + 1;
+    Dim bottom = creature + area.w;
+    Dim bottom_left = bottom - 1;
+    Dim bottom_right = bottom + 1;    
 
-//     if (creatures.find(top) != creatures.end()) ++neighbor;
-//     if (creatures.find(upper_left) != creatures.end()) ++neighbor;
-//     if (creatures.find(upper_right) != creatures.end()) ++neighbor;
-//     if (creatures.find(left) != creatures.end()) ++neighbor;
-//     if (creatures.find(right) != creatures.end()) ++neighbor;
-//     if (creatures.find(bottom) != creatures.end()) ++neighbor;
-//     if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
-//     if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
+    if (creatures.find(top) != creatures.end()) ++neighbor;
+    if (creatures.find(upper_left) != creatures.end()) ++neighbor;
+    if (creatures.find(upper_right) != creatures.end()) ++neighbor;
+    if (creatures.find(left) != creatures.end()) ++neighbor;
+    if (creatures.find(right) != creatures.end()) ++neighbor;
+    if (creatures.find(bottom) != creatures.end()) ++neighbor;
+    if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
+    if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
 
-//     return neighbor;
-// }
+    return neighbor;
+}
 
 
 // auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures {
@@ -197,6 +200,10 @@ auto spawner(const Area &area, const Dim &N) -> Creatures {
     creatures.insert({point_to_index({2,3}, area), 0});
     creatures.insert({point_to_index({3,1}, area), 0});
     creatures.insert({point_to_index({3,2}, area), 0});
+
+    for (auto &creature : creatures)
+        creatures.find(creature.first)->second = 
+            neighbor_count(creatures, area, creature.first);
 
     return creatures;
 }
