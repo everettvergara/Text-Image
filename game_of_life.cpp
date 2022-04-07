@@ -28,7 +28,10 @@ using SysClock = chr::system_clock;
 
 auto is_key_pressed() -> int;
 auto spawner(const Area &area, const Dim &N) -> Creatures;
+
+auto neighbor_count(Creatures &creatures, Creature &creature) -> Dim;
 auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area, const Dim &at_most_neighbors = 2) -> Creatures;
+auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void;
 
 auto main(int argc, char **argv) -> int {
 
@@ -46,13 +49,13 @@ auto main(int argc, char **argv) -> int {
 
         // Execute Policies
         Creatures to_kill = kill_creatures_with_single_neighbors(creatures, area, 2);
-    
+        kill_creatures(to_kill, creatures);
 
-        // // Render
-        // for (auto &c : creatures) {
-        //     screen.set_text(c, 'x');
-        //     screen.set_color(c, rand() % 8);
-        // }
+        // Render
+        for (auto &c : creatures) {
+            screen.set_text(c, 'x');
+            screen.set_color(c, rand() % 8);
+        }
 
         screen.show();
         TimePointSysClock end = SysClock::now();
@@ -60,41 +63,47 @@ auto main(int argc, char **argv) -> int {
         if (delay > 0) 
             this_thread::sleep_for(chr::milliseconds(delay));
 
+        exit(0);
     } while(!is_key_pressed() && creatures.size() > 0);
 }
 
+auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void {
+    for (auto &c : creatures_to_kill)
+        creatures.erase(c);
+}
+
+auto neighbor_count(const Creatures &creatures, const Area &area, const Creature &creature) -> Dim {
+    Dim neighbor = 0;
+
+    Dim top = creature - area.w;
+    Dim upper_left = top - 1;
+    Dim upper_right = top + 1;
+    Dim left = creature - 1;
+    Dim right = creature + 1;
+    Dim bottom = creature + area.w;
+    Dim bottom_left = bottom - 1;
+    Dim bottom_right = bottom + 1;    
+
+    if (creatures.find(top) != creatures.end()) ++neighbor;
+    if (creatures.find(upper_left) != creatures.end()) ++neighbor;
+    if (creatures.find(upper_right) != creatures.end()) ++neighbor;
+    if (creatures.find(left) != creatures.end()) ++neighbor;
+    if (creatures.find(right) != creatures.end()) ++neighbor;
+    if (creatures.find(bottom) != creatures.end()) ++neighbor;
+    if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
+    if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
+
+    return neighbor;
+}
 
 auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area, const Dim &at_most_neighbors) -> Creatures {
 
     Creatures to_kill;
 
-    auto neighbor_count = [&](const Creature &c) -> Dim {
-        Dim neighbor = 0;
-
-        Dim top = c - area.w;
-        Dim upper_left = top - 1;
-        Dim upper_right = top + 1;
-        Dim left = c - 1;
-        Dim right = c + 1;
-        Dim bottom = c + area.w;
-        Dim bottom_left = bottom - 1;
-        Dim bottom_right = bottom + 1;    
-
-        if (creatures.find(top) != creatures.end()) ++neighbor;
-        if (creatures.find(upper_left) != creatures.end()) ++neighbor;
-        if (creatures.find(upper_right) != creatures.end()) ++neighbor;
-        if (creatures.find(left) != creatures.end()) ++neighbor;
-        if (creatures.find(right) != creatures.end()) ++neighbor;
-        if (creatures.find(bottom) != creatures.end()) ++neighbor;
-        if (creatures.find(bottom_left) != creatures.end()) ++neighbor;
-        if (creatures.find(bottom_right) != creatures.end()) ++neighbor;
-
-        return neighbor;
-    };
-
-    for (auto &c : creatures)
-        if (neighbor_count(c) <= at_most_neighbors) 
-            to_kill.insert(c);
+    to_kill.reserve(area());
+    for (auto &creature : creatures)
+        if (neighbor_count(creatures, area, creature) <= at_most_neighbors) 
+            to_kill.insert(creature);
     
     return to_kill;
 }
@@ -103,6 +112,7 @@ auto spawner(const Area &area, const Dim &N) -> Creatures {
     
     std::vector<Dim> creature_ixs;
     
+    creature_ixs.reserve(area());
     for (Dim i = 0; i < area(); ++i)
         creature_ixs.push_back(i);
 
@@ -110,6 +120,7 @@ auto spawner(const Area &area, const Dim &N) -> Creatures {
         std::swap(creature_ixs[i], creature_ixs[rand() % area()]);
 
     Creatures creatures;
+    creatures.reserve(N);
     for (Dim i = 0; i < N; ++i)
         creatures.insert(creature_ixs[i]);
 
