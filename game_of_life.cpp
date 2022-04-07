@@ -30,7 +30,8 @@ auto is_key_pressed() -> int;
 auto spawner(const Area &area, const Dim &N) -> Creatures;
 
 auto neighbor_count(Creatures &creatures, Creature &creature) -> Dim;
-auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area, const Dim &at_most_neighbors = 2) -> Creatures;
+auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures;
+
 auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void;
 
 auto main(int argc, char **argv) -> int {
@@ -48,7 +49,8 @@ auto main(int argc, char **argv) -> int {
             screen.set_text(c, ' ');
 
         // Execute Policies
-        Creatures to_kill = kill_creatures_with_single_neighbors(creatures, area, 2);
+
+        Creatures to_kill = find_creatures_with_single_or_ge_four(creatures, area, 2);
         kill_creatures(to_kill, creatures);
 
         // Render
@@ -96,15 +98,16 @@ auto neighbor_count(const Creatures &creatures, const Area &area, const Creature
     return neighbor;
 }
 
-auto kill_creatures_with_single_neighbors(Creatures &creatures, const Area &area, const Dim &at_most_neighbors) -> Creatures {
+auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures {
 
     Creatures to_kill;
 
     to_kill.reserve(area());
-    for (auto &creature : creatures)
-        if (neighbor_count(creatures, area, creature) <= at_most_neighbors) 
+    for (auto &creature : creatures) {
+        Dim neighbors = neighbor_count(creatures, area, creature);
+        if (neighbors <= 2 || neighbors >= 4) 
             to_kill.insert(creature);
-    
+    }
     return to_kill;
 }
 
