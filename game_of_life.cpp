@@ -109,13 +109,13 @@ auto populate_adjacent_neighbors(
     Dim bottom_right = bottom + 1; 
 
     if (top >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = top;
-    if (upper_left >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = upper_left;
-    if (upper_right >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = upper_right;
-    if (left >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = left;
-    if (right >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = right;
-    if (bottom >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = bottom;
-    if (bottom_left >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = bottom_left;
-    if (bottom_right >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = bottom_right;
+    if (upper_left >= 0 && upper_left < area()) adjacent_neighbors[neighbor_size++] = upper_left;
+    if (upper_right >= 0 && upper_right < area()) adjacent_neighbors[neighbor_size++] = upper_right;
+    if (left >= 0 && left < area()) adjacent_neighbors[neighbor_size++] = left;
+    if (right >= 0 && right < area()) adjacent_neighbors[neighbor_size++] = right;
+    if (bottom >= 0 && bottom < area()) adjacent_neighbors[neighbor_size++] = bottom;
+    if (bottom_left >= 0 && bottom_left < area()) adjacent_neighbors[neighbor_size++] = bottom_left;
+    if (bottom_right >= 0 && bottom_right < area()) adjacent_neighbors[neighbor_size++] = bottom_right;
 
     return neighbor_size;
 }
@@ -327,18 +327,6 @@ auto init(const Area &area, const Dim &N) -> CreaturesCountTuple {
             cc.first, 
             neighbor_count(creatures_count, area, cc.first));
 */
-
-    // update_creature(creatures_count, count_creatures, point_to_index({1,1}, area), 0);
-    // update_creature(creatures_count, count_creatures, point_to_index({2,1}, area), 0);
-    // update_creature(creatures_count, count_creatures, point_to_index({1,2}, area), 0);
-
-    // for (auto &cc : creatures_count)
-    //     update_creature(
-    //         creatures_count, 
-    //         count_creatures, 
-    //         cc.first, 
-    //         neighbor_count(creatures_count, area, cc.first));
-
     return {creatures_count, count_creatures};
 }
 
