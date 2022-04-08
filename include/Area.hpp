@@ -29,8 +29,8 @@ namespace g80 {
         Dim w{0};
         Dim h{0};
 
-        Area () {}
-        Area (Dim w, Dim h) : 
+        Area () {};
+        Area (const Dim &w, const Dim &h) : 
             w(w), h(h) {}
 
         auto operator()() const -> Dim {
