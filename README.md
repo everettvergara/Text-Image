@@ -105,3 +105,10 @@ class TextImage {
 
 };
 ```
+
+Some things you can do with TextImage Class
+---
+
+Game of Life Simulation
+---
+![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/Game%20of%20life.png)
