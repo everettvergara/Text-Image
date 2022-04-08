@@ -11,7 +11,7 @@
 #include <chrono>
 #include <thread>
 
-// Includes for kbhit
+// Includes for is_key_pressed
 #include <cstdio>
 #include <sys/select.h>
 #include <sys/ioctl.h>
@@ -35,12 +35,13 @@ namespace this_thread = std::this_thread;
 using TimePointSysClock = chr::time_point<chr::system_clock>;
 using SysClock = chr::system_clock;
 
-// Game configurations
+// Game configurations 
 constexpr Dim FPS = 15;
 constexpr Dim MSPF = 1000 / FPS;
 
 // Game Routine Functions
 auto init(const Area &area, const Dim &N) -> CreaturesCountTuple;
+auto init_small_test(const Area &area, const Dim &N) -> CreaturesCountTuple;
 auto render_creatures(TextImage &screen, const CreaturesCount &creatures_count) -> void;
 auto erase_creatures(TextImage &screen, const CreaturesCount &creatures_count) -> void;
 auto delayer(TimePointSysClock start) -> void;
@@ -50,17 +51,17 @@ auto is_key_pressed() -> int;
 auto point_to_index(const Point &point, const Area &area) -> Dim;
 auto populate_adjacent_neighbors(const Creature &creature, const Area &area, AdjacentNeighbors &adjacent_neighbors) -> Count;
 auto update_creature(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Creature &creature, const Count &count) -> void;
-auto neighbor_exists(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> bool;
 auto neighbor_count(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> Dim;
 auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> void;
 auto get_blank_list_with_three_neighbors(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> CreaturesList;
 
 auto main(int argc, char **argv) -> int {
 
-    const Dim N = 1000;
+    const Dim N = 1500;
     Area area({140, 40});
     TextImage screen(area);
-    auto [creatures_count, count_creatures] = init(area, N);
+    screen.fill_text(' ');
+    auto [creatures_count, count_creatures] = init(area, N); 
 
     do {
 
@@ -79,14 +80,14 @@ auto main(int argc, char **argv) -> int {
 auto render_creatures(TextImage &screen, const CreaturesCount &creatures_count) -> void {
     for (auto &cc : creatures_count) {
         screen.set_text(cc.first, '0' + cc.second);
-        screen.set_color(cc.first, 1 + rand() % 7);
+        screen.set_color(cc.first, 1 ); //+ rand() % 7);
     }
     screen.show();
 }
 
 auto erase_creatures(TextImage &screen, const CreaturesCount &creatures_count) -> void {
     for (auto &cc : creatures_count)
-        screen.set_text(cc.first, ' ');
+        screen.set_text(cc.first, ' '); 
 }
 
 auto delayer(TimePointSysClock start) -> void {
@@ -102,6 +103,13 @@ auto populate_adjacent_neighbors(
     AdjacentNeighbors &adjacent_neighbors) -> Count {
 
     Count neighbor_size = 0;
+    auto add_neighbor_if_within_bounds = [&](const Dim &neighbor_to_check) -> bool {
+        if (neighbor_to_check >= 0 && neighbor_to_check <= area()) {
+            adjacent_neighbors[neighbor_size++] = neighbor_to_check;
+            return true;
+        }
+        return false;
+    };
 
     Dim top = creature - area.w;
     Dim upper_left = top - 1;
@@ -112,15 +120,15 @@ auto populate_adjacent_neighbors(
     Dim bottom_left = bottom - 1;
     Dim bottom_right = bottom + 1; 
 
-    if (top >= 0 && top < area()) adjacent_neighbors[neighbor_size++] = top;
-    if (upper_left >= 0 && upper_left < area()) adjacent_neighbors[neighbor_size++] = upper_left;
-    if (upper_right >= 0 && upper_right < area()) adjacent_neighbors[neighbor_size++] = upper_right;
-    if (left >= 0 && left < area()) adjacent_neighbors[neighbor_size++] = left;
-    if (right >= 0 && right < area()) adjacent_neighbors[neighbor_size++] = right;
-    if (bottom >= 0 && bottom < area()) adjacent_neighbors[neighbor_size++] = bottom;
-    if (bottom_left >= 0 && bottom_left < area()) adjacent_neighbors[neighbor_size++] = bottom_left;
-    if (bottom_right >= 0 && bottom_right < area()) adjacent_neighbors[neighbor_size++] = bottom_right;
-
+    add_neighbor_if_within_bounds(top);
+    add_neighbor_if_within_bounds(upper_left);
+    add_neighbor_if_within_bounds(upper_right);
+    add_neighbor_if_within_bounds(left);
+    add_neighbor_if_within_bounds(right);
+    add_neighbor_if_within_bounds(bottom);
+    add_neighbor_if_within_bounds(bottom_left);
+    add_neighbor_if_within_bounds(bottom_right);
+    
     return neighbor_size;
 }
 
@@ -203,37 +211,6 @@ auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatu
 
 }
 
-
-auto neighbor_exists(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> bool {
-    
-    Dim top = creature - area.w;
-    
-    if (creatures_count.find(top) != creatures_count.end()) return true;
-    
-    Dim upper_left = top - 1;
-    if (creatures_count.find(upper_left) != creatures_count.end()) return true;
-    
-    Dim upper_right = top + 1;
-    if (creatures_count.find(upper_right) != creatures_count.end()) return true;
-    
-    Dim left = creature - 1;
-    if (creatures_count.find(left) != creatures_count.end()) return true;
-    
-    Dim right = creature + 1;
-    if (creatures_count.find(right) != creatures_count.end()) return true;
-    
-    Dim bottom = creature + area.w;
-    if (creatures_count.find(bottom) != creatures_count.end()) return true;
-    
-    Dim bottom_left = bottom - 1;
-    if (creatures_count.find(bottom_left) != creatures_count.end()) return true;
-    
-    Dim bottom_right = bottom + 1;    
-    if (creatures_count.find(bottom_right) != creatures_count.end()) return true;
-
-    return false;
-}
-
 auto neighbor_count(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> Dim {
     
     Dim neighbor = 0;
@@ -311,14 +288,14 @@ auto init_small_test(const Area &area, const Dim &N) -> CreaturesCountTuple {
 auto init(const Area &area, const Dim &N) -> CreaturesCountTuple {
     
     CreaturesCount creatures_count;
+    creatures_count.reserve(area()); 
+    
     CountCreatures count_creatures; 
-
-    creatures_count.reserve(area());
     for (Dim i = 0; i < 9; ++i) 
         count_creatures[i].reserve(area());
 
     // Generate and shuffle all creatures
-    // then get the first N Creatures
+    // then get only first N Creatures
     std::vector<Creature> all_creatures;
     all_creatures.reserve(area());
     for (Dim i = 0; i < area(); ++i)
@@ -327,7 +304,7 @@ auto init(const Area &area, const Dim &N) -> CreaturesCountTuple {
     for (Dim i = 0; i < area(); ++i) 
         std::swap(all_creatures[i], all_creatures[rand() % area()]);
 
-    // Create the initial creatures
+    // Initial creatures
     for (Dim i = 0; i < N; ++i)
         update_creature(creatures_count, count_creatures, all_creatures[i], 0);
 
