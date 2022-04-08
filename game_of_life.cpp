@@ -1,3 +1,22 @@
+/*
+ *  Game of Life using TextImage Class
+ *  Copyright (C) 2022 Everett Gaius S. Vergara
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *	
+ */
+
 // Game of Life Dastruct
 #include <iostream>
 #include <vector>
@@ -38,11 +57,10 @@ using SysClock = chr::system_clock;
 // Game configurations 
 constexpr Dim FPS = 15;
 constexpr Dim MSPF = 1000 / FPS;
-constexpr Dim N = 2000;
-constexpr Dim SCREEN_WIDTH = 100;
+constexpr Dim N = 3500;
+constexpr Dim SCREEN_WIDTH = 140;
 constexpr Dim SCREEN_HEIGHT = 40;
 const Area area(SCREEN_WIDTH, SCREEN_HEIGHT);
-
 
 // Game Routine Functions
 auto init() -> CreaturesCountTuple;
@@ -62,6 +80,8 @@ auto get_blank_list_with_three_neighbors(CreaturesCount &creatures_count, CountC
 auto main(int argc, char **argv) -> int {
     
     TextImage screen(area);
+    TextImage title("---===| Game of Life |===---", 3, ON);
+
     screen.fill_text(' ');
     auto [creatures_count, count_creatures] = init(); 
 
@@ -72,6 +92,9 @@ auto main(int argc, char **argv) -> int {
         erase_creatures(screen, creatures_count);
         execute_rules(creatures_count, count_creatures);
         render_creatures(screen, creatures_count);
+
+        screen.or_image(title, {static_cast<Dim>(SCREEN_WIDTH / 2 - title.area().w / 2), 0});
+        screen.show();
 
         delayer(start_delay_timer);
 
@@ -84,7 +107,6 @@ auto render_creatures(TextImage &screen, const CreaturesCount &creatures_count) 
         screen.set_text(cc.first, '0' + cc.second);
         screen.set_color(cc.first, 1 + rand() % 7);
     }
-    screen.show();
 }
 
 auto erase_creatures(TextImage &screen, const CreaturesCount &creatures_count) -> void {
@@ -239,11 +261,7 @@ auto point_to_index(const Point &point) -> Dim {
     return point.y * area.w + point.x;
 } 
 
-auto update_creature(
-    CreaturesCount &creatures_count, 
-    CountCreatures &count_creatures, 
-    const Creature &creature, 
-    const Count &count) -> void {
+auto update_creature(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Creature &creature, const Count &count) -> void {
     
     // Update Creatures Count
     auto f = creatures_count.find(creature);
