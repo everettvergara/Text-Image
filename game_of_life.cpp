@@ -15,7 +15,6 @@
 
 #include "TextImage.h"
 
-
 // Game of Life Automata
 using namespace g80;
 using Creature = Dim;
@@ -32,7 +31,6 @@ using CountCreatures = std::array<CreaturesList, 9>;
 // Creatures and Count
 using CreaturesCountTuple = std::tuple<CreaturesCount, CountCreatures>;
 
-
 constexpr int FPS = 5;
 constexpr int MSPF = 1000 / FPS;
 namespace chr = std::chrono;
@@ -43,7 +41,6 @@ using SysClock = chr::system_clock;
 auto is_key_pressed() -> int;
 auto init(const Area &area, const Dim &N) -> CreaturesCountTuple;
 
-
 auto point_to_index(const Point &point, const Area &area) -> Dim;
 auto update_creature(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Creature &creature, const Count &count) -> void;
 auto neighbor_exists(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> bool;
@@ -51,10 +48,6 @@ auto neighbor_count(const CreaturesCount &creatures_count, const Area &area, con
 auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> void;
 auto get_blank_list_with_three_neighbors(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> CreaturesList;
 
-// auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures;
-// auto find_creatures_with_three(Creatures &creatures, const Area &area) -> Creatures;
-// auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void;
-// auto spawn_creatures(const Creatures &creatures_to_spawn, Creatures &creatures) -> void;
 
 auto main(int argc, char **argv) -> int {
 
