@@ -49,6 +49,8 @@ auto update_creature(CreaturesCount &creatures_count, CountCreatures &count_crea
 auto neighbor_exists(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> bool;
 auto neighbor_count(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> Dim;
 auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> void;
+auto get_blank_list_with_three_neighbors(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> CreaturesList;
+
 // auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures;
 // auto find_creatures_with_three(Creatures &creatures, const Area &area) -> Creatures;
 // auto kill_creatures(const Creatures &creatures_to_kill, Creatures &creatures) -> void;
@@ -100,12 +102,57 @@ auto main(int argc, char **argv) -> int {
     } while(creatures_count.size() > 0);
 }
 
+auto get_blank_list_with_three_neighbors(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> CreaturesList {
+    
+    Dim neighbor_size;
+    std::array<Creature, 8> neighbors; 
+    auto populate_neighbors = [&](const Creature &creature) {
+        neighbor_size = 0;
+        Dim top = creature - area.w;
+        Dim upper_left = top - 1;
+        Dim upper_right = top + 1;
+        Dim left = creature - 1;
+        Dim right = creature + 1;
+        Dim bottom = creature + area.w;
+        Dim bottom_left = bottom - 1;
+        Dim bottom_right = bottom + 1; 
+
+        if (top >= 0 && top < area()) neighbors[neighbor_size++] = top;
+        if (upper_left >= 0 && top < area()) neighbors[neighbor_size++] = upper_left;
+        if (upper_right >= 0 && top < area()) neighbors[neighbor_size++] = upper_right;
+        if (left >= 0 && top < area()) neighbors[neighbor_size++] = left;
+        if (right >= 0 && top < area()) neighbors[neighbor_size++] = right;
+        if (bottom >= 0 && top < area()) neighbors[neighbor_size++] = bottom;
+        if (bottom_left >= 0 && top < area()) neighbors[neighbor_size++] = bottom_left;
+        if (bottom_right >= 0 && top < area()) neighbors[neighbor_size++] = bottom_right;
+    };
+
+    CreaturesList blank_list_with_three;
+    blank_list_with_three.reserve(area());
+    for (auto &cc : creatures_count) {
+        populate_neighbors(cc.first);
+
+        // For all neighbors of the current point
+        for (Dim i = 0; i < neighbor_size; ++i)
+
+            // Check only if the neigbor is blank
+            if (creatures_count.find(neighbors[i]) == creatures_count.end())
+
+                // If it has 3 neigbors then insert to blank_list_with_three
+                if (blank_list_with_three.find(neighbors[i]) == blank_list_with_three.end())
+                    if (neighbor_count(creatures_count, area, neighbors[i]) == 3)
+                        blank_list_with_three.insert(neighbors[i]);
+    }
+
+    return blank_list_with_three;
+}
+
 auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatures, const Area &area) -> void {
 
     CreaturesList to_update;
+    to_update.reserve(area());      // N can be made more efficient
 
-    // can be made efficient by making static?
-    to_update.reserve(area());  
+    CreaturesList blank_list_with_three = get_blank_list_with_three_neighbors(creatures_count, count_creatures, area);
 
     Dim neighbor_size;
     std::array<Creature, 8> neighbors; 
@@ -152,13 +199,27 @@ auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatu
         count_creatures[i].clear();
     }
     
-    // Spawn
+    // Spawn Blank Spaces with three neighbors
+    for (auto &cc : blank_list_with_three)
+        update_creature(
+            creatures_count, 
+            count_creatures, 
+            cc,
+            3);
+    
+    // Update neighbors of killed creatures
+    for (auto &cc : to_update)
+        update_creature(
+            creatures_count, 
+            count_creatures, 
+            cc,
+            neighbor_count(creatures_count, area, cc));
+
 }
 
 
 auto neighbor_exists(const CreaturesCount &creatures_count, const Area &area, const Creature &creature) -> bool {
-    Dim neighbor = 0;
-
+    
     Dim top = creature - area.w;
     
     if (creatures_count.find(top) != creatures_count.end()) return true;
