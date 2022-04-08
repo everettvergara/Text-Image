@@ -86,19 +86,13 @@ auto main(int argc, char **argv) -> int {
             screen.set_color(cc.first, rand() % 8);
         }
 
-
         screen.show();
-
-                
-        std::cout << "\n\n\n----" << creatures_count.size() << "\n";
-        exit(0);
 
         TimePointSysClock end = SysClock::now();
         int delay = MSPF - chr::duration_cast<chr::milliseconds>(end - start).count();
         if (delay > 0) 
             this_thread::sleep_for(chr::milliseconds(delay));
 
-        exit(0);
     } while(creatures_count.size() > 0);
 }
 
@@ -209,11 +203,12 @@ auto execute_rules(CreaturesCount &creatures_count, CountCreatures &count_creatu
     
     // Update neighbors of killed creatures
     for (auto &cc : to_update)
-        update_creature(
-            creatures_count, 
-            count_creatures, 
-            cc,
-            neighbor_count(creatures_count, area, cc));
+        if (creatures_count.find(cc) != creatures_count.end())
+            update_creature(
+                creatures_count, 
+                count_creatures, 
+                cc,
+                neighbor_count(creatures_count, area, cc));
 
 }
 
@@ -274,54 +269,6 @@ auto neighbor_count(const CreaturesCount &creatures_count, const Area &area, con
 }
 
 
-// auto find_creatures_with_single_or_ge_four(Creatures &creatures, const Area &area) -> Creatures {
-
-//     Creatures to_kill;
-//     to_kill.reserve(area());    // N can be optimized
-//     for (auto &creature : creatures) {
-//         Dim neighbors = neighbor_count(creatures, area, creature);
-//         if (neighbors <= 1 || neighbors >= 4) 
-//             to_kill.insert(creature);
-//     }
-//     return to_kill;
-// }
-
-// // Blank cell with two three neigbors survives
-// auto find_creatures_with_three(Creatures &creatures, const Area &area) -> Creatures {
-
-//     Creatures to_test;
-    
-//     to_test.reserve(area());    // N can be optimized;
-//     for (auto &creature : creatures) {
-//         Dim top = creature - area.w;
-//         Dim upper_left = top - 1;
-//         Dim upper_right = top + 1;
-//         Dim left = creature - 1;
-//         Dim right = creature + 1;
-//         Dim bottom = creature + area.w;
-//         Dim bottom_left = bottom - 1;
-//         Dim bottom_right = bottom + 1;    
-
-//         if (top >= 0 && creatures.find(top) == creatures.end()) to_test.insert(top);
-//         if (upper_left >= 0 && creatures.find(upper_left) == creatures.end()) to_test.insert(upper_left);
-//         if (upper_right >= 0 && creatures.find(upper_right) == creatures.end()) to_test.insert(upper_right);
-//         if (left >= 0 && creatures.find(left) == creatures.end()) to_test.insert(left);
-//         if (right < area() && creatures.find(right) == creatures.end()) to_test.insert(right);
-//         if (bottom < area() && creatures.find(bottom) == creatures.end()) to_test.insert(bottom);
-//         if (bottom_left < area() && creatures.find(bottom_left) == creatures.end()) to_test.insert(bottom_left);
-//         if (bottom_right < area() && creatures.find(bottom_right) == creatures.end()) to_test.insert(bottom_right);
-//     }
-
-//     Creatures to_spawn;
-//     to_spawn.reserve(area());   // N can be optimized;
-//     for (auto &creature : to_test) {
-//         Dim neighbors = neighbor_count(creatures, area, creature);
-//         if (neighbors == 3) 
-//             to_spawn.insert(creature);
-//     }
-
-//     return to_spawn;
-// }
 
 auto point_to_index(const Point &point, const Area &area) -> Dim {
     return point.y * area.w + point.x;
