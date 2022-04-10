@@ -39,10 +39,21 @@ auto main(int argc, char **argv) -> int {
     TextImage screen({flag_width, flag_height + wave_height}, 7, ' ', ON);
     TextImage flag({flag_width, flag_height + wave_height}, 7, '.', ON);
 
-    // Populate the flag,
+    // Draw the flag
     for (Dim y = 0; y < flag_height; ++y)
         for (Dim x = 0; x < flag_width; ++x)
             flag.set_text(flag.index({x, y}), 'a' + rand() % 26);
+
+    for (Dim i = 0; i < 15; ++i) {
+        for (Dim j = 1 + i * 3; j < flag_width; ++j) {
+            flag.set_color(flag.index({j, i}), 4);
+            flag.set_color(flag.index({j, static_cast<Dim>(flag_height - i - 1)}), 1);
+        }
+    }
+
+    
+
+
 
     Dim x = 0;
     std::array<Dim, flag_width> y;
