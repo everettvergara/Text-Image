@@ -54,8 +54,8 @@ auto main(int argc, char **argv) -> int {
         flag.set_text(flag.index({x, static_cast<Dim>(flag_height + wave_radius / 2 - y[x] - 1)}), '@');
         ++x;
     }
-    std::cout << "x: " << x << "\n";
-    exit(0);
+    // std::cout << "x: " << x << "\n";
+    // exit(0);
 
     do {
 
@@ -63,7 +63,18 @@ auto main(int argc, char **argv) -> int {
         
         screen.fill_text(" ");
 
-        for (Dim x = 0; x < flag_width; ++x);
+        for (Dim x = 0; x < flag_width; ++x) {
+            TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});
+            screen.put_image(vertical_line, {x, static_cast<Dim>(wave_radius / 2 - y[x] - 1)});
+            y[x] = y[x] + yn[x];
+            if (y[x] <= 0) {
+                y[x] = 1;
+                yn[x] = 1;
+            } else if (y[x] >= flag_height - 1) {
+                y[x] = flag_height - 2;
+                yn[x] = -1;
+            } 
+        }
 
         screen.show();
 
