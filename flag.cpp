@@ -31,12 +31,13 @@ auto is_key_pressed() -> int;
 
 auto main(int argc, char **argv) -> int {
     
-    const Dim wave_radius = 10;
+    const Dim wave_height = 6;
     const Dim flag_height = 30;
     const Dim flag_width = 120;
-
-    TextImage screen({flag_width, flag_height + wave_radius}, 7, ' ', ON);
-    TextImage flag({flag_width, flag_height + wave_radius}, 7, '.', ON);
+    const double waves = 8.0;
+    
+    TextImage screen({flag_width, flag_height + wave_height}, 7, ' ', ON);
+    TextImage flag({flag_width, flag_height + wave_height}, 7, '.', ON);
 
     // Populate the flag,
     for (Dim y = 0; y < flag_height; ++y)
@@ -47,14 +48,15 @@ auto main(int argc, char **argv) -> int {
     std::array<Dim, flag_width> y;
     std::array<Dim, flag_width> yn;
 
-    double inc = 4.0 * M_PI / flag_width;
-    for (double a = 0; a < 4 * M_PI; a += inc) {
-        y[x] = sin(a) * (wave_radius / 2 - 1);
+    double inc = waves * M_PI / flag_width;
+    for (double a = 0; a < waves * M_PI; a += inc) {
+        y[x] = (wave_height / 2.0) - sin(a) * (wave_height / 2.0 - 1) - 1;
         yn[x] = +1;
-        flag.set_text(flag.index({x, static_cast<Dim>(flag_height + wave_radius / 2 - y[x] - 1)}), '@');
+        //flag.set_text(flag.index({x, static_cast<Dim>(y[x])}), '@');
         ++x;
     }
     // std::cout << "x: " << x << "\n";
+    // flag.show();
     // exit(0);
 
     do {
@@ -65,18 +67,19 @@ auto main(int argc, char **argv) -> int {
 
         for (Dim x = 0; x < flag_width; ++x) {
             TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});
-            screen.put_image(vertical_line, {x, static_cast<Dim>(wave_radius / 2 - y[x] - 1)});
+            screen.put_image(vertical_line, {x, static_cast<Dim>(wave_height / 2  + y[x])});
             y[x] = y[x] + yn[x];
             if (y[x] <= 0) {
                 y[x] = 1;
                 yn[x] = 1;
-            } else if (y[x] >= flag_height - 1) {
-                y[x] = flag_height - 2;
+            } else if (y[x] >= wave_height - 1) {
+                y[x] = wave_height - 2;
                 yn[x] = -1;
             } 
         }
 
         screen.show();
+        //exit(0);
 
         delayer(start_delay_timer);
 
