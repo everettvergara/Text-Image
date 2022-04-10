@@ -36,14 +36,13 @@ auto main(int argc, char **argv) -> int {
     const Dim flag_width = 120;
     const double waves = 8.0;
     
-    TextImage screen({flag_width, flag_height + wave_height}, 7, ' ', ON);
-    TextImage flag({flag_width, flag_height + wave_height}, 7, '.', ON);
-
+    TextImage screen({flag_width, flag_height + wave_height + 5}, 7, ' ', ON);
+    TextImage flag({flag_width, flag_height}, 7, '.', ON);
+    
+    
     // Draw the flag
-    for (Dim y = 0; y < flag_height; ++y)
-        for (Dim x = 0; x < flag_width; ++x)
-            flag.set_text(flag.index({x, y}), 'a' + rand() % 26);
-
+    flag.fill_text("BayangmagiliwPerlasngSilangananAlabngpusoSadibdibmoybuhayLupangHinirangDuyankangmagitingSamanlulupigDikapasisiilSadagatatbundokSsimoyatsalangitmongbughawMaydilagangtulaAtawitsapaglayangminamahalAngkislapngwatawatmoyTagumpaynanagniningningAngbituinatarawniyaKailanpamaydimagdidilimLupangarawngluwalhatitpagsintaBuhayaylangitsapilingmoAmingligayana'pagmaymangaapiAngmamatayngdahilsaiyo");
+    
     for (Dim i = 0; i < 15; ++i) {
         for (Dim j = 1 + i * 3; j < flag_width; ++j) {
             flag.set_color(flag.index({j, i}), 4);
@@ -51,9 +50,31 @@ auto main(int argc, char **argv) -> int {
         }
     }
 
-    
+    flag.gfx_circle({14, 15}, 6, 'x', 3, ON);
+    flag.gfx_fill_with_color_border({14, 15}, 'X', 3, ON);
+    for (double i = 0.0; i < 2.0 * M_PI; i += 2.0 * M_PI / 8.0) {
+        flag.gfx_point({static_cast<Dim>(14.0 + 7.0 * cos(i)), static_cast<Dim>(15.0 + 7.0 * sin(i))}, '#', 3, ON);
+        flag.gfx_point({static_cast<Dim>(14.0 + 8.0 * cos(i)), static_cast<Dim>(15.0 + 8.0 * sin(i))}, '#', 3, ON);
+    }
 
+    // Stars
+    flag.gfx_point({3,3}, '#', 3, ON);
+    flag.gfx_point({4,4}, '#', 3, ON);
+    flag.gfx_point({5,5}, '#', 3, ON);
+    flag.gfx_point({5,3}, '#', 3, ON);
+    flag.gfx_point({3,5}, '#', 3, ON);
 
+    flag.gfx_point({3, flag_height - 3 - 1}, '#', 3, ON);
+    flag.gfx_point({4,flag_height - 4 - 1}, '#', 3, ON);
+    flag.gfx_point({5,flag_height - 5 - 1}, '#', 3, ON);
+    flag.gfx_point({5,flag_height - 3 - 1}, '#', 3, ON);
+    flag.gfx_point({3,flag_height - 5 - 1}, '#', 3, ON);
+
+    flag.gfx_point({33, 14}, '#', 3, ON);
+    flag.gfx_point({34, 15}, '#', 3, ON);
+    flag.gfx_point({35, 16}, '#', 3, ON);
+    flag.gfx_point({35, 14}, '#', 3, ON);
+    flag.gfx_point({33, 16}, '#', 3, ON);
 
     Dim x = 0;
     std::array<Dim, flag_width> y;
@@ -66,9 +87,6 @@ auto main(int argc, char **argv) -> int {
         //flag.set_text(flag.index({x, static_cast<Dim>(y[x])}), '@');
         ++x;
     }
-    // std::cout << "x: " << x << "\n";
-    // flag.show();
-    // exit(0);
 
     do {
 
