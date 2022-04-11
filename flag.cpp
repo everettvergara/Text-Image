@@ -28,6 +28,7 @@ constexpr Dim MSPF = 1000 / FPS;
 
 auto delayer(TimePointSysClock start) -> void;
 auto is_key_pressed() -> int;
+auto draw_flag(TextImage &flag) -> void;
 
 auto main(int argc, char **argv) -> int {
     
@@ -142,4 +143,8 @@ auto is_key_pressed() -> int {
     int bytesWaiting;
     ioctl(STDIN, FIONREAD, &bytesWaiting); 
     return bytesWaiting;
+}
+
+auto draw_flag(TextImage &flag) -> void {
+
 }
