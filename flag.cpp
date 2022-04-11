@@ -42,7 +42,8 @@ auto main(int argc, char **argv) -> int {
     
     // Draw the flag
     flag.fill_text("BayangmagiliwPerlasngSilangananAlabngpusoSadibdibmoybuhayLupangHinirangDuyankangmagitingSamanlulupigDikapasisiilSadagatatbundokSsimoyatsalangitmongbughawMaydilagangtulaAtawitsapaglayangminamahalAngkislapngwatawatmoyTagumpaynanagniningningAngbituinatarawniyaKailanpamaydimagdidilimLupangarawngluwalhatitpagsintaBuhayaylangitsapilingmoAmingligayana'pagmaymangaapiAngmamatayngdahilsaiyo");
-    
+    //flag.fill_text("Bayang magiliw Perlas ng Silanganan Alab ng puso Sa dibdib moy buhay Lupang Hinirang Duyan ka ng magiting  Sa manlulupig Di ka pasisiil Sa dagat at bundok Sa simoy at sa langit mong bughaw  May dilag ang tula  At awit sa paglayang minamahal Ang kislap ng watawat moy Tagumpay na nagniningning Ang bituin at araw niya  Kailan pa may di magdidilim Lupa ng araw ng luwalhatit pagsinta Buhay ay langit sa piling mo  Aming ligaya na pag may mang-aapi Ang mamatay ng dahil sa iyo.");
+
     for (Dim i = 0; i < 15; ++i) {
         for (Dim j = 1 + i * 3; j < flag_width; ++j) {
             flag.set_color(flag.index({j, i}), 4);
@@ -94,6 +95,7 @@ auto main(int argc, char **argv) -> int {
         
         screen.fill_text(" ");
 
+        flag.xlat_rotate_left(1, TEXT);
         for (Dim x = 0; x < flag_width; ++x) {
             TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});
             screen.put_image(vertical_line, {x, static_cast<Dim>(wave_height / 2  + y[x])});
