@@ -61,7 +61,7 @@ auto main(int argc, char **argv) -> int {
         screen.fill_text(" ");
 
         // Update
-        flag.xlat_rotate_right(flag_width - 1, TEXT);
+        flag.xlat_rotate_right(flag_width - 1, COLOR);
 
         for (Dim x = 0; x < flag_width; ++x) {
 
