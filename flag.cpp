@@ -43,7 +43,7 @@ auto main(int argc, char **argv) -> int {
     
     // Draw the flag
     flag.fill_text("BayangmagiliwPerlasngSilangananAlabngpusoSadibdibmoybuhayLupangHinirangDuyankangmagitingSamanlulupigDikapasisiilSadagatatbundokSsimoyatsalangitmongbughawMaydilagangtulaAtawitsapaglayangminamahalAngkislapngwatawatmoyTagumpaynanagniningningAngbituinatarawniyaKailanpamaydimagdidilimLupangarawngluwalhatitpagsintaBuhayaylangitsapilingmoAmingligayana'pagmaymangaapiAngmamatayngdahilsaiyo");
-    //flag.fill_text("Bayang magiliw Perlas ng Silanganan Alab ng puso Sa dibdib moy buhay Lupang Hinirang Duyan ka ng magiting  Sa manlulupig Di ka pasisiil Sa dagat at bundok Sa simoy at sa langit mong bughaw  May dilag ang tula  At awit sa paglayang minamahal Ang kislap ng watawat moy Tagumpay na nagniningning Ang bituin at araw niya  Kailan pa may di magdidilim Lupa ng araw ng luwalhatit pagsinta Buhay ay langit sa piling mo  Aming ligaya na pag may mang-aapi Ang mamatay ng dahil sa iyo.");
+    // flag.fill_text("Bayang magiliw Perlas ng Silanganan Alab ng puso Sa dibdib moy buhay Lupang Hinirang Duyan ka ng magiting  Sa manlulupig Di ka pasisiil Sa dagat at bundok Sa simoy at sa langit mong bughaw  May dilag ang tula  At awit sa paglayang minamahal Ang kislap ng watawat moy Tagumpay na nagniningning Ang bituin at araw niya  Kailan pa may di magdidilim Lupa ng araw ng luwalhatit pagsinta Buhay ay langit sa piling mo  Aming ligaya na pag may mang-aapi Ang mamatay ng dahil sa iyo.");
 
     for (Dim i = 0; i < 15; ++i) {
         for (Dim j = 1 + i * 3; j < flag_width; ++j) {
@@ -60,23 +60,12 @@ auto main(int argc, char **argv) -> int {
     }
 
     // Stars
-    flag.set_color({3,3}, 3);
-    flag.set_color({4,4}, 3);
-    flag.set_color({5,5}, 3);
-    flag.set_color({5,3}, 3);
-    flag.set_color({3,5}, 3);
-
-    flag.set_color({3, flag_height - 3 - 1}, 3);
-    flag.set_color({4,flag_height - 4 - 1}, 3);
-    flag.set_color({5,flag_height - 5 - 1}, 3);
-    flag.set_color({5,flag_height - 3 - 1}, 3);
-    flag.set_color({3,flag_height - 5 - 1}, 3);
-
-    flag.set_color({33, 14}, 3);
-    flag.set_color({34, 15}, 3);
-    flag.set_color({35, 16}, 3);
-    flag.set_color({35, 14}, 3);
-    flag.set_color({33, 16}, 3);
+    flag.gfx_line_color({3,3}, {5, 5}, 3);
+    flag.gfx_line_color({3,5}, {5, 3}, 3);
+    flag.gfx_line_color({3, flag_height - 3 - 1}, {5, flag_height - 5 - 1}, 3);
+    flag.gfx_line_color({3, flag_height - 5 - 1}, {5, flag_height - 3 - 1}, 3);
+    flag.gfx_line_color({33,14}, {35, 16}, 3);
+    flag.gfx_line_color({33,16}, {35, 14}, 3);
 
     Dim x = 0;
     std::array<Dim, flag_width> y;
