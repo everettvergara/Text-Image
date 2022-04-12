@@ -801,7 +801,12 @@ auto g80::TextImage::gfx_circle_mask(const Point &point, const Dim &radius, cons
 }
 
 auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
-    
+    gfx_arc_text(point, radius, sa, ea, text);
+    gfx_arc_color(point, radius, sa, ea, color);
+    gfx_arc_mask(point, radius, sa, ea, mask_bit);
+}
+
+auto g80::TextImage::gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim)> &tia_set) -> void {
     Dim center_point = index(point);
 
     Dim x = radius;
@@ -919,9 +924,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
         if (*octa_bound.xy * octa_bound.xy_mul >= octa_bound.sx && 
             *octa_bound.xy * octa_bound.xy_mul <= octa_bound.ex) {
             Dim ix = center_point + (*octa_bound.xy * octa_bound.xy_mul) + (*octa_bound.bxy * octa_bound.bxy_mul);
-            text_[ix] = text;
-            color_[ix] = color;
-            set_mask(ix, mask_bit);
+            tia_set(ix);
         }
     };
 
@@ -941,8 +944,31 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
             dx += 2;
         }
         by += area_.w;
-    }
+    }    
 }
+
+auto g80::TextImage::gfx_arc_text(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        text_[ix] = text;
+    };
+    gfx_arc_loop(point, radius, sa, ea, tia_set);
+}
+
+auto g80::TextImage::gfx_arc_color(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Color &color) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        color_[ix] = color;
+    };
+    gfx_arc_loop(point, radius, sa, ea, tia_set);
+}
+
+auto g80::TextImage::gfx_arc_mask(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const MASK_BIT &mask_bit) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        set_mask(ix, mask_bit);
+    };
+    gfx_arc_loop(point, radius, sa, ea, tia_set);
+}
+
+
 
 auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
 

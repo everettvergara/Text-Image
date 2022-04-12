@@ -99,7 +99,6 @@ auto main(int argc, char **argv) -> int {
         }
 
         screen.show();
-        // exit(0);
 
         delayer(start_delay_timer);
 

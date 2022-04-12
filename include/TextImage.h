@@ -131,6 +131,9 @@ namespace g80 {
             auto gfx_circle_mask(const Point &point, const Dim &radius, const MASK_BIT &mask_bit) -> void;
 
             auto gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_arc_text(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text) -> void;
+            auto gfx_arc_color(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Color &color) -> void;
+            auto gfx_arc_mask(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const MASK_BIT &mask_bit) -> void;
             
             
             
@@ -156,6 +159,7 @@ namespace g80 {
             auto get_mask8bit_value(const Dim &ix, const Dim &size, const Dim &init_offset = 0) const -> Mask8bitOp;
             auto gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void;
             auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim)> &tia_set) -> void;
+            auto gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim)> &tia_set) -> void;
             
 
     };
