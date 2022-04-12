@@ -96,7 +96,8 @@ auto main(int argc, char **argv) -> int {
         
         screen.fill_text(" ");
 
-        flag.xlat_rotate_left(1, TEXT);
+        //flag.xlat_rotate_left(1, TEXT);
+        flag.xlat_rotate_right(119, TEXT);
         for (Dim x = 0; x < flag_width; ++x) {
             TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});
             screen.put_image(vertical_line, {x, static_cast<Dim>(wave_height / 2  + y[x])});
@@ -111,7 +112,7 @@ auto main(int argc, char **argv) -> int {
         }
 
         screen.show();
-        //exit(0);
+        // exit(0);
 
         delayer(start_delay_timer);
 
