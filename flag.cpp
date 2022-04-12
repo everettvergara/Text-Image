@@ -22,7 +22,7 @@ namespace this_thread = std::this_thread;
 using TimePointSysClock = chr::time_point<chr::system_clock>;
 using SysClock = chr::system_clock;
 
-// Animation configurations 
+// Animation config 
 constexpr Dim FPS = 15;
 constexpr Dim MSPF = 1000 / FPS;
 
@@ -37,6 +37,7 @@ auto draw_flag(TextImage &screen, TextImage &flag) -> void;
 
 auto main(int argc, char **argv) -> int {
 
+    TextImage title("---===| Pinoy Flag |===---", 3, ON);
     TextImage screen({flag_width, flag_height + wave_height + 5}, 7, ' ', ON);
     TextImage flag({flag_width, flag_height}, 7, '.', ON);
     draw_flag(screen, flag);
@@ -61,18 +62,25 @@ auto main(int argc, char **argv) -> int {
 
         // Update
         flag.xlat_rotate_right(flag_width - 1, TEXT);
+
         for (Dim x = 0; x < flag_width; ++x) {
+
             TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});
             screen.put_image(vertical_line, {x, static_cast<Dim>(wave_height / 2  + y[x])});
+            
             y[x] = y[x] + yn[x];
+
             if (y[x] <= 0) {
                 y[x] = 1;
                 yn[x] = 1;
+
             } else if (y[x] >= wave_height - 1) {
                 y[x] = wave_height - 2;
                 yn[x] = -1;
             } 
         }
+
+        screen.or_image(title, {static_cast<Dim>(flag_width / 2 - title.area().w / 2), 0});
 
         // Render
         screen.show();
