@@ -52,8 +52,9 @@ auto main(int argc, char **argv) -> int {
         }
     }
 
-    flag.gfx_circle({14, 15}, 6, 'x', 3, ON);
-    flag.gfx_fill_with_color_border({14, 15}, 'X', 3, ON);
+    // flag.gfx_circle<Color>({14, 15}, 6, 3);
+    flag.gfx_circle_color({14, 15}, 6, 3);
+    //flag.gfx_fill_with_color_border({14, 15}, 'X', 3, ON);
     for (double i = 0.0; i < 2.0 * M_PI; i += 2.0 * M_PI / 8.0) {
         flag.gfx_point({static_cast<Dim>(14.0 + 7.0 * cos(i)), static_cast<Dim>(15.0 + 7.0 * sin(i))}, '#', 3, ON);
         flag.gfx_point({static_cast<Dim>(14.0 + 8.0 * cos(i)), static_cast<Dim>(15.0 + 8.0 * sin(i))}, '#', 3, ON);
@@ -95,7 +96,6 @@ auto main(int argc, char **argv) -> int {
         
         screen.fill_text(" ");
 
-        //flag.xlat_rotate_left(1, TEXT);
         flag.xlat_rotate_right(flag_width - 1, TEXT);
         for (Dim x = 0; x < flag_width; ++x) {
             TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});

@@ -25,6 +25,7 @@
 #include <cmath>
 #include <array>
 #include <unordered_map>
+#include <functional>
 
 #include "TextImage.h"
 
@@ -772,6 +773,64 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
     }
 }
 
+auto g80::TextImage::gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void {
+    Dim center_point = index(point);
+
+    Dim x = radius;
+    Dim y = 0;
+
+    Dim bx = x * area_.w;
+    Dim by = y * area_.w;
+
+    Dim dx = 1 - (radius << 1);
+    Dim dy = 1;
+    Dim re = 0;
+
+    while (x >= y)
+    {
+        tia_set(center_point + x - by);
+        tia_set(center_point + y - bx);
+        tia_set(center_point - y - bx);
+        tia_set(center_point - x - by);
+        tia_set(center_point + x + by);
+        tia_set(center_point + y + bx);
+        tia_set(center_point - y + bx);
+        tia_set(center_point - x + by);
+
+        ++y;
+        re += dy;
+        dy += 2;
+        if ((re << 1) + dx > 0)
+        {
+            --x;
+            bx -= area_.w;
+            re += dx;
+            dx += 2;
+        }
+        by += area_.w;
+    }
+}
+
+auto g80::TextImage::gfx_circle_text(const Point &point, const Dim &radius, const Text &text) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        text_[ix] = text;
+    };
+    gfx_circle_loop(point, radius, tia_set);
+}
+
+auto g80::TextImage::gfx_circle_color(const Point &point, const Dim &radius, const Color &color) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        color_[ix] = color;
+    };
+    gfx_circle_loop(point, radius, tia_set);
+}
+
+auto g80::TextImage::gfx_circle_mask(const Point &point, const Dim &radius, const MASK_BIT &mask_bit) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        set_mask(ix, mask_bit);
+    };
+    gfx_circle_loop(point, radius, tia_set);
+}
 
 auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
     
