@@ -680,6 +680,33 @@ auto g80::TextImage::gfx_point(const Point &point, const Text &text, const Color
 }
 
 auto g80::TextImage::gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+    gfx_line_text(point1, point2, text);
+    gfx_line_color(point1, point2, color);
+    gfx_line_mask(point1, point2, mask_bit);
+}
+
+auto g80::TextImage::gfx_line_text(const Point &point1, const Point &point2, const Text &text) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        text_[ix] = text;
+    };
+    gfx_line_loop(point1, point2, tia_set);
+}
+
+auto g80::TextImage::gfx_line_color(const Point &point1, const Point &point2, const Color &color) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+        color_[ix] = color;
+    };
+    gfx_line_loop(point1, point2, tia_set);
+}
+
+auto g80::TextImage::gfx_line_mask(const Point &point1, const Point &point2, const MASK_BIT &mask_bit) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+       set_mask(ix, mask_bit);
+    };
+    gfx_line_loop(point1, point2, tia_set);
+}
+
+auto g80::TextImage::gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim)> &tia_set) -> void {
     Dim dx = point2.x - point1.x;
     Dim dy = point2.y - point1.y;
     Dim sdx = dx < 0 ? -1 : 1;
@@ -689,9 +716,7 @@ auto g80::TextImage::gfx_line(const Point &point1, const Point &point2, const Te
     Dim curr_point = index(point1);
     if (adx >= ady) {    
         for (Dim i = 0, t = ady; i <= adx; ++i, t += ady) {
-            text_[curr_point] = text;
-            color_[curr_point] = color;
-            set_mask(curr_point, mask_bit);
+            tia_set(curr_point);
             if (t >= adx) {
                 curr_point += sdy;
                 t -= adx;
@@ -700,9 +725,7 @@ auto g80::TextImage::gfx_line(const Point &point1, const Point &point2, const Te
         }
     } else {
         for (Dim i = 0, t = adx; i <= ady; ++i, t += adx) {
-            text_[curr_point] = text;
-            color_[curr_point] = color;
-            set_mask(curr_point, mask_bit);
+            tia_set(curr_point);
             if (t >= ady) {
                 curr_point += sdx;
                 t -= ady;

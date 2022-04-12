@@ -117,13 +117,23 @@ namespace g80 {
 
             // Graphics
             auto gfx_point(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            
+            
             auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_line_text(const Point &point1, const Point &point2, const Text &text) -> void;
+            auto gfx_line_color(const Point &point1, const Point &point2, const Color &color) -> void;
+            auto gfx_line_mask(const Point &point1, const Point &point2, const MASK_BIT &mask_bit) -> void;
+            
+            
             auto gfx_circle(const Point &point, const Dim &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
             auto gfx_circle_text(const Point &point, const Dim &radius, const Text &text) -> void;
             auto gfx_circle_color(const Point &point, const Dim &radius, const Color &color) -> void;
             auto gfx_circle_mask(const Point &point, const Dim &radius, const MASK_BIT &mask_bit) -> void;
 
             auto gfx_arc(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            
+            
+            
             auto gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
             auto gfx_fill_with_color_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
             auto gfx_fill_with_mask_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
@@ -145,6 +155,7 @@ namespace g80 {
         private:
             auto get_mask8bit_value(const Dim &ix, const Dim &size, const Dim &init_offset = 0) const -> Mask8bitOp;
             auto gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void;
+            auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim)> &tia_set) -> void;
             
 
     };
