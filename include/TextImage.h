@@ -135,9 +135,9 @@ namespace g80 {
             auto gfx_arc_color(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Color &color) -> void;
             auto gfx_arc_mask(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const MASK_BIT &mask_bit) -> void;
             
-            auto gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_fill_with_text_border(const Point &point, const Text &text) -> void;
             auto gfx_fill_color_border(const Point &point, const Color &color) -> void;
-            auto gfx_fill_with_mask_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_fill_with_mask_border(const Point &point, const MASK_BIT &mask_bit) -> void;
             
             // Save and Load
             auto save(const String &filename) const -> void;

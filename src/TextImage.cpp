@@ -970,40 +970,18 @@ auto g80::TextImage::gfx_arc_mask(const Point &point, const Dim &radius, const D
 
 
 
-auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text) -> void {
 
-    // The preferential method of fill is always stack over recursion, to prevent stackoverflow
-    // 
-    // The max stack allocation based on observation is (col - 1) x (row - 1) + 1
-    // Since this is known, it is better to use a std::vector instead of std::stack
-    // to represent a stack
-
-    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
-    int si = -1;
-
-    if (text_[index(point)] != text)
-        points[++si] = point;
-
-    while (si >= 0) {
-        Point p = points[si--];
-
-        Dim ix = index(p);
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
         text_[ix] = text;
-        color_[ix] = color;
-        set_mask(ix, mask_bit);
+    };
 
-        if (p.y - 1 >= 0 && text_[index({p.x, DIM(p.y - 1)})] != text)
-            points[++si] = {p.x, DIM(p.y - 1)};
+    std::function<bool(const Dim)> border_check = [&](const Dim &ix) -> bool {
+        return text_[ix] == text;
+    };
+    
+    gfx_fill_loop(point, tia_set, border_check);
 
-        if (p.y + 1 < area_.h && text_[index({p.x, DIM(p.y + 1)})] != text)
-            points[++si] = {p.x, DIM(p.y + 1)};
-
-        if (p.x - 1 >= 0 && text_[index({DIM(p.x - 1), p.y})] != text)
-            points[++si] = {DIM(p.x - 1), p.y};
-
-        if (p.x + 1 < area_.w && text_[index({DIM(p.x + 1), p.y})] != text)
-            points[++si] = {DIM(p.x + 1), p.y};
-    }
 }
 
 auto g80::TextImage::gfx_fill_color_border(const Point &point, const Color &color) -> void {
@@ -1020,40 +998,16 @@ auto g80::TextImage::gfx_fill_color_border(const Point &point, const Color &colo
 }
 
 
-auto g80::TextImage::gfx_fill_with_mask_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
-
-    // The preferential method of fill is always stack over recursion, to prevent stackoverflow
-    // 
-    // The max stack allocation based on observation is (col - 1) x (row - 1) + 1
-    // Since this is known, it is better to use a std::vector instead of std::stack
-    // to represent a stack
-
-    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
-    int si = -1;
-
-    if (get_mask(index(point)) != mask_bit)
-        points[++si] = point;
-
-    while (si >= 0) {
-        Point p = points[si--];
-
-        Dim ix = index(p);
-        text_[ix] = text;
-        color_[ix] = color;
+auto g80::TextImage::gfx_fill_with_mask_border(const Point &point, const MASK_BIT &mask_bit) -> void {
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
         set_mask(ix, mask_bit);
+    };
 
-        if (p.y - 1 >= 0 && get_mask(index({p.x, DIM(p.y - 1)})) != mask_bit)
-            points[++si] = {p.x, DIM(p.y - 1)};
-
-        if (p.y + 1 < area_.h && get_mask(index({p.x, DIM(p.y + 1)})) != mask_bit)
-            points[++si] = {p.x, DIM(p.y + 1)};
-
-        if (p.x - 1 >= 0 && get_mask(index({DIM(p.x - 1), p.y})) != mask_bit)
-            points[++si] = {DIM(p.x - 1), p.y};
-
-        if (p.x + 1 < area_.w && get_mask(index({DIM(p.x + 1), p.y})) != mask_bit)
-            points[++si] = {DIM(p.x + 1), p.y};
-    }
+    std::function<bool(const Dim)> border_check = [&](const Dim &ix) -> bool {
+        return get_mask(ix) == mask_bit;
+    };
+    
+    gfx_fill_loop(point, tia_set, border_check);
 }
 
 auto g80::TextImage::gfx_fill_loop(const Point &point, std::function<void(const Dim)> &tia_set, std::function<bool(const Dim)> &border_check) -> void {
