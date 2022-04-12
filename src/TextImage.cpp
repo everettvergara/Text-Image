@@ -713,64 +713,9 @@ auto g80::TextImage::gfx_line(const Point &point1, const Point &point2, const Te
 }
 
 auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
-    
-    Dim center_point = index(point);
-
-    Dim x = radius;
-    Dim y = 0;
-
-    Dim bx = x * area_.w;
-    Dim by = y * area_.w;
-
-    Dim dx = 1 - (radius << 1);
-    Dim dy = 1;
-    Dim re = 0;
-
-    while (x >= y)
-    {
-        // 1st Octant
-        text_[center_point + x - by] = text;
-        color_[center_point + x - by] = color;
-        set_mask(center_point + x - by, mask_bit);
-        
-        // The rest of the octant
-        text_[center_point + y - bx] = text;
-        text_[center_point - y - bx] = text;
-        text_[center_point - x - by] = text;
-
-        text_[center_point + x + by] = text;
-        text_[center_point + y + bx] = text;
-        text_[center_point - y + bx] = text;
-        text_[center_point - x + by] = text;
-
-        color_[center_point + y - bx] = color;
-        color_[center_point - y - bx] = color;
-        color_[center_point - x - by] = color;
-        color_[center_point + x + by] = color;
-        color_[center_point + y + bx] = color;
-        color_[center_point - y + bx] = color;
-        color_[center_point - x + by] = color;
-
-        set_mask(center_point + y - bx, mask_bit);
-        set_mask(center_point - y - bx, mask_bit);
-        set_mask(center_point - x - by, mask_bit);
-        set_mask(center_point + x + by, mask_bit);
-        set_mask(center_point + y + bx, mask_bit);
-        set_mask(center_point - y + bx, mask_bit);
-        set_mask(center_point - x + by, mask_bit);
-
-        ++y;
-        re += dy;
-        dy += 2;
-        if ((re << 1) + dx > 0)
-        {
-            --x;
-            bx -= area_.w;
-            re += dx;
-            dx += 2;
-        }
-        by += area_.w;
-    }
+    gfx_circle_text(point, radius, text);
+    gfx_circle_color(point, radius, color);
+    gfx_circle_mask(point, radius, mask_bit);
 }
 
 auto g80::TextImage::gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void {
