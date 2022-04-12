@@ -602,7 +602,7 @@ auto g80::TextImage::xlat_reverse(Dim start, Dim end, TextImageAttribute tia) ->
 }
 
 auto g80::TextImage::xlat_rotate_left(Dim rotate, TextImageAttribute tia) -> void {
-    Dim r = rotate % area_.w;
+    Dim r = rotate % area_();
     if (r > 0) {
         xlat_reverse(0, r - 1, tia);
         xlat_reverse(r, area_() - 1, tia);
@@ -611,7 +611,7 @@ auto g80::TextImage::xlat_rotate_left(Dim rotate, TextImageAttribute tia) -> voi
 }
 
 auto g80::TextImage::xlat_rotate_right(Dim rotate, TextImageAttribute tia) -> void {
-    Dim r = rotate % area_.w;
+    Dim r = rotate % area_();
     if (r > 0) {
         xlat_reverse(0, area_() - 1, tia);
         xlat_reverse(0, r - 1, tia);

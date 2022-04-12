@@ -86,7 +86,6 @@ auto main(int argc, char **argv) -> int {
     for (double a = 0; a < waves * M_PI; a += inc) {
         y[x] = (wave_height / 2.0) - sin(a) * (wave_height / 2.0 - 1) - 1;
         yn[x] = +1;
-        //flag.set_text(flag.index({x, static_cast<Dim>(y[x])}), '@');
         ++x;
     }
 
@@ -97,7 +96,7 @@ auto main(int argc, char **argv) -> int {
         screen.fill_text(" ");
 
         //flag.xlat_rotate_left(1, TEXT);
-        flag.xlat_rotate_right(119, TEXT);
+        flag.xlat_rotate_right(flag_width - 1, TEXT);
         for (Dim x = 0; x < flag_width; ++x) {
             TextImage vertical_line = flag.get_image({{x, 0}, {1, flag_height}});
             screen.put_image(vertical_line, {x, static_cast<Dim>(wave_height / 2  + y[x])});
