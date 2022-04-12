@@ -4,7 +4,7 @@ TextImage is a simple C++17 Compatible Class to handle console buffering. Applic
 
 For reference, the class has the following functions:
 
-```
+```c++
 class TextImage {
     public:
         // Constructors, assignments and destructors

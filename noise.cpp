@@ -21,7 +21,7 @@ auto is_key_pressed() -> int;
 
 auto main(int argc, char **argv) -> int {
     
-    TextImage noise({150, 40}, ON);
+    TextImage noise({130, 40}, ON);
     noise.fill_color(7);
     
     do {
