@@ -122,7 +122,7 @@ auto draw_flag(TextImage &screen, TextImage &flag) -> void {
 
     // Sun
     flag.gfx_circle_color({14, 15}, 6, 3);
-    flag.gfx_fill_with_color_border({14, 15}, 'X', 3, ON);
+    flag.gfx_fill_color_border({14, 15}, 3);
     for (double i = 0.0; i < 2.0 * M_PI; i += 2.0 * M_PI / 8.0) {
         flag.set_color({static_cast<Dim>(14.0 + 7.0 * cos(i)), static_cast<Dim>(15.0 + 7.0 * sin(i))}, 3);
         flag.set_color({static_cast<Dim>(14.0 + 8.0 * cos(i)), static_cast<Dim>(15.0 + 8.0 * sin(i))}, 3);

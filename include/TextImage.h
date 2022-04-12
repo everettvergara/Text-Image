@@ -135,12 +135,10 @@ namespace g80 {
             auto gfx_arc_color(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Color &color) -> void;
             auto gfx_arc_mask(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const MASK_BIT &mask_bit) -> void;
             
-            
-            
             auto gfx_fill_with_text_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            auto gfx_fill_with_color_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+            auto gfx_fill_color_border(const Point &point, const Color &color) -> void;
             auto gfx_fill_with_mask_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-
+            
             // Save and Load
             auto save(const String &filename) const -> void;
             auto load(const String &filename) -> void;
@@ -160,7 +158,7 @@ namespace g80 {
             auto gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void;
             auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim)> &tia_set) -> void;
             auto gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim)> &tia_set) -> void;
-            
+            auto gfx_fill_loop(const Point &point, std::function<void(const Dim)> &tia_set, std::function<bool(const Dim)> &border_check) -> void;
 
     };
 

@@ -1006,40 +1006,17 @@ auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &t
     }
 }
 
-auto g80::TextImage::gfx_fill_with_color_border(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+auto g80::TextImage::gfx_fill_color_border(const Point &point, const Color &color) -> void {
 
-    // The preferential method of fill is always stack over recursion, to prevent stackoverflow
-    // 
-    // The max stack allocation based on observation is (col - 1) x (row - 1) + 1
-    // Since this is known, it is better to use a std::vector instead of std::stack
-    // to represent a stack
-
-    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
-    int si = -1;
-
-    if (color_[index(point)] != color)
-        points[++si] = point;
-
-    while (si >= 0) {
-        Point p = points[si--];
-
-        Dim ix = index(p);
-        text_[ix] = text;
+    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
         color_[ix] = color;
-        set_mask(ix, mask_bit);
+    };
 
-        if (p.y - 1 >= 0 && color_[index({p.x, DIM(p.y - 1)})] != color)
-            points[++si] = {p.x, DIM(p.y - 1)};
-
-        if (p.y + 1 < area_.h && color_[index({p.x, DIM(p.y + 1)})] != color)
-            points[++si] = {p.x, DIM(p.y + 1)};
-
-        if (p.x - 1 >= 0 && color_[index({DIM(p.x - 1), p.y})] != color)
-            points[++si] = {DIM(p.x - 1), p.y};
-
-        if (p.x + 1 < area_.w && color_[index({DIM(p.x + 1), p.y})] != color)
-            points[++si] = {DIM(p.x + 1), p.y};
-    }
+    std::function<bool(const Dim)> border_check = [&](const Dim &ix) -> bool {
+        return color_[ix] == color;
+    };
+    
+    gfx_fill_loop(point, tia_set, border_check);
 }
 
 
@@ -1079,3 +1056,36 @@ auto g80::TextImage::gfx_fill_with_mask_border(const Point &point, const Text &t
     }
 }
 
+auto g80::TextImage::gfx_fill_loop(const Point &point, std::function<void(const Dim)> &tia_set, std::function<bool(const Dim)> &border_check) -> void {
+    
+    // The preferential method of fill is always stack over recursion, to prevent stackoverflow
+    // 
+    // The max stack allocation based on observation is (col - 1) x (row - 1) + 1
+    // Since this is known, it is better to use a std::vector instead of std::stack
+    // to represent a stack
+
+    std::vector<Point> points((point.x - 1) * (point.y - 1) + 1);
+    int si = -1;
+
+    if (!border_check(index(point)))
+        points[++si] = point;;
+
+    while (si >= 0) {
+        Point p = points[si--];
+
+        Dim ix = index(p);
+        tia_set(ix);
+
+        if (p.y - 1 >= 0 && !border_check(index({p.x, DIM(p.y - 1)})))
+            points[++si] = {p.x, DIM(p.y - 1)};
+
+        if (p.y + 1 < area_.h && !border_check(index({p.x, DIM(p.y + 1)})))
+            points[++si] = {p.x, DIM(p.y + 1)};
+
+        if (p.x - 1 >= 0 && !border_check(index({DIM(p.x - 1), p.y})))
+            points[++si] = {DIM(p.x - 1), p.y};
+
+        if (p.x + 1 < area_.w && !border_check(index({DIM(p.x + 1), p.y})))
+            points[++si] = {DIM(p.x + 1), p.y};
+    }
+}
