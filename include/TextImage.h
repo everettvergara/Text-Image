@@ -103,6 +103,7 @@ namespace g80 {
             auto or_image(const TextImage &text_image, const Point &point) -> void;
             auto xor_image(const TextImage &text_image, const Point &point) -> void;
             auto put_text_color(const String &text, const Color &color, const Point &point) -> void;
+            
             auto show() const -> void;
 
             // Translate Functions
@@ -155,11 +156,10 @@ namespace g80 {
 
         private:
             auto get_mask8bit_value(const Dim &ix, const Dim &size, const Dim &init_offset = 0) const -> Mask8bitOp;
-            auto gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void;
-            auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim)> &tia_set) -> void;
-            auto gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim)> &tia_set) -> void;
-            auto gfx_fill_loop(const Point &point, std::function<void(const Dim)> &tia_set, std::function<bool(const Dim)> &border_check) -> void;
-
+            auto gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim &)> &tia_set) -> void;
+            auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim &)> &tia_set) -> void;
+            auto gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim &)> &tia_set) -> void;
+            auto gfx_fill_loop(const Point &point, std::function<void(const Dim &)> &tia_set, std::function<bool(const Dim &)> &border_check) -> void;
     };
 
  

@@ -686,27 +686,27 @@ auto g80::TextImage::gfx_line(const Point &point1, const Point &point2, const Te
 }
 
 auto g80::TextImage::gfx_line_text(const Point &point1, const Point &point2, const Text &text) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    static std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         text_[ix] = text;
     };
     gfx_line_loop(point1, point2, tia_set);
 }
 
 auto g80::TextImage::gfx_line_color(const Point &point1, const Point &point2, const Color &color) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    static std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         color_[ix] = color;
     };
     gfx_line_loop(point1, point2, tia_set);
 }
 
 auto g80::TextImage::gfx_line_mask(const Point &point1, const Point &point2, const MASK_BIT &mask_bit) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    static std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
        set_mask(ix, mask_bit);
     };
     gfx_line_loop(point1, point2, tia_set);
 }
 
-auto g80::TextImage::gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim)> &tia_set) -> void {
+auto g80::TextImage::gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const Dim &)> &tia_set) -> void {
     Dim dx = point2.x - point1.x;
     Dim dy = point2.y - point1.y;
     Dim sdx = dx < 0 ? -1 : 1;
@@ -741,7 +741,7 @@ auto g80::TextImage::gfx_circle(const Point &point, const Dim &radius, const Tex
     gfx_circle_mask(point, radius, mask_bit);
 }
 
-auto g80::TextImage::gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim)> &tia_set) -> void {
+auto g80::TextImage::gfx_circle_loop(const Point &point, const Dim &radius, std::function<void(const Dim &)> &tia_set) -> void {
     Dim center_point = index(point);
 
     Dim x = radius;
@@ -780,21 +780,21 @@ auto g80::TextImage::gfx_circle_loop(const Point &point, const Dim &radius, std:
 }
 
 auto g80::TextImage::gfx_circle_text(const Point &point, const Dim &radius, const Text &text) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         text_[ix] = text;
     };
     gfx_circle_loop(point, radius, tia_set);
 }
 
 auto g80::TextImage::gfx_circle_color(const Point &point, const Dim &radius, const Color &color) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         color_[ix] = color;
     };
     gfx_circle_loop(point, radius, tia_set);
 }
 
 auto g80::TextImage::gfx_circle_mask(const Point &point, const Dim &radius, const MASK_BIT &mask_bit) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         set_mask(ix, mask_bit);
     };
     gfx_circle_loop(point, radius, tia_set);
@@ -806,7 +806,7 @@ auto g80::TextImage::gfx_arc(const Point &point, const Dim &radius, const Dim &s
     gfx_arc_mask(point, radius, sa, ea, mask_bit);
 }
 
-auto g80::TextImage::gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim)> &tia_set) -> void {
+auto g80::TextImage::gfx_arc_loop(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, std::function<void(const Dim &)> &tia_set) -> void {
     Dim center_point = index(point);
 
     Dim x = radius;
@@ -948,21 +948,21 @@ auto g80::TextImage::gfx_arc_loop(const Point &point, const Dim &radius, const D
 }
 
 auto g80::TextImage::gfx_arc_text(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Text &text) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         text_[ix] = text;
     };
     gfx_arc_loop(point, radius, sa, ea, tia_set);
 }
 
 auto g80::TextImage::gfx_arc_color(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const Color &color) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         color_[ix] = color;
     };
     gfx_arc_loop(point, radius, sa, ea, tia_set);
 }
 
 auto g80::TextImage::gfx_arc_mask(const Point &point, const Dim &radius, const Dim &sa, const Dim &ea, const MASK_BIT &mask_bit) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         set_mask(ix, mask_bit);
     };
     gfx_arc_loop(point, radius, sa, ea, tia_set);
@@ -972,11 +972,11 @@ auto g80::TextImage::gfx_arc_mask(const Point &point, const Dim &radius, const D
 
 auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &text) -> void {
 
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         text_[ix] = text;
     };
 
-    std::function<bool(const Dim)> border_check = [&](const Dim &ix) -> bool {
+    std::function<bool(const Dim &)> border_check = [&](const Dim &ix) -> bool {
         return text_[ix] == text;
     };
     
@@ -986,11 +986,11 @@ auto g80::TextImage::gfx_fill_with_text_border(const Point &point, const Text &t
 
 auto g80::TextImage::gfx_fill_color_border(const Point &point, const Color &color) -> void {
 
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         color_[ix] = color;
     };
 
-    std::function<bool(const Dim)> border_check = [&](const Dim &ix) -> bool {
+    std::function<bool(const Dim &)> border_check = [&](const Dim &ix) -> bool {
         return color_[ix] == color;
     };
     
@@ -999,18 +999,18 @@ auto g80::TextImage::gfx_fill_color_border(const Point &point, const Color &colo
 
 
 auto g80::TextImage::gfx_fill_with_mask_border(const Point &point, const MASK_BIT &mask_bit) -> void {
-    std::function<void(const Dim)> tia_set = [&](const Dim &ix) -> void {
+    std::function<void(const Dim &)> tia_set = [&](const Dim &ix) -> void {
         set_mask(ix, mask_bit);
     };
 
-    std::function<bool(const Dim)> border_check = [&](const Dim &ix) -> bool {
+    std::function<bool(const Dim &)> border_check = [&](const Dim &ix) -> bool {
         return get_mask(ix) == mask_bit;
     };
     
     gfx_fill_loop(point, tia_set, border_check);
 }
 
-auto g80::TextImage::gfx_fill_loop(const Point &point, std::function<void(const Dim)> &tia_set, std::function<bool(const Dim)> &border_check) -> void {
+auto g80::TextImage::gfx_fill_loop(const Point &point, std::function<void(const Dim &)> &tia_set, std::function<bool(const Dim &)> &border_check) -> void {
     
     // The preferential method of fill is always stack over recursion, to prevent stackoverflow
     // 
