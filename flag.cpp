@@ -119,7 +119,7 @@ auto is_key_pressed() -> int {
 
 auto draw_flag(TextImage &screen, TextImage &flag) -> void {
     
-    // Flag Text
+    // Flag Text and Color
     flag.fill_text("BayangmagiliwPerlasngSilangananAlabngpusoSadibdibmoybuhayLupangHinirangDuyankangmagitingSamanlulupigDikapasisiilSadagatatbundokSsimoyatsalangitmongbughawMaydilagangtulaAtawitsapaglayangminamahalAngkislapngwatawatmoyTagumpaynanagniningningAngbituinatarawniyaKailanpamaydimagdidilimLupangarawngluwalhatitpagsintaBuhayaylangitsapilingmoAmingligayana'pagmaymangaapiAngmamatayngdahilsaiyo");
     for (Dim i = 0; i < 15; ++i) {
         for (Dim j = 1 + i * 3; j < flag_width; ++j) {
