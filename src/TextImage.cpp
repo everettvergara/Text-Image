@@ -18,8 +18,10 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <cstring>
 #include <map>
 #include <vector>
 #include <cmath>

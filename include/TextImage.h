@@ -23,6 +23,7 @@
 #include <memory>
 #include <cstdint>
 #include <optional>
+#include <functional>
 
 #include "Area.hpp"
 #include "Rect.hpp"
