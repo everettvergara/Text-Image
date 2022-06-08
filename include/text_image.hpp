@@ -459,6 +459,7 @@ namespace g80 {
         auto xlat_shift_left(uint16_t shift, text_image_attrib tia = ALL, const text &default_text = ' ', const color &default_color = 0, const mask_bit &default_mask_bit = OFF) -> void {
             
             if (shift > size_) shift = size_;
+            else if (shift == 0) return;
 
             if (tia & TEXT) {
                 for (uint16_t i = 0; i < size_ - shift; ++i) text_[i] = text_[i + shift];
@@ -479,23 +480,24 @@ namespace g80 {
         auto xlat_shift_right(int16_t shift, text_image_attrib tia = ALL, const text &default_text = ' ', const color &default_color = 0, const mask_bit &default_mask_bit = OFF) -> void {
 
             if (shift > size_) shift = size_;
+            else if (shift == 0) return;
 
             if (tia & TEXT) {
-                // TODO: Translate to uint to maximze type capacity
-                for (int16_t i = size_ - 1; i >= shift; --i) text_[i] = text_[i - shift];
-                for (int16_t i = 0; i < shift; ++i) text_[i] = default_text;
+                for (uint16_t i = size_ - 1; i >= shift; --i) text_[i] = text_[i - shift];
+                for (uint16_t i = 0; i < shift; ++i) text_[i] = default_text;
             }
 
             if (tia & COLOR) {
-                for (int16_t i = size_ - 1; i >= shift; --i) color_[i] = color_[i - shift];
-                for (int16_t i = 0; i < shift; ++i) color_[i] = default_color;
+                for (uint16_t i = size_ - 1; i >= shift; --i) color_[i] = color_[i - shift];
+                for (uint16_t i = 0; i < shift; ++i) color_[i] = default_color;
             }
 
             if (tia & MASK) {
-                for (int16_t i = size_ - 1; i >= shift; --i) set_mask(i, get_mask(i - shift));
-                for (int16_t i = 0; i < shift; ++i) set_mask(i, default_mask_bit);
+                for (uint16_t i = size_ - 1; i >= shift; --i) set_mask(i, get_mask(i - shift));
+                for (uint16_t i = 0; i < shift; ++i) set_mask(i, default_mask_bit);
             }
         }
+        
         //     auto xlat_reverse(int16_t start, int16_t end, TextImageAttribute tia) -> void;
         //     auto xlat_rotate_left(int16_t rotate, TextImageAttribute tia) -> void;
         //     auto xlat_rotate_right(int16_t rotate, TextImageAttribute tia) -> void;
