@@ -420,7 +420,19 @@ namespace g80 {
                 }
             }
         }
-        // auto and_image(const TextImage &text_image, const Point &point) -> void;
+
+        auto and_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+            for (uint16_t r = 0; r < timg.h_; ++r) {
+                uint16_t tix = ix(x, y + r); 
+                for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
+                    if ((get_mask(tix) & timg.get_mask(six)) == ON) {
+                        text_[tix] = timg.craw_text().get()[six];
+                        color_[tix] = timg.craw_color().get()[six];
+                    }
+                    ++tix;
+                }
+            }
+        }
         // auto or_image(const TextImage &text_image, const Point &point) -> void;
         // auto xor_image(const TextImage &text_image, const Point &point) -> void;
 
