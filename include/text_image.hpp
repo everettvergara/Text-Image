@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <optional>
 #include <functional>
+#include <sstream>
 
 
 
@@ -86,7 +87,10 @@ namespace g80 {
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         }
 
-        //     TextImage(const TextImage &rhs);
+        // text_image(const text_image &rhs); //:
+           // w_(rhs.w_), h_(rhs.h_), size_(w_ * h_) {
+
+        //}
         //     TextImage(TextImage &&rhs);
         //     auto operator=(const TextImage &rhs) -> TextImage &; 
         //     auto operator=(TextImage &&rhs) -> TextImage &;
@@ -112,8 +116,8 @@ namespace g80 {
         //     auto get_text(const int16_t &ix) const -> Text;
         //     auto show_text() const -> void;
         
-        inline auto fill_text(const text t) -> void {
-            for (int16_t i = 0; i < size_; ++i) text_[i] = t;            
+        auto fill_text(const text t) -> void {
+            std::fill_n(&text_[0], size_, t);      
         }
 
         //     auto fill_text(const String &text) -> void;
@@ -124,8 +128,8 @@ namespace g80 {
         //     auto get_color(const Point &point) const -> Color;
         //     auto get_color(const int16_t &ix) const -> Color;
         //     auto show_color() const -> void;
-        inline auto fill_color(const color c) const -> void {
-            for (int16_t i = 0; i < size_; ++i) color_[i] = c;
+        auto fill_color(const color c) const -> void {
+            std::fill_n(&color_[0], size_, c);      
         }
 
         //     // Mask functions
@@ -133,12 +137,12 @@ namespace g80 {
         //     auto set_mask(const int16_t &ix, MASK_BIT mask_bit) -> void;
         //     auto get_mask(const Point &point) const -> MASK_BIT;
         //     auto get_mask(const int16_t &ix) const -> MASK_BIT;
-        inline auto set_all_mask8bit() -> void {
-            for (int16_t i = 0; i < size_of_mask8bit_; ++i) mask8bit_[i] = 0xff;                
+        auto set_all_mask8bit() -> void {
+            std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0xff);            
         }
 
-        inline auto clear_all_mask8bit() -> void {
-            for (int16_t i = 0; i < size_of_mask8bit_; ++i) mask8bit_[i] = 0x00;                
+        auto clear_all_mask8bit() -> void {
+            std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0x00);           
         }
         //     auto create_mask_if_color(const Color &color) -> void;
         //     auto create_mask_if_text(const Text &text) -> void;
@@ -154,7 +158,27 @@ namespace g80 {
         //     auto xor_image(const TextImage &text_image, const Point &point) -> void;
         //     auto put_text_color(const String &text, const Color &color, const Point &point) -> void;
             
-        //     auto show() const -> void;
+        auto show() const -> void {
+            static const std::string color[] { "\033[30m", "\033[31m", "\033[32m", "\033[33m", "\033[34m", "\033[35m", "\033[36m", "\033[37m" };
+            static const size_t size_of_color = sizeof(color) / sizeof(std::string);
+            std::stringstream output;
+            
+            output << "\033[2J";
+            size_t prev_color = size_of_color;
+            for (int16_t i = 0; i < size_; ++i) {
+
+                if (prev_color != color_[i]) {
+                    prev_color = color_[i];
+                    output << color[prev_color];
+                }
+
+                if (i % w_ == 0 && i > 0) output << "\n"; 
+                output << text_[i];
+            }
+
+            output << "\033[0m\n";
+            std::cout << output.str();            
+        }
 
         //     // Translate Functions
         //     // TODO: TEST xlat
