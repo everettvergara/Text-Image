@@ -49,12 +49,13 @@ namespace g80 {
     enum text_image_attrib {TEXT = 1, COLOR = 2, MASK = 4, ALL = 7}; 
 
     class text_image {
-        public:
+    public:
             
         // TODO, remove reference if parameter type is primitive 
         // TODO, remove on return type unless necessary 
 
         // Constructors, assignments and destructors
+
         text_image() = default;
 
         text_image(const std::string &filename) {
@@ -73,7 +74,17 @@ namespace g80 {
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         } 
             
-        //     TextImage(const int16_t width, const int16_t height, MASK_BIT mask_bit = ON);
+        text_image(const int16_t w, const int16_t h, mask_bit m = ON) :
+            w_(w), h_(h), size_(w_ * h_),
+            color_(std::make_unique<color[]>(size_)),
+            text_(std::make_unique<text[]>(size_)),
+            size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
+            mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
+            
+            fill_text(' ');
+            fill_color(7);
+            if (m) set_all_mask8bit(); else clear_all_mask8bit();
+        }
         //     TextImage(const int16_t width, const int16_t height, const Color &color, const Text &text, MASK_BIT = ON);
         //     TextImage(const TextImage &rhs);
         //     TextImage(TextImage &&rhs);
@@ -100,7 +111,11 @@ namespace g80 {
         //     auto get_text(const Point &point) const -> Text;
         //     auto get_text(const int16_t &ix) const -> Text;
         //     auto show_text() const -> void;
-        //     auto fill_text(const Text &text) -> void;
+        
+        inline auto fill_text(const text t) -> void {
+            for (int16_t i = 0; i < size_; ++i) text_[i] = t;            
+        }
+
         //     auto fill_text(const String &text) -> void;
 
         //     // Color functions
@@ -109,7 +124,7 @@ namespace g80 {
         //     auto get_color(const Point &point) const -> Color;
         //     auto get_color(const int16_t &ix) const -> Color;
         //     auto show_color() const -> void;
-        auto fill_color(const color c) const -> void {
+        inline auto fill_color(const color c) const -> void {
             for (int16_t i = 0; i < size_; ++i) color_[i] = c;
         }
 
@@ -118,11 +133,11 @@ namespace g80 {
         //     auto set_mask(const int16_t &ix, MASK_BIT mask_bit) -> void;
         //     auto get_mask(const Point &point) const -> MASK_BIT;
         //     auto get_mask(const int16_t &ix) const -> MASK_BIT;
-        auto set_all_mask8bit() -> void {
+        inline auto set_all_mask8bit() -> void {
             for (int16_t i = 0; i < size_of_mask8bit_; ++i) mask8bit_[i] = 0xff;                
         }
 
-        auto clear_all_mask8bit() -> void {
+        inline auto clear_all_mask8bit() -> void {
             for (int16_t i = 0; i < size_of_mask8bit_; ++i) mask8bit_[i] = 0x00;                
         }
         //     auto create_mask_if_color(const Color &color) -> void;
