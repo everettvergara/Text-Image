@@ -52,6 +52,7 @@ namespace g80 {
     // todo: fix warnings uint16_t vs. uint16_t in for loops
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
+    // todo: throw exception on construction if w_, h_ == 0
 
     /**
      * Constructors, Assignments and 
@@ -474,7 +475,27 @@ namespace g80 {
                 for (uint16_t i = size_ - shift; i < size_; ++i) set_mask(i, default_mask_bit);      
             }            
         }
-        //     auto xlat_shift_right(int16_t shift, TextImageAttribute tia, const Text &default_text = ' ', const Color &default_color = 0, const MASK_BIT &default_mask_bit = OFF) -> void;
+
+        auto xlat_shift_right(int16_t shift, text_image_attrib tia = ALL, const text &default_text = ' ', const color &default_color = 0, const mask_bit &default_mask_bit = OFF) -> void {
+
+            if (shift > size_) shift = size_;
+
+            if (tia & TEXT) {
+                // TODO: Translate to uint to maximze type capacity
+                for (int16_t i = size_ - 1; i >= shift; --i) text_[i] = text_[i - shift];
+                for (int16_t i = 0; i < shift; ++i) text_[i] = default_text;
+            }
+
+            if (tia & COLOR) {
+                for (int16_t i = size_ - 1; i >= shift; --i) color_[i] = color_[i - shift];
+                for (int16_t i = 0; i < shift; ++i) color_[i] = default_color;
+            }
+
+            if (tia & MASK) {
+                for (int16_t i = size_ - 1; i >= shift; --i) set_mask(i, get_mask(i - shift));
+                for (int16_t i = 0; i < shift; ++i) set_mask(i, default_mask_bit);
+            }
+        }
         //     auto xlat_reverse(int16_t start, int16_t end, TextImageAttribute tia) -> void;
         //     auto xlat_rotate_left(int16_t rotate, TextImageAttribute tia) -> void;
         //     auto xlat_rotate_right(int16_t rotate, TextImageAttribute tia) -> void;
