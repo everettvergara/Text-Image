@@ -38,8 +38,6 @@ namespace g80 {
     using text = uint8_t;
     using mask8bit = uint8_t;
 
-    using size_of_mask8bit = uint16_t;
-
     using uptr_color = std::unique_ptr<color[]>;
     using uptr_text = std::unique_ptr<text[]>;
     using uptr_mask8bit = std::unique_ptr<mask8bit[]>;
@@ -166,7 +164,7 @@ namespace g80 {
             return size_;
         }
 
-        inline auto size_mask8bit() const -> size_of_mask8bit {
+        inline auto size_mask8bit() const -> uint16_t {
             return size_of_mask8bit_;
         }        
 
@@ -318,6 +316,7 @@ namespace g80 {
             file.write(static_cast<const char *>(static_cast<const void*>(text_.get())), size_);
             file.write(static_cast<const char *>(static_cast<const void*>(mask8bit_.get())), size_of_mask8bit_);
         }
+
         auto load(const std::string &filename) -> void {
             std::ifstream file (filename, std::ios::binary);
             file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -347,7 +346,7 @@ namespace g80 {
             uint16_t w_, h_, size_;
             uptr_color color_{nullptr};
             uptr_text text_{nullptr};
-            size_of_mask8bit size_of_mask8bit_{0};
+            uint16_t size_of_mask8bit_{0};
             uptr_mask8bit mask8bit_{nullptr};
 
         // private:
