@@ -308,7 +308,16 @@ namespace g80 {
             return static_cast<uint16_t>(y * w_ + x);
         }
 
-        //     auto save(const String &filename) const -> void;
+        auto save(const std::string &filename) const -> void {
+            std::ofstream file (filename, std::ios::binary);
+            file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+
+            file.write(static_cast<const char *>(static_cast<const void*>(&w_)), sizeof(w_));
+            file.write(static_cast<const char *>(static_cast<const void*>(&h_)), sizeof(h_));
+            file.write(static_cast<const char *>(static_cast<const void*>(color_.get())), size_);
+            file.write(static_cast<const char *>(static_cast<const void*>(text_.get())), size_);
+            file.write(static_cast<const char *>(static_cast<const void*>(mask8bit_.get())), size_of_mask8bit_);
+        }
         auto load(const std::string &filename) -> void {
             std::ifstream file (filename, std::ios::binary);
             file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
