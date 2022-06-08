@@ -51,7 +51,7 @@ namespace g80 {
             
     // todo: use template instead of int16_t
     // todo: all ix must be uint
-    // todo: fix warnings size_t vs. uint16_t in for loops
+    // todo: fix warnings uint16_t vs. uint16_t in for loops
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
 
@@ -70,12 +70,12 @@ namespace g80 {
         }
 
         text_image(const std::string &t, const color c, const mask_bit m = ON) :
-            w_(t.size()), h_(1), size_(w_),
+            w_(static_cast<uint16_t>(t.size())), h_(1), size_(w_),
             color_(std::make_unique<color[]>(size_)),
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
             mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
-            for (size_t i = 0; i < size_; ++i) text_[i] = t[i];
+            for (uint16_t i = 0; i < size_; ++i) text_[i] = t[i];
             fill_color(c);
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         } 
@@ -206,8 +206,8 @@ namespace g80 {
             std::stringstream output;
             
             output << "\033[2J";
-            size_t next_line = w_;
-            for (size_t i = 0; i < size_; ++i) {
+            uint16_t next_line = w_;
+            for (uint16_t i = 0; i < size_; ++i) {
                 if (i == next_line) {output << "\n"; next_line += w_;} 
                 output << std::setw(3) << std::hex << static_cast<int>(color_[i]);
             }
@@ -220,8 +220,8 @@ namespace g80 {
             std::stringstream output;
             
             output << "\033[2J";
-            size_t next_line = w_;
-            for (size_t i = 0; i < size_; ++i) {
+            uint16_t next_line = w_;
+            for (uint16_t i = 0; i < size_; ++i) {
                 if (i == next_line) {output << "\n"; next_line += w_;} 
                 output << text_[i];
             }
@@ -240,8 +240,8 @@ namespace g80 {
             output << "\n";
             
             // Draw bits
-            size_t next_line = w_;
-            for (size_t i = 0; i < size_; ++i) {
+            uint16_t next_line = w_;
+            for (uint16_t i = 0; i < size_; ++i) {
                 if (i == next_line) {output << "\n"; next_line += w_;} 
                 
                 if (i == marker) output << "_";
@@ -263,7 +263,7 @@ namespace g80 {
 
     public:
 
-        inline auto set_text(const int16_t &ix, const text t) -> void {
+        inline auto set_text(const uint16_t &ix, const text t) -> void {
             text_[ix] = t;
         }
         
@@ -271,7 +271,7 @@ namespace g80 {
             set_text(ix(x, y), t);
         }
 
-        inline auto get_text(const int16_t ix) const -> text {
+        inline auto get_text(const uint16_t ix) const -> text {
             return text_[ix];
         }
         
@@ -283,7 +283,7 @@ namespace g80 {
             std::fill_n(&text_[0], size_, t);      
         }
 
-        inline auto set_color(const int16_t ix, const color c) -> void {
+        inline auto set_color(const uint16_t ix, const color c) -> void {
             color_[ix] = c;
         }
 
@@ -291,7 +291,7 @@ namespace g80 {
             set_color(ix(x, y), c);
         }
 
-        inline auto get_color(const int16_t ix) const -> color {
+        inline auto get_color(const uint16_t ix) const -> color {
             return color_[ix];
         }
 
@@ -333,7 +333,7 @@ namespace g80 {
         auto clear_all_mask8bit() -> void {
             std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0x00);           
         }
-        
+
         //     auto create_mask_if_color(const Color &color) -> void;
         //     auto create_mask_if_text(const Text &text) -> void;
         //     auto invert_mask() -> void;
@@ -350,13 +350,13 @@ namespace g80 {
             
         auto show() const -> void {
             static const std::string color[] { "\033[30m", "\033[31m", "\033[32m", "\033[33m", "\033[34m", "\033[35m", "\033[36m", "\033[37m" };
-            static const size_t size_of_color = sizeof(color) / sizeof(std::string);
+            static const uint16_t size_of_color = sizeof(color) / sizeof(std::string);
             std::stringstream output;
             
             output << "\033[2J";
-            size_t prev_color = size_of_color;
-            size_t next_line = w_;
-            for (size_t i = 0; i < size_; ++i) {
+            uint16_t prev_color = size_of_color;
+            uint16_t next_line = w_;
+            for (uint16_t i = 0; i < size_; ++i) {
                 if (prev_color != color_[i]) {prev_color = color_[i]; output << color[prev_color];}
                 if (i == next_line) {output << "\n"; next_line += w_;} 
                 output << text_[i];
