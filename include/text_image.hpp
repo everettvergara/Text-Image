@@ -478,7 +478,7 @@ namespace g80 {
             }            
         }
 
-        auto xlat_shift_right(int16_t shift, text_image_attrib tia = ALL, const text &default_text = ' ', const color &default_color = 0, const mask_bit &default_mask_bit = OFF) -> void {
+        auto xlat_shift_right(uint16_t shift, text_image_attrib tia = ALL, const text &default_text = ' ', const color &default_color = 0, const mask_bit &default_mask_bit = OFF) -> void {
 
             if (shift > size_) shift = size_;
             else if (shift == 0) return;
@@ -499,7 +499,7 @@ namespace g80 {
             }
         }
 
-        auto xlat_reverse(uint16_t start, uint16_t end, text_image_attrib tia) -> void {
+        auto xlat_reverse(uint16_t start, uint16_t end, text_image_attrib tia = ALL) -> void {
             if (tia & TEXT) {
                 uint16_t i = start, j = end;
                 while (i < j) std::swap(text_[i++], text_[j--]);
@@ -521,7 +521,15 @@ namespace g80 {
                 }
             }            
         }
-        //     auto xlat_rotate_left(int16_t rotate, TextImageAttribute tia) -> void;
+
+        auto xlat_rotate_left(uint16_t rotate, text_image_attrib tia) -> void {
+            uint16_t r = rotate >= size_ ? rotate % size_ : rotate;
+            if (r > 0) {
+                xlat_reverse(0, r - 1, tia);
+                xlat_reverse(r, size_ - 1, tia);
+                xlat_reverse(0, size_ - 1, tia);
+            }
+        }
         //     auto xlat_rotate_right(int16_t rotate, TextImageAttribute tia) -> void;
         //     auto xlat_flip_horizontal(TextImageAttribute tia) -> void;
         //     auto xlat_flip_vertical(TextImageAttribute tia) -> void;
