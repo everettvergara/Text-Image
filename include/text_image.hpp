@@ -214,7 +214,7 @@ namespace g80 {
             output << "\033[0m\n";
             std::cout << output.str();              
         }
-        
+
         auto show_text() const -> void {
             std::stringstream output;
             
@@ -282,14 +282,22 @@ namespace g80 {
             std::fill_n(&text_[0], size_, t);      
         }
 
-        //     auto fill_text(const String &text) -> void;
+        inline auto set_color(const int16_t ix, const color c) -> void {
+            color_[ix] = c;
+        }
 
-        //     // Color functions
-        //     auto set_color(const Point &point, const Color &color) -> void;
-        //     auto set_color(const int16_t &ix, const Color &color) -> void;
-        //     auto get_color(const Point &point) const -> Color;
-        //     auto get_color(const int16_t &ix) const -> Color;
-        //     auto show_color() const -> void;
+        inline auto set_color(const int16_t x, const int16_t y, const color c) -> void {
+            set_color(ix(x, y), c);
+        }
+
+        inline auto get_color(const int16_t ix) const -> color {
+            return color_[ix];
+        }
+
+        inline auto get_color(const int16_t x, const int16_t y) const -> color {
+            return get_color(ix(x, y));
+        }
+        
         auto fill_color(const color c) const -> void {
             std::fill_n(&color_[0], size_, c);      
         }
@@ -299,6 +307,7 @@ namespace g80 {
         //     auto set_mask(const int16_t &ix, MASK_BIT mask_bit) -> void;
         //     auto get_mask(const Point &point) const -> MASK_BIT;
         //     auto get_mask(const int16_t &ix) const -> MASK_BIT;
+        
         auto set_all_mask8bit() -> void {
             std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0xff);            
         }
