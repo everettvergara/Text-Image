@@ -50,6 +50,7 @@ namespace g80 {
     class text_image {
             
     // todo: use template instead of int16_t
+    // todo: all ix must be uint
     // todo: fix warnings size_t vs. uint16_t in for loops
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
@@ -302,11 +303,28 @@ namespace g80 {
             std::fill_n(&color_[0], size_, c);      
         }
 
-        //     // Mask functions
-        //     auto set_mask(const Point &point, MASK_BIT mask_bit) -> void;
-        //     auto set_mask(const int16_t &ix, MASK_BIT mask_bit) -> void;
-        //     auto get_mask(const Point &point) const -> MASK_BIT;
-        //     auto get_mask(const int16_t &ix) const -> MASK_BIT;
+        inline auto set_mask(const uint16_t ix, mask_bit m) -> void {
+            uint16_t offset = ix % 8;
+            mask8bit and_mask = ~(1 << offset);
+            mask8bit or_mask = m << offset;
+            mask8bit_[ix / 8] &= and_mask;
+            mask8bit_[ix / 8] |= or_mask;
+        }
+        
+        inline auto set_mask(const int16_t x, const int16_t y, mask_bit m) -> void {
+            set_mask(ix(x, y), m);
+        }
+
+        inline auto get_mask(const uint16_t &ix) const -> mask_bit {
+            uint16_t offset = ix % 8;
+            mask8bit value = mask8bit_[ix / 8];
+            value = mask8bit_[ix / 8] & (1 << offset);
+            return value ? ON : OFF;
+        }
+
+        inline auto get_mask(const int16_t x, int16_t y) const -> mask_bit {
+            return get_mask(ix(x, y));
+        }
         
         auto set_all_mask8bit() -> void {
             std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0xff);            
@@ -315,6 +333,7 @@ namespace g80 {
         auto clear_all_mask8bit() -> void {
             std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0x00);           
         }
+        
         //     auto create_mask_if_color(const Color &color) -> void;
         //     auto create_mask_if_text(const Text &text) -> void;
         //     auto invert_mask() -> void;
