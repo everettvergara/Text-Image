@@ -546,7 +546,48 @@ namespace g80 {
                 xlat_reverse(j, j + w_ - 1, tia);
             }
         }
-        //     auto xlat_flip_vertical(TextImageAttribute tia) -> void;
+        
+        auto xlat_flip_vertical(const text_image_attrib tia) -> void {
+            
+            if (tia & TEXT) {
+                uint16_t i = 0;
+                uint16_t j = h_ - 1;
+                while (i < j) {
+                    uint16_t k = ix(0, i++);
+                    uint16_t kmax = k + w_;
+                    uint16_t l = ix(0, j--);
+                    while (k < kmax) std::swap(text_[k++], text_[l++]);
+                }
+            }
+
+            if (tia & COLOR) {
+                uint16_t i = 0;
+                uint16_t j = h_ - 1;
+                while (i < j) {
+                    uint16_t k = ix(0, i++);
+                    uint16_t kmax = k + w_;
+                    uint16_t l = ix(0, j--);
+                    while (k < kmax) std::swap(color_[k++], color_[l++]);
+                }
+            }
+
+            if (tia & MASK) {
+                uint16_t i = 0;
+                uint16_t j = h_ - 1;
+                while (i < j) {
+                    uint16_t k = ix(0, i++);
+                    uint16_t kmax = k + w_;
+                    uint16_t l = ix(0, j--);
+                    while (k < kmax) {
+                        mask_bit t = get_mask(l);
+                        set_mask(l, get_mask(k));
+                        set_mask(k, t);
+                        ++l;
+                        ++k; 
+                    }
+                }
+            }            
+        }
 
         //     // Graphics
         //     auto gfx_point(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
