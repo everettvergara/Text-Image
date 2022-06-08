@@ -255,6 +255,13 @@ namespace g80 {
             std::cout << output.str();
         }
 
+        auto show_mask_value() const -> void {
+            for (uint16_t i = 0; i < size_of_mask8bit_; ++i)
+                if (mask8bit_[i]) std::cout << "i: " << i << " - " << static_cast<uint16_t>(mask8bit_[i]) << "\n";
+            std::cout << std::endl;            
+        }
+
+
     /**
      * Text, Color and Mask 
      * Getters and Setter
@@ -334,12 +341,22 @@ namespace g80 {
             std::fill_n(&mask8bit_[0], size_of_mask8bit_, 0x00);           
         }
 
-        //     auto create_mask_if_color(const Color &color) -> void;
-        //     auto create_mask_if_text(const Text &text) -> void;
-        //     auto invert_mask() -> void;
-        //     auto show_mask(int16_t marker = 0xffff) const -> void;
-        //     auto show_mask_value() const -> void;
+        auto create_mask_if_color(const color c) -> void {
+            for (uint16_t i = 0; i < size_; ++i) 
+                set_mask(i, color_[i] == c ? ON : OFF);
+        }
 
+        auto create_mask_if_text(const text &t) -> void {
+            for (uint16_t i = 0; i < size_; ++i) 
+                set_mask(i, text_[i] == t ? ON : OFF);
+        }
+
+        auto invert_mask() -> void {
+            for (uint16_t i = 0; i < size_of_mask8bit_; ++i)
+                mask8bit_[i] = ~mask8bit_[i];            
+        }
+
+        
         //     // Text Image functions
         //     auto get_image(const Rect &rect) const -> TextImage;
         //     auto put_image(const TextImage &text_image, const Point &point) -> void;
