@@ -410,35 +410,14 @@ namespace g80 {
             return dest_text_image;            
         }
 
-        auto put_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+    private:
+        auto bit_image(const int16_t x, const int16_t y, const text_image &timg, 
+        const std::function<auto (uint16_t, uint16_t, const text_image &) -> bool> &conditional = 
+        [](uint16_t, uint16_t, const text_image &) -> bool {return true;}) {
             for (uint16_t r = 0; r < timg.h_; ++r) {
                 uint16_t tix = ix(x, y + r); 
                 for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
-                    text_[tix] = timg.craw_text().get()[six];
-                    color_[tix] = timg.craw_color().get()[six];
-                    ++tix;
-                }
-            }
-        }
-
-        auto and_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            for (uint16_t r = 0; r < timg.h_; ++r) {
-                uint16_t tix = ix(x, y + r); 
-                for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
-                    if ((get_mask(tix) & timg.get_mask(six)) == ON) {
-                        text_[tix] = timg.craw_text().get()[six];
-                        color_[tix] = timg.craw_color().get()[six];
-                    }
-                    ++tix;
-                }
-            }
-        }
-
-        auto or_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            for (uint16_t r = 0; r < timg.h_; ++r) {
-                uint16_t tix = ix(x, y + r); 
-                for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
-                    if ((get_mask(tix) | timg.get_mask(six)) == ON) {
+                    if (conditional(tix, six, timg)) {
                         text_[tix] = timg.craw_text().get()[six];
                         color_[tix] = timg.craw_color().get()[six];
                     }
@@ -446,19 +425,52 @@ namespace g80 {
                 }
             }            
         }
-        
-        auto xor_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            for (uint16_t r = 0; r < timg.h_; ++r) {
-                uint16_t tix = ix(x, y + r); 
-                for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
-                    if ((get_mask(tix) ^ timg.get_mask(six)) == ON) {
-                        text_[tix] = timg.craw_text().get()[six];
-                        color_[tix] = timg.craw_color().get()[six];
-                    }
-                    ++tix;
-                }
-            }
+
+    public:
+        auto put_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+            bit_image(x, y, timg);
         }
+
+        auto and_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+            auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) & timg.get_mask(six)) == ON;};
+            bit_image(x, y, timg, conditional);
+        }
+
+        auto or_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+            auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) | timg.get_mask(six)) == ON;};
+            bit_image(x, y, timg, conditional);
+        }
+
+        auto xor_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+            auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) ^ timg.get_mask(six)) == ON;};
+            bit_image(x, y, timg, conditional);
+        }
+
+        // auto or_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+        //     for (uint16_t r = 0; r < timg.h_; ++r) {
+        //         uint16_t tix = ix(x, y + r); 
+        //         for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
+        //             if ((get_mask(tix) | timg.get_mask(six)) == ON) {
+        //                 text_[tix] = timg.craw_text().get()[six];
+        //                 color_[tix] = timg.craw_color().get()[six];
+        //             }
+        //             ++tix;
+        //         }
+        //     }            
+        // }
+        
+        // auto xor_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+        //     for (uint16_t r = 0; r < timg.h_; ++r) {
+        //         uint16_t tix = ix(x, y + r); 
+        //         for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
+        //             if ((get_mask(tix) ^ timg.get_mask(six)) == ON) {
+        //                 text_[tix] = timg.craw_text().get()[six];
+        //                 color_[tix] = timg.craw_color().get()[six];
+        //             }
+        //             ++tix;
+        //         }
+        //     }
+        // }
 
 
         //     // Translate Functions
