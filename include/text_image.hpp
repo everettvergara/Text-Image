@@ -32,8 +32,6 @@
 
 namespace g80 {
 
-    // struct rect {int16_t x, y, w, h;};
-
     using color = uint8_t;
     using text = uint8_t;
     using mask8bit = uint8_t;
@@ -366,13 +364,56 @@ namespace g80 {
             }
         }
         
-        
-        //     // Text Image functions
-        //     auto get_image(const Rect &rect) const -> TextImage;
-        //     auto put_image(const TextImage &text_image, const Point &point) -> void;
-        //     auto and_image(const TextImage &text_image, const Point &point) -> void;
-        //     auto or_image(const TextImage &text_image, const Point &point) -> void;
-        //     auto xor_image(const TextImage &text_image, const Point &point) -> void;
+    /**
+     * Image translations
+     * 
+     */
+
+    public:
+
+        auto get_image(const int16_t x, const int16_t y, const uint16_t w, const uint16_t h) const -> text_image {
+            
+            text_image dest_text_image(w, h, 7, ' ', OFF);
+            text *text_ptr = dest_text_image.raw_text().get();
+            color *color_ptr = dest_text_image.raw_color().get();
+
+            uint16_t start = ix(x, y);
+            for (uint16_t row = 0; row < h; ++row) {
+                uint16_t i = (start + row * w_) % size_;
+                memcpy(text_ptr, &text_[i], sizeof(text) * w);
+                memcpy(color_ptr, &color_[i], sizeof(color) * w);
+                text_ptr += w;
+                color_ptr += w;
+            }
+
+            // Copy mask in chunks of 8-bits
+            // which is faster by a factor of 3 than 
+            // copying mask bit by bit
+            
+            mask8bit *mask8bit_ptr = dest_text_image.raw_mask8bit().get();
+            uint16_t total_copied = 0;
+            for (uint16_t row = 0; row < h; ++row) {
+                uint16_t ix = (start + row * w_) % size_;
+                uint16_t size = w;
+                do {
+                    uint16_t init_offset = total_copied % 8;
+                    uint16_t s = 8 - total_copied % 8;
+                    s = s > size ? size : s;
+                    mask8bit mask = get_mask8bit_value(ix, s, init_offset);
+                    mask8bit_ptr[total_copied / 8] |= mask;
+                    total_copied += s;
+                    ix += s;
+                    size -= s;
+                } while(size > 0);
+            }
+
+            return dest_text_image;            
+        }
+
+        // auto put_image(const TextImage &text_image, const Point &point) -> void;
+        // auto and_image(const TextImage &text_image, const Point &point) -> void;
+        // auto or_image(const TextImage &text_image, const Point &point) -> void;
+        // auto xor_image(const TextImage &text_image, const Point &point) -> void;
 
 
         //     // Translate Functions
@@ -479,8 +520,31 @@ namespace g80 {
         uint16_t size_of_mask8bit_{0};
         uptr_mask8bit mask8bit_{nullptr};
 
-        // private:
-        //     auto get_mask8bit_value(const int16_t &ix, const int16_t &size, const int16_t &init_offset = 0) const -> Mask8bitOp;
+    private:
+        auto get_mask8bit_value(const uint16_t ix, const uint16_t size, const uint16_t init_offset = 0) const -> mask8bit {
+            if (size == 0 || size > 8) return 0;
+
+            uint16_t ix8 = ix / 8;
+            uint16_t nix8 = (ix + size - 1) / 8;
+            uint16_t offset = ix % 8 - init_offset;
+
+            mask8bit value;
+            if (offset >= 0) {
+                value = mask8bit_[ix8] >> offset;
+                value &= ~((1 << init_offset) - 1);
+                if (nix8 > ix8 && nix8 < size_of_mask8bit_)
+                    value |= mask8bit_[nix8] << (8 - offset);
+                value &= (1 << (size + init_offset)) - 1;
+            } else {
+                value = mask8bit_[ix8];
+                value = mask8bit_[ix8] << -offset;
+                value &= ~((1 << init_offset) - 1);
+                value &= (1 << (size + init_offset)) - 1;
+            } 
+
+            return value;
+        }
+
         //     auto gfx_circle_loop(const Point &point, const int16_t &radius, std::function<void(const int16_t &)> &tia_set) -> void;
         //     auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const int16_t &)> &tia_set) -> void;
         //     auto gfx_arc_loop(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &tia_set) -> void;
