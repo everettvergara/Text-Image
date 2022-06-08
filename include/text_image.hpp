@@ -123,7 +123,22 @@ namespace g80 {
             }
             return *this;
         }
-        //     auto operator=(TextImage &&rhs) -> TextImage &;
+        
+        auto operator=(text_image &&rhs) -> text_image & {
+            if (this != &rhs) {
+                w_ = {rhs.w_};
+                h_ = {rhs.h_};
+                size_ = {rhs.size_};
+                size_of_mask8bit_ = (rhs.size_of_mask8bit_);
+                color_.reset(rhs.raw_color().get());
+                rhs.color_.release();
+                text_.reset(rhs.raw_text().get());
+                rhs.text_.release();
+                mask8bit_.reset(rhs.raw_mask8bit().get());
+                rhs.mask8bit_.release();
+            }
+            return *this;
+        }
         
         ~text_image() = default;
 
