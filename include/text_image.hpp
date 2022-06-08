@@ -365,7 +365,7 @@ namespace g80 {
         }
         
     /**
-     * Image translations
+     * Image get and put
      * 
      */
 
@@ -411,6 +411,7 @@ namespace g80 {
         }
 
     private:
+
         auto bit_image(const int16_t x, const int16_t y, const text_image &timg, 
         const std::function<auto (uint16_t, uint16_t, const text_image &) -> bool> &conditional = 
         [](uint16_t, uint16_t, const text_image &) -> bool {return true;}) {
@@ -427,6 +428,7 @@ namespace g80 {
         }
 
     public:
+
         auto put_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
             bit_image(x, y, timg);
         }
@@ -446,36 +448,32 @@ namespace g80 {
             bit_image(x, y, timg, conditional);
         }
 
-        // auto or_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-        //     for (uint16_t r = 0; r < timg.h_; ++r) {
-        //         uint16_t tix = ix(x, y + r); 
-        //         for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
-        //             if ((get_mask(tix) | timg.get_mask(six)) == ON) {
-        //                 text_[tix] = timg.craw_text().get()[six];
-        //                 color_[tix] = timg.craw_color().get()[six];
-        //             }
-        //             ++tix;
-        //         }
-        //     }            
-        // }
-        
-        // auto xor_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-        //     for (uint16_t r = 0; r < timg.h_; ++r) {
-        //         uint16_t tix = ix(x, y + r); 
-        //         for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
-        //             if ((get_mask(tix) ^ timg.get_mask(six)) == ON) {
-        //                 text_[tix] = timg.craw_text().get()[six];
-        //                 color_[tix] = timg.craw_color().get()[six];
-        //             }
-        //             ++tix;
-        //         }
-        //     }
-        // }
+    /**
+     * Image translations
+     * 
+     */
 
+    public:
 
-        //     // Translate Functions
-        //     // TODO: TEST xlat
-        //     auto xlat_shift_left(int16_t shift, TextImageAttribute tia, const Text &default_text = ' ', const Color &default_color = 0, const MASK_BIT &default_mask_bit = OFF) -> void;
+        auto xlat_shift_left(uint16_t shift, text_image_attrib tia = ALL, const text &default_text = ' ', const color &default_color = 0, const mask_bit &default_mask_bit = OFF) -> void {
+            
+            if (shift > size_) shift = size_;
+
+            if (tia & TEXT) {
+                for (uint16_t i = 0; i < size_ - shift; ++i) text_[i] = text_[i + shift];
+                for (uint16_t i = size_ - shift; i < size_; ++i) text_[i] = default_text;
+            }
+
+            if (tia & COLOR) {
+                for (uint16_t i = 0; i < size_ - shift; ++i) color_[i] = color_[i + shift];
+                for (uint16_t i = size_ - shift; i < size_; ++i) color_[i] = default_color;
+            }
+
+            if (tia & MASK) {
+                for (uint16_t i = 0; i < size_ - shift; ++i) set_mask(i, get_mask(i + shift));
+                for (uint16_t i = size_ - shift; i < size_; ++i) set_mask(i, default_mask_bit);      
+            }            
+        }
         //     auto xlat_shift_right(int16_t shift, TextImageAttribute tia, const Text &default_text = ' ', const Color &default_color = 0, const MASK_BIT &default_mask_bit = OFF) -> void;
         //     auto xlat_reverse(int16_t start, int16_t end, TextImageAttribute tia) -> void;
         //     auto xlat_rotate_left(int16_t rotate, TextImageAttribute tia) -> void;
