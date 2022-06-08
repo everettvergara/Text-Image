@@ -389,7 +389,7 @@ namespace g80 {
             // Copy mask in chunks of 8-bits
             // which is faster by a factor of 3 than 
             // copying mask bit by bit
-            
+
             mask8bit *mask8bit_ptr = dest_text_image.raw_mask8bit().get();
             uint16_t total_copied = 0;
             for (uint16_t row = 0; row < h; ++row) {
@@ -410,7 +410,16 @@ namespace g80 {
             return dest_text_image;            
         }
 
-        // auto put_image(const TextImage &text_image, const Point &point) -> void;
+        auto put_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
+            for (uint16_t r = 0; r < timg.h_; ++r) {
+                uint16_t tix = ix(x, y + r); 
+                for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
+                    text_[tix] = timg.craw_text().get()[six];
+                    color_[tix] = timg.craw_color().get()[six];
+                    ++tix;
+                }
+            }
+        }
         // auto and_image(const TextImage &text_image, const Point &point) -> void;
         // auto or_image(const TextImage &text_image, const Point &point) -> void;
         // auto xor_image(const TextImage &text_image, const Point &point) -> void;
