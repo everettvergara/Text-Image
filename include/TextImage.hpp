@@ -74,18 +74,18 @@ namespace g80 {
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         } 
             
-        text_image(const int16_t w, const int16_t h, mask_bit m = ON) :
+        text_image(const int16_t w, const int16_t h, const color c = 7, const text t = ' ', mask_bit m = ON) :
             w_(w), h_(h), size_(w_ * h_),
             color_(std::make_unique<color[]>(size_)),
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
             mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
             
-            fill_text(' ');
-            fill_color(7);
+            fill_color(c);
+            fill_text(t);
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         }
-        //     TextImage(const int16_t width, const int16_t height, const Color &color, const Text &text, MASK_BIT = ON);
+
         //     TextImage(const TextImage &rhs);
         //     TextImage(TextImage &&rhs);
         //     auto operator=(const TextImage &rhs) -> TextImage &; 
