@@ -38,7 +38,7 @@ namespace g80 {
     using text = uint8_t;
     using mask8bit = uint8_t;
 
-    using size_of_mask8bit = size_t;
+    using size_of_mask8bit = uint16_t;
 
     using uptr_color = std::unique_ptr<color[]>;
     using uptr_text = std::unique_ptr<text[]>;
@@ -64,7 +64,7 @@ namespace g80 {
             load(filename);
         }
 
-        text_image(const std::string &t, const color c, mask_bit m = ON) :
+        text_image(const std::string &t, const color c, const mask_bit m = ON) :
             w_(t.size()), h_(1), size_(w_),
             color_(std::make_unique<color[]>(size_)),
             text_(std::make_unique<text[]>(size_)),
@@ -76,7 +76,7 @@ namespace g80 {
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         } 
             
-        text_image(const int16_t w, const int16_t h, const color c = 7, const text t = ' ', mask_bit m = ON) :
+        text_image(const int16_t w, const int16_t h, const color c = 7, const text t = ' ', const mask_bit m = ON) :
             w_(w), h_(h), size_(w_ * h_),
             color_(std::make_unique<color[]>(size_)),
             text_(std::make_unique<text[]>(size_)),
@@ -88,8 +88,20 @@ namespace g80 {
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         }
 
-        // text_image(const text_image &rhs); //:
-           // w_(rhs.w_), h_(rhs.h_), size_(w_ * h_) {
+        text_image(const text_image &rhs) :
+            w_(rhs.w_), h_(rhs.h_), size_(w_ * h_),
+            size_of_mask8bit_(rhs.size_of_mask8bit_) {
+
+            const color *c = rhs.craw_color().get();
+            std::copy(c, c + size_, color_.get());
+
+            const text *t = rhs.craw_text().get();
+            std::copy(t, t + size_, text_.get());
+
+            const mask8bit *m = rhs.craw_mask8bit().get();
+            std::copy(m, m + size_of_mask8bit_, mask8bit_.get());
+        }
+           //  {
 
         //}
         //     TextImage(TextImage &&rhs);
@@ -97,18 +109,52 @@ namespace g80 {
         //     auto operator=(TextImage &&rhs) -> TextImage &;
         //     ~TextImage() = default;
 
-        //     // Protected Getters
-        //     auto width() const -> int16_t;
-        //     auto height() const -> int16_t;
-        //     auto size() const -> 
+    //
+    // Property Getters
+    //
 
-        //     auto raw_color() -> Uptr_color &;
-        //     auto craw_color() const -> const Uptr_color &;
-        //     auto raw_text() -> Uptr_text &;
-        //     auto craw_text() const -> const Uptr_text &;
-        //     auto raw_mask8bit() -> Uptr_mask8bit &;
-        //     auto craw_mask8bit() const -> const Uptr_mask8bit &;
-        //     auto size_of_mask8bit() -> Sizeof_mask8bit;
+    public:
+
+        inline auto width() const -> uint16_t {
+            return w_;
+        }
+
+        inline auto height() const -> uint16_t {
+            return h_;
+        }
+
+        inline auto size() const -> uint16_t {
+            return size_;
+        }
+
+        inline auto size_mask8bit() const -> size_of_mask8bit {
+            return size_of_mask8bit_;
+        }        
+
+        inline auto raw_color() -> uptr_color & {
+            return color_;
+        }
+
+        inline auto craw_color() const -> const uptr_color & {
+            return color_;
+        }
+
+        inline auto raw_text() -> uptr_text & {
+            return text_;
+        }
+
+        inline auto craw_text() const -> const uptr_text & {
+            return text_;
+        }
+
+        inline auto raw_mask8bit() -> uptr_mask8bit & {
+            return mask8bit_;
+        }
+        
+        inline auto craw_mask8bit() const -> const uptr_mask8bit & {
+            return mask8bit_;
+        }
+
 
         //     // Text functions
         //     auto set_text(const Point &point, const Text &text) -> void;
@@ -168,11 +214,7 @@ namespace g80 {
             size_t prev_color = size_of_color;
             size_t next_line = w_;
             for (size_t i = 0; i < size_; ++i) {
-                if (prev_color != color_[i]) {
-                    prev_color = color_[i];
-                    output << color[prev_color];
-                }
-
+                if (prev_color != color_[i]) {prev_color = color_[i]; output << color[prev_color];}
                 if (i == next_line) {output << "\n"; next_line += w_;} 
                 output << text_[i];
             }
@@ -217,27 +259,27 @@ namespace g80 {
             
         //     // Save and Load
         //     auto save(const String &filename) const -> void;
-            auto load(const std::string &filename) -> void {
-                std::ifstream file (filename, std::ios::binary);
-                file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-                
-                file.read(static_cast<char *>(static_cast<void *>(&w_)), sizeof(w_));
-                file.read(static_cast<char *>(static_cast<void *>(&h_)), sizeof(h_));
-                size_ = w_ * h_;
-                size_of_mask8bit_ = size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1;
+        auto load(const std::string &filename) -> void {
+            std::ifstream file (filename, std::ios::binary);
+            file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
+            
+            file.read(static_cast<char *>(static_cast<void *>(&w_)), sizeof(w_));
+            file.read(static_cast<char *>(static_cast<void *>(&h_)), sizeof(h_));
+            size_ = w_ * h_;
+            size_of_mask8bit_ = size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1;
 
-                color_.reset(new color[size_]);
-                file.read(static_cast<char *>(static_cast<void *>(color_.get())), size_);
+            color_.reset(new color[size_]);
+            file.read(static_cast<char *>(static_cast<void *>(color_.get())), size_);
 
-                text_.reset(new text[size_]);            
-                file.read(static_cast<char *>(static_cast<void *>(text_.get())), size_);
+            text_.reset(new text[size_]);            
+            file.read(static_cast<char *>(static_cast<void *>(text_.get())), size_);
 
-                mask8bit_.reset(new mask8bit[size_of_mask8bit_]);           
-                file.read(static_cast<char *>(static_cast<void *>(mask8bit_.get())), size_of_mask8bit_);
-            }
+            mask8bit_.reset(new mask8bit[size_of_mask8bit_]);           
+            file.read(static_cast<char *>(static_cast<void *>(mask8bit_.get())), size_of_mask8bit_);
+        }
             
         //     // Helper functions
-        //     auto index(const Point &point) const -> int16_t;
+        //     auto ix(const Point &point) const -> int16_t;
 
         protected:
             uint16_t w_, h_, size_;
