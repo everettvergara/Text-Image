@@ -70,7 +70,6 @@ namespace g80 {
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
             mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
-            
             for (size_t i = 0; i < size_; ++i) text_[i] = t[i];
             fill_color(c);
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
@@ -82,7 +81,6 @@ namespace g80 {
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
             mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
-            
             fill_color(c);
             fill_text(t);
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
@@ -91,21 +89,34 @@ namespace g80 {
         text_image(const text_image &rhs) :
             w_(rhs.w_), h_(rhs.h_), size_(w_ * h_),
             size_of_mask8bit_(rhs.size_of_mask8bit_) {
-
             const color *c = rhs.craw_color().get();
             std::copy(c, c + size_, color_.get());
-
             const text *t = rhs.craw_text().get();
             std::copy(t, t + size_, text_.get());
-
             const mask8bit *m = rhs.craw_mask8bit().get();
             std::copy(m, m + size_of_mask8bit_, mask8bit_.get());
         }
-           //  {
 
         //}
         //     TextImage(TextImage &&rhs);
-        //     auto operator=(const TextImage &rhs) -> TextImage &; 
+
+        auto operator=(const text_image &rhs) -> text_image & {
+            if (this != &rhs) {
+                w_ = {rhs.w_};
+                h_ = {rhs.h_};
+                size_ = {rhs.size_};
+                size_of_mask8bit_ = (rhs.size_of_mask8bit_);
+
+                color_.reset(new color[size_]);
+                text_.reset(new text[size_]);
+                mask8bit_.reset(new mask8bit[size_of_mask8bit_]);
+
+                std::copy(rhs.color_.get(), rhs.color_.get() + size_, color_.get());
+                std::copy(rhs.text_.get(), rhs.text_.get() + size_, text_.get());
+                std::copy(rhs.mask8bit_.get(), rhs.mask8bit_.get() + size_, mask8bit_.get());
+            }
+            return *this;
+        }
         //     auto operator=(TextImage &&rhs) -> TextImage &;
         //     ~TextImage() = default;
 
