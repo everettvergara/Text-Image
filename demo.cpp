@@ -7,5 +7,7 @@ auto main(const int argc, const char *argv[]) -> int {
 
     text_image ti(140, 30, 7, '`', ON);
     ti.show();
+
+    ti.show_mask(0);
     
 }

@@ -201,14 +201,14 @@ namespace g80 {
 
     public:
 
-        auto show_text() const -> void {
+        auto show_color() const -> void {
             std::stringstream output;
             
             output << "\033[2J";
             size_t next_line = w_;
             for (size_t i = 0; i < size_; ++i) {
                 if (i == next_line) {output << "\n"; next_line += w_;} 
-                output << text_[i];
+                output << std::setw(3) << std::hex << static_cast<int>(color_[i]);
             }
 
             output << "\033[0m\n";
@@ -222,7 +222,7 @@ namespace g80 {
             size_t next_line = w_;
             for (size_t i = 0; i < size_; ++i) {
                 if (i == next_line) {output << "\n"; next_line += w_;} 
-                output << std::setw(3) << std::hex << static_cast<int>(color_[i]);
+                output << text_[i];
             }
 
             output << "\033[0m\n";
