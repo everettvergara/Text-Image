@@ -50,6 +50,7 @@ namespace g80 {
     class text_image {
             
     // todo: use template instead of int16_t
+    // todo: fix warnings size_t vs. uint16_t in for loops
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
 
@@ -193,13 +194,90 @@ namespace g80 {
         }
 
 
-        //     // Text functions
-        //     auto set_text(const Point &point, const Text &text) -> void;
-        //     auto set_text(const int16_t &ix, const Text &text) -> void;
-        //     auto get_text(const Point &point) const -> Text;
-        //     auto get_text(const int16_t &ix) const -> Text;
-        //     auto show_text() const -> void;
+    /** 
+     * Debuggers
+     * 
+     */
+
+    public:
+
+        auto show_text() const -> void {
+            std::stringstream output;
+            
+            output << "\033[2J";
+            size_t next_line = w_;
+            for (size_t i = 0; i < size_; ++i) {
+                if (i == next_line) {output << "\n"; next_line += w_;} 
+                output << text_[i];
+            }
+
+            output << "\033[0m\n";
+            std::cout << output.str();              
+        }
         
+        auto show_text() const -> void {
+            std::stringstream output;
+            
+            output << "\033[2J";
+            size_t next_line = w_;
+            for (size_t i = 0; i < size_; ++i) {
+                if (i == next_line) {output << "\n"; next_line += w_;} 
+                output << std::setw(3) << std::hex << static_cast<int>(color_[i]);
+            }
+
+            output << "\033[0m\n";
+            std::cout << output.str();              
+        }
+
+        auto show_mask(int16_t marker) const -> void {
+            std::stringstream output;
+            
+            mask8bit mask = 0x01;
+
+            // Draw header label
+            for (int16_t i = 0; i < w_; ++i) output << i % 10;
+            output << "\n";
+            
+            // Draw bits
+            size_t next_line = w_;
+            for (size_t i = 0; i < size_; ++i) {
+                if (i == next_line) {output << "\n"; next_line += w_;} 
+                
+                if (i == marker) output << "_";
+                else output << ((mask8bit_[i / 8] & mask) ? "1" : ".");
+                
+                mask <<= 1;
+                if (!mask) mask = 0x01;
+            }
+
+            output << "\033[0m\n\n";
+            std::cout << output.str();
+        }
+
+    /**
+     * Text, Color and Mask 
+     * Getters and Setter
+     * 
+     */
+
+    public:
+
+        inline auto set_text(const int16_t &ix, const text t) -> void {
+            text_[ix] = t;
+        }
+        
+        inline auto set_text(const int16_t x, const int16_t y, const text t) -> void {
+            set_text(ix(x, y), t);
+        }
+
+        inline auto get_text(const int16_t ix) const -> text {
+            return text_[ix];
+        }
+        
+        inline auto get_text(const int16_t x, const int16_t y) const -> text {
+            return get_text(ix(x, y));
+        }
+
         auto fill_text(const text t) -> void {
             std::fill_n(&text_[0], size_, t);      
         }
@@ -309,7 +387,6 @@ namespace g80 {
         auto save(const std::string &filename) const -> void {
             std::ofstream file (filename, std::ios::binary);
             file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-
             file.write(static_cast<const char *>(static_cast<const void*>(&w_)), sizeof(w_));
             file.write(static_cast<const char *>(static_cast<const void*>(&h_)), sizeof(h_));
             file.write(static_cast<const char *>(static_cast<const void*>(color_.get())), size_);
@@ -320,34 +397,31 @@ namespace g80 {
         auto load(const std::string &filename) -> void {
             std::ifstream file (filename, std::ios::binary);
             file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
-            
             file.read(static_cast<char *>(static_cast<void *>(&w_)), sizeof(w_));
             file.read(static_cast<char *>(static_cast<void *>(&h_)), sizeof(h_));
             size_ = w_ * h_;
             size_of_mask8bit_ = size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1;
-
             color_.reset(new color[size_]);
             file.read(static_cast<char *>(static_cast<void *>(color_.get())), size_);
-
             text_.reset(new text[size_]);            
             file.read(static_cast<char *>(static_cast<void *>(text_.get())), size_);
-
             mask8bit_.reset(new mask8bit[size_of_mask8bit_]);           
             file.read(static_cast<char *>(static_cast<void *>(mask8bit_.get())), size_of_mask8bit_);
         }
             
         
-        /**
-         *  Protected Properties
-         * 
-         */
+    /**
+     *  Protected Properties
+     * 
+     */
 
-        protected:
-            uint16_t w_, h_, size_;
-            uptr_color color_{nullptr};
-            uptr_text text_{nullptr};
-            uint16_t size_of_mask8bit_{0};
-            uptr_mask8bit mask8bit_{nullptr};
+    protected:
+
+        uint16_t w_, h_, size_;
+        uptr_color color_{nullptr};
+        uptr_text text_{nullptr};
+        uint16_t size_of_mask8bit_{0};
+        uptr_mask8bit mask8bit_{nullptr};
 
         // private:
         //     auto get_mask8bit_value(const int16_t &ix, const int16_t &size, const int16_t &init_offset = 0) const -> Mask8bitOp;
