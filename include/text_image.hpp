@@ -48,16 +48,21 @@ namespace g80 {
     enum mask_bit {OFF = 0x00, ON = 0x01};
     enum text_image_attrib {TEXT = 1, COLOR = 2, MASK = 4, ALL = 7}; 
 
-    // todo: use template instead of int16_t
     
     class text_image {
-    public:
             
-        // TODO, remove reference if parameter type is primitive 
-        // TODO, remove on return type unless necessary 
+    // todo: use template instead of int16_t
+    // TODO, remove reference if parameter type is primitive 
+    // TODO, remove on return type unless necessary 
 
-        // Constructors, assignments and destructors
+    /**
+     * Constructors, Assignments and 
+     * Destructors 
+     * 
+     */
 
+    public:
+    
         text_image() = default;
 
         text_image(const std::string &filename) {
@@ -142,9 +147,10 @@ namespace g80 {
         
         ~text_image() = default;
 
-    //
-    // Property Getters
-    //
+    /**
+     * Protected Property Getters
+     * 
+     */
 
     public:
 
@@ -290,7 +296,18 @@ namespace g80 {
         //     auto gfx_fill_color_border(const Point &point, const Color &color) -> void;
         //     auto gfx_fill_with_mask_border(const Point &point, const MASK_BIT &mask_bit) -> void;
             
-        //     // Save and Load
+    
+    /**
+     * Helper functions
+     * 
+     */
+
+    public:
+
+        inline auto ix(const int16_t x, const int16_t y) const -> uint16_t {
+            return static_cast<uint16_t>(y * w_ + x);
+        }
+
         //     auto save(const String &filename) const -> void;
         auto load(const std::string &filename) -> void {
             std::ifstream file (filename, std::ios::binary);
@@ -311,8 +328,11 @@ namespace g80 {
             file.read(static_cast<char *>(static_cast<void *>(mask8bit_.get())), size_of_mask8bit_);
         }
             
-        //     // Helper functions
-        //     auto ix(const Point &point) const -> int16_t;
+        
+        /**
+         *  Protected Properties
+         * 
+         */
 
         protected:
             uint16_t w_, h_, size_;
@@ -328,9 +348,6 @@ namespace g80 {
         //     auto gfx_arc_loop(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &tia_set) -> void;
         //     auto gfx_fill_loop(const Point &point, std::function<void(const int16_t &)> &tia_set, std::function<bool(const int16_t &)> &border_check) -> void;
     };
-
- 
-
 }
 
 #endif 
