@@ -106,20 +106,18 @@ namespace g80 {
                 h_ = {rhs.h_};
                 size_ = {rhs.size_};
                 size_of_mask8bit_ = (rhs.size_of_mask8bit_);
-
                 color_.reset(new color[size_]);
                 text_.reset(new text[size_]);
                 mask8bit_.reset(new mask8bit[size_of_mask8bit_]);
-
                 std::copy(rhs.color_.get(), rhs.color_.get() + size_, color_.get());
                 std::copy(rhs.text_.get(), rhs.text_.get() + size_, text_.get());
                 std::copy(rhs.mask8bit_.get(), rhs.mask8bit_.get() + size_, mask8bit_.get());
-            
             }
             return *this;
         }
         //     auto operator=(TextImage &&rhs) -> TextImage &;
-        //     ~TextImage() = default;
+        
+        ~text_image() = default;
 
     //
     // Property Getters
