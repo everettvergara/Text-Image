@@ -53,6 +53,7 @@ namespace g80 {
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
     // todo: throw exception on construction if w_, h_ == 0
+    // todo: TEST ALL functions
 
     /**
      * Constructors, Assignments and 
@@ -497,8 +498,29 @@ namespace g80 {
                 for (uint16_t i = 0; i < shift; ++i) set_mask(i, default_mask_bit);
             }
         }
-        
-        //     auto xlat_reverse(int16_t start, int16_t end, TextImageAttribute tia) -> void;
+
+        auto xlat_reverse(uint16_t start, uint16_t end, text_image_attrib tia) -> void {
+            if (tia & TEXT) {
+                uint16_t i = start, j = end;
+                while (i < j) std::swap(text_[i++], text_[j--]);
+            }
+
+            if (tia & COLOR) {
+                uint16_t i = start, j = end;
+                while (i < j) std::swap(color_[i++], color_[j--]);
+            }
+
+            if (tia & MASK) {
+                uint16_t i = start, j = end;
+                while (i < j) {
+                    mask_bit t = get_mask(i);
+                    set_mask(i, get_mask(j));
+                    set_mask(j, t);
+                    ++i;
+                    --j;
+                }
+            }            
+        }
         //     auto xlat_rotate_left(int16_t rotate, TextImageAttribute tia) -> void;
         //     auto xlat_rotate_right(int16_t rotate, TextImageAttribute tia) -> void;
         //     auto xlat_flip_horizontal(TextImageAttribute tia) -> void;
