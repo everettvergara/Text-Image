@@ -530,7 +530,15 @@ namespace g80 {
                 xlat_reverse(0, size_ - 1, tia);
             }
         }
-        //     auto xlat_rotate_right(int16_t rotate, TextImageAttribute tia) -> void;
+        
+        auto xlat_rotate_right(uint16_t rotate, text_image_attrib tia) -> void {
+            uint16_t r = rotate >= size_ ? rotate % size_ : rotate;
+            if (r > 0) {
+                xlat_reverse(0, size_ - 1, tia);
+                xlat_reverse(0, r - 1, tia);
+                xlat_reverse(r, size_ - 1, tia);
+            }            
+        }
         //     auto xlat_flip_horizontal(TextImageAttribute tia) -> void;
         //     auto xlat_flip_vertical(TextImageAttribute tia) -> void;
 
