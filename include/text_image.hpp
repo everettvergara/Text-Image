@@ -97,8 +97,16 @@ namespace g80 {
             std::copy(m, m + size_of_mask8bit_, mask8bit_.get());
         }
 
-        //}
-        //     TextImage(TextImage &&rhs);
+        text_image(text_image &&rhs) :
+            w_(rhs.w_), h_(rhs.h_), size_(w_ * h_),
+            size_of_mask8bit_(rhs.size_of_mask8bit_) {
+            color_.reset(rhs.raw_color().get());
+            rhs.color_.release();
+            text_.reset(rhs.raw_text().get());
+            rhs.text_.release();
+            mask8bit_.reset(rhs.raw_mask8bit().get());
+            rhs.mask8bit_.release();
+        }
 
         auto operator=(const text_image &rhs) -> text_image & {
             if (this != &rhs) {
@@ -107,10 +115,10 @@ namespace g80 {
                 size_ = {rhs.size_};
                 size_of_mask8bit_ = (rhs.size_of_mask8bit_);
                 color_.reset(new color[size_]);
-                text_.reset(new text[size_]);
-                mask8bit_.reset(new mask8bit[size_of_mask8bit_]);
                 std::copy(rhs.color_.get(), rhs.color_.get() + size_, color_.get());
+                text_.reset(new text[size_]);
                 std::copy(rhs.text_.get(), rhs.text_.get() + size_, text_.get());
+                mask8bit_.reset(new mask8bit[size_of_mask8bit_]);
                 std::copy(rhs.mask8bit_.get(), rhs.mask8bit_.get() + size_, mask8bit_.get());
             }
             return *this;
