@@ -32,14 +32,13 @@
 
 namespace g80 {
 
-    struct rect {int16_t x, y, w, h;};
+    // struct rect {int16_t x, y, w, h;};
 
     using color = uint8_t;
     using text = uint8_t;
     using mask8bit = uint8_t;
 
-    // todo: use template instead of int16_t
-    using size_of_mask8bit = uint16_t;
+    using size_of_mask8bit = size_t;
 
     using uptr_color = std::unique_ptr<color[]>;
     using uptr_text = std::unique_ptr<text[]>;
@@ -49,6 +48,8 @@ namespace g80 {
     enum mask_bit {OFF = 0x00, ON = 0x01};
     enum text_image_attrib {TEXT = 1, COLOR = 2, MASK = 4, ALL = 7}; 
 
+    // todo: use template instead of int16_t
+    
     class text_image {
     public:
             
@@ -70,7 +71,7 @@ namespace g80 {
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
             mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
             
-            for (int16_t i = 0; i < size_; ++i) text_[i] = t[i];
+            for (size_t i = 0; i < size_; ++i) text_[i] = t[i];
             fill_color(c);
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         } 
@@ -165,14 +166,14 @@ namespace g80 {
             
             output << "\033[2J";
             size_t prev_color = size_of_color;
-            for (int16_t i = 0; i < size_; ++i) {
-
+            size_t next_line = w_;
+            for (size_t i = 0; i < size_; ++i) {
                 if (prev_color != color_[i]) {
                     prev_color = color_[i];
                     output << color[prev_color];
                 }
 
-                if (i % w_ == 0 && i > 0) output << "\n"; 
+                if (i == next_line) {output << "\n"; next_line += w_;} 
                 output << text_[i];
             }
 
@@ -239,7 +240,7 @@ namespace g80 {
         //     auto index(const Point &point) const -> int16_t;
 
         protected:
-            int16_t w_, h_, size_;
+            uint16_t w_, h_, size_;
             uptr_color color_{nullptr};
             uptr_text text_{nullptr};
             size_of_mask8bit size_of_mask8bit_{0};
