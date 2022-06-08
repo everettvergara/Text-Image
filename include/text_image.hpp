@@ -264,7 +264,7 @@ namespace g80 {
 
     /**
      * Text, Color and Mask 
-     * Getters and Setter
+     * Getters and Setters
      * 
      */
 
@@ -356,6 +356,16 @@ namespace g80 {
                 mask8bit_[i] = ~mask8bit_[i];            
         }
 
+        auto put_text_color(const int16_t x, const int16_t y, const std::string &t, const color c) -> void {
+            uint16_t start = ix(x, y);
+            for (uint16_t i = 0; i < t.size(); ++i) {
+                uint16_t j = (start + i);
+                if (j >= size_) j %= size_;
+                text_[j] = t[i];
+                color_[j] = c;
+            }
+        }
+        
         
         //     // Text Image functions
         //     auto get_image(const Rect &rect) const -> TextImage;
@@ -363,25 +373,7 @@ namespace g80 {
         //     auto and_image(const TextImage &text_image, const Point &point) -> void;
         //     auto or_image(const TextImage &text_image, const Point &point) -> void;
         //     auto xor_image(const TextImage &text_image, const Point &point) -> void;
-        //     auto put_text_color(const String &text, const Color &color, const Point &point) -> void;
-            
-        auto show() const -> void {
-            static const std::string color[] { "\033[30m", "\033[31m", "\033[32m", "\033[33m", "\033[34m", "\033[35m", "\033[36m", "\033[37m" };
-            static const uint16_t size_of_color = sizeof(color) / sizeof(std::string);
-            std::stringstream output;
-            
-            output << "\033[2J";
-            uint16_t prev_color = size_of_color;
-            uint16_t next_line = w_;
-            for (uint16_t i = 0; i < size_; ++i) {
-                if (prev_color != color_[i]) {prev_color = color_[i]; output << color[prev_color];}
-                if (i == next_line) {output << "\n"; next_line += w_;} 
-                output << text_[i];
-            }
 
-            output << "\033[0m\n";
-            std::cout << output.str();            
-        }
 
         //     // Translate Functions
         //     // TODO: TEST xlat
@@ -426,7 +418,9 @@ namespace g80 {
     public:
 
         inline auto ix(const int16_t x, const int16_t y) const -> uint16_t {
-            return static_cast<uint16_t>(y * w_ + x);
+            auto t = static_cast<uint16_t>(y * w_ + x);
+            if (t >= size_) t %= size_;
+            return t;
         }
 
         auto save(const std::string &filename) const -> void {
@@ -453,7 +447,24 @@ namespace g80 {
             mask8bit_.reset(new mask8bit[size_of_mask8bit_]);           
             file.read(static_cast<char *>(static_cast<void *>(mask8bit_.get())), size_of_mask8bit_);
         }
+        
+        auto show() const -> void {
+            static const std::string color[] { "\033[30m", "\033[31m", "\033[32m", "\033[33m", "\033[34m", "\033[35m", "\033[36m", "\033[37m" };
+            static const uint16_t size_of_color = sizeof(color) / sizeof(std::string);
+            std::stringstream output;
             
+            output << "\033[2J";
+            uint16_t prev_color = size_of_color;
+            uint16_t next_line = w_;
+            for (uint16_t i = 0; i < size_; ++i) {
+                if (prev_color != color_[i]) {prev_color = color_[i]; output << color[prev_color];}
+                if (i == next_line) {output << "\n"; next_line += w_;} 
+                output << text_[i];
+            }
+
+            output << "\033[0m\n";
+            std::cout << output.str();            
+        }
         
     /**
      *  Protected Properties
