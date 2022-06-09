@@ -633,16 +633,19 @@ namespace g80 {
     public:
 
         auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text &t) -> void {
-            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &ix) -> void {text_[ix] = t;};
+            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &i) -> void {text_[i] = t;};
             gfx_line_loop(x1, y1, x2, y2, tia_set);
         }
-        // auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
 
-        // }
+        auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color &c) -> void {
+            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &i) -> void {color_[i] = c;};
+            gfx_line_loop(x1, y1, x2, y2, tia_set);
+        }
 
-        //     auto gfx_line_color(const Point &point1, const Point &point2, const Color &color) -> void;
-        //     auto gfx_line_mask(const Point &point1, const Point &point2, const MASK_BIT &mask_bit) -> void;
-            
+        auto gfx_line_mask(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const mask_bit &m) -> void {
+            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &i) -> void {set_mask(i, m);};
+            gfx_line_loop(x1, y1, x2, y2, tia_set);
+        }
             
         //     auto gfx_circle(const Point &point, const int16_t &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
         //     auto gfx_circle_text(const Point &point, const int16_t &radius, const Text &text) -> void;
