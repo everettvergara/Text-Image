@@ -33,7 +33,14 @@
 
 namespace g80 {
 
-    #define UNSAFE_OPTIM
+    /**
+     * Uncomment #define UNSAFE_OPTIM
+     * if you are sure that your program doesn't 
+     * go beyond the boundaries of your canvass
+     * 
+     * #define UNSAFE_OPTIM
+     * 
+     */
 
     using color = uint8_t;
     using text = uint8_t;
@@ -52,12 +59,11 @@ namespace g80 {
             
     // todo: use template instead of int16_t
     // * todo: all ix must be uint
-    // todo: fix warnings uint16_t vs. uint16_t in for loops
-    // TODO, remove reference if parameter type is primitive 
-    // TODO, remove on return type unless necessary 
+    // * todo: fix warnings uint16_t vs. uint16_t in for loops
+    // * TODO, remove reference if parameter type is primitive 
     // todo: throw exception on construction if w_, h_ == 0
-    // todo: decide whether or not to guarantee and use uint in ix
-    // todo: decide where to put ix % size_ validation, if its before or upon setting of text, color or mask
+    // * todo: decide whether or not to guarantee and use uint in ix
+    // * todo: decide where to put ix % size_ validation, if its before or upon setting of text, color or mask
     // todo: TEST ALL functions
 
     /**
@@ -381,7 +387,7 @@ namespace g80 {
 
         auto put_text_color(const int16_t x, const int16_t y, const std::string &t, const color c) -> void {
             uint16_t start = ix(x, y);
-            for (uint16_t i = 0; i < t.size(); ++i) {
+            for (uint16_t i = 0; i < static_cast<uint16_t>(t.size()); ++i) {
                 uint16_t j = (start + i);
                 set_text(j, t[i]);
                 set_color(j, c);
