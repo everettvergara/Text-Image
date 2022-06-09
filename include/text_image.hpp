@@ -606,22 +606,20 @@ namespace g80 {
 
     private:
 
-        auto gfx_line_loop(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2,  const std::function<void(const int16_t &)> &tia_set) -> void {
+        auto gfx_line_loop(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2,  const std::function<void(const uint16_t &)> &set_tia) -> void {
             int16_t dx = x2 - x1;
             int16_t dy = y2 - y1;
             int16_t sdx = dx < 0 ? -1 : 1;
             int16_t sdy = dy < 0 ? -w_ : w_;
             int16_t adx = dx < 0 ? dx * -1 : dx;
             int16_t ady = dy < 0 ? dy * -1 : dy;
-            int16_t curr_point = ix(x1, y1);
+            uint16_t curr_point = ix(x1, y1);
 
             auto draw_line = [&](const int16_t adg, const int16_t sdg, const int16_t adl, const int16_t sdl) -> void {
                 for (int16_t i = 0, t = adl; i <= adg; ++i, t += adl) {
-                    tia_set(curr_point);
-                    if (t >= adg) {
-                        curr_point += sdl;
-                        t -= adg;
-                    }
+                    // TODO: Can be further improved by computing for the boundary intersect
+                    if (curr_point >=0 && curr_point < size_) set_tia(curr_point);
+                    if (t >= adg) {curr_point += sdl; t -= adg; }
                     curr_point +=sdg;
                 }
             };
@@ -633,18 +631,18 @@ namespace g80 {
     public:
 
         auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text &t) -> void {
-            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &i) -> void {text_[i] = t;};
-            gfx_line_loop(x1, y1, x2, y2, tia_set);
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {text_[i] = t;};
+            gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color &c) -> void {
-            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &i) -> void {color_[i] = c;};
-            gfx_line_loop(x1, y1, x2, y2, tia_set);
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {color_[i] = c;};
+            gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_mask(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const mask_bit &m) -> void {
-            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &i) -> void {set_mask(i, m);};
-            gfx_line_loop(x1, y1, x2, y2, tia_set);
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {set_mask(i, m);};
+            gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
             
         //     auto gfx_circle(const Point &point, const int16_t &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
@@ -756,10 +754,10 @@ namespace g80 {
             return value;
         }
 
-        //     auto gfx_circle_loop(const Point &point, const int16_t &radius, std::function<void(const int16_t &)> &tia_set) -> void;
-        //     auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const int16_t &)> &tia_set) -> void;
-        //     auto gfx_arc_loop(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &tia_set) -> void;
-        //     auto gfx_fill_loop(const Point &point, std::function<void(const int16_t &)> &tia_set, std::function<bool(const int16_t &)> &border_check) -> void;
+        //     auto gfx_circle_loop(const Point &point, const int16_t &radius, std::function<void(const int16_t &)> &set_tia) -> void;
+        //     auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const int16_t &)> &set_tia) -> void;
+        //     auto gfx_arc_loop(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &set_tia) -> void;
+        //     auto gfx_fill_loop(const Point &point, std::function<void(const int16_t &)> &set_tia, std::function<bool(const int16_t &)> &border_check) -> void;
     };
 }
 
