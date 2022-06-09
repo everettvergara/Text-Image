@@ -54,6 +54,7 @@ namespace g80 {
     // TODO, remove on return type unless necessary 
     // todo: throw exception on construction if w_, h_ == 0
     // todo: decide whether or not to guarantee and use uint in ix
+    // todo: decide where to put ix % size_ validation, if its before or upon setting of text, color or mask
     // todo: TEST ALL functions
 
     /**
@@ -730,7 +731,7 @@ namespace g80 {
      */
 
     private:
-        auto gfx_arc_loop(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, std::function<auto (const int16_t) -> void> &set_tia) -> void {
+        auto gfx_arc_loop(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const std::function<auto (const uint16_t) -> void> &set_tia) -> void {
             int16_t center_point = ix(cx, cy);
 
             int16_t x = r;
@@ -857,10 +858,26 @@ namespace g80 {
             }    
         }
 
-        //     auto gfx_arc(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-        //     auto gfx_arc_text(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const Text &text) -> void;
-        //     auto gfx_arc_color(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const Color &color) -> void;
-        //     auto gfx_arc_mask(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const MASK_BIT &mask_bit) -> void;
+        auto gfx_arc_color(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const color &c) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
+        }
+        
+        auto gfx_arc_text(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const text &t) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
+        }
+
+        auto gfx_arc_mask(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const mask_bit &m) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
+        }
+
+        auto gfx_arc(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const color &c, const text &t, const mask_bit &m) -> void {
+            gfx_arc_color(cx, cy, r, sa, ea, c);
+            gfx_arc_text(cx, cy, r, sa, ea, t);
+            gfx_arc_mask(cx, cy, r, sa, ea, m);
+        }
             
         //     auto gfx_fill_with_text_border(const Point &point, const Text &text) -> void;
         //     auto gfx_fill_color_border(const Point &point, const Color &color) -> void;
