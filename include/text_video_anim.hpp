@@ -13,6 +13,8 @@
 
 namespace g80 {
 
+    using namespace std::chrono;
+            
     auto is_key_pressed() -> int {
         static const int STDIN = 0;
         static bool initialized = false;
@@ -80,10 +82,10 @@ namespace g80 {
 
     private:
 
-        auto delayer(std::chrono::time_point<std::chrono::system_clock> &start) -> void {
-            std::chrono::time_point<std::chrono::system_clock> end {std::chrono::system_clock::now()};
-            uint_type delay = MSPF_ - static_cast<uint_type>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-            if (delay > 0) std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+        auto delayer(time_point<system_clock> &start) -> void {
+            time_point<system_clock> end {system_clock::now()};
+            uint_type delay = MSPF_ - static_cast<uint_type>(duration_cast<milliseconds>(end - start).count());
+            if (delay > 0) std::this_thread::sleep_for(milliseconds(delay));
         }
 
     public:
@@ -93,12 +95,16 @@ namespace g80 {
         virtual auto run() -> bool {
             
             do {
-                std::chrono::time_point<std::chrono::system_clock> start {std::chrono::system_clock::now()};
+                time_point<system_clock> start {system_clock::now()};
                 
-                if (event()) {update(); delayer(start);}
+                timg_.show();
 
+                if (event()) {
+                    update(); 
+                    delayer(start);
+                }
             } while(is_running_);
-            
+
             return true;
         }
 
