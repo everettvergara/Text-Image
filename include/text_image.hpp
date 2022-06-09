@@ -632,8 +632,9 @@ namespace g80 {
 
     public:
 
-        auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2,  const text &t -> void {
-            
+        auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text &t) -> void {
+            const static std::function<void(const int16_t &)> tia_set = [&](const int16_t &ix) -> void {text_[ix] = t;};
+            gfx_line_loop(x1, y1, x2, y2, tia_set);
         }
         // auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
 
