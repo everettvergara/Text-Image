@@ -24,7 +24,6 @@
 #include <fstream>
 #include <memory>
 #include <cstdint>
-#include <optional>
 #include <functional>
 #include <sstream>
 #include <unordered_map>
@@ -49,12 +48,22 @@ namespace g80 {
     using uptr_color = std::unique_ptr<color[]>;
     using uptr_text = std::unique_ptr<text[]>;
     using uptr_mask8bit = std::unique_ptr<mask8bit[]>;
-    using mask8bitop = std::optional<mask8bit>;
-
+    
     enum mask_bit {OFF = 0x00, ON = 0x01};
     enum text_image_attrib {TEXT = 1, COLOR = 2, MASK = 4, ALL = 7}; 
 
+
+    template<typename T, T less_than>
+    class validator_if_less_than {
     
+    public:
+        validator_if_less_than(const T &n) : n_(n) {if (n_ < less_than) throw std::runtime_error(std::string("Invalid parameter."));}
+        operator const T &(void) const {return n_;}   
+    private:
+        T n_;
+    };
+
+
     class text_image {
             
     // todo: use template instead of int16_t
@@ -81,7 +90,7 @@ namespace g80 {
         }
 
         text_image(const std::string &t, const color c, const mask_bit m = ON) :
-            w_(static_cast<uint16_t>(t.size())), h_(1), size_(w_),
+            w_(validator_if_less_than<uint16_t, 1>(static_cast<uint16_t>(t.size()))), h_(1), size_(w_),
             color_(std::make_unique<color[]>(size_)),
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
@@ -92,7 +101,7 @@ namespace g80 {
         } 
             
         text_image(const int16_t w, const int16_t h, const color c = 7, const text t = ' ', const mask_bit m = ON) :
-            w_(w), h_(h), size_(w_ * h_),
+            w_(validator_if_less_than<uint16_t, 1>(w)), h_(validator_if_less_than<uint16_t, 1>(h)), size_(w_ * h_),
             color_(std::make_unique<color[]>(size_)),
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
@@ -428,7 +437,9 @@ namespace g80 {
     public:
 
         auto get_image(const int16_t x, const int16_t y, const uint16_t w, const uint16_t h) const -> text_image {
-            
+
+            if (w == 0 || h == 0) return text_image();
+
             text_image dest_text_image(w, h, 7, ' ', OFF);
             text *text_ptr = dest_text_image.raw_text().get();
             color *color_ptr = dest_text_image.raw_color().get();
@@ -1015,7 +1026,7 @@ namespace g80 {
             file.exceptions (std::ifstream::failbit | std::ifstream::badbit);
             file.read(static_cast<char *>(static_cast<void *>(&w_)), sizeof(w_));
             file.read(static_cast<char *>(static_cast<void *>(&h_)), sizeof(h_));
-            size_ = w_ * h_;
+            size_ = validator_if_less_than<uint16_t, 1>(w_) * validator_if_less_than<uint16_t, 1>(h_);
             size_of_mask8bit_ = size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1;
             color_.reset(new color[size_]);
             file.read(static_cast<char *>(static_cast<void *>(color_.get())), size_);

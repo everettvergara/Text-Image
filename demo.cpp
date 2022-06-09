@@ -12,6 +12,4 @@ auto main(const int argc, const char *argv[]) -> int {
     // ti.gfx_fill_text(70, 15, '*');
     ti.show();
 
-
-    
 }
