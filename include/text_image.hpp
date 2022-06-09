@@ -78,7 +78,7 @@ namespace g80 {
             text_(std::make_unique<text[]>(size_)),
             size_of_mask8bit_(size_ % 8 == 0 ? size_ / 8 : size_ / 8 + 1),
             mask8bit_(std::make_unique<mask8bit[]>(size_of_mask8bit_)) {
-            for (uint16_t i = 0; i < size_; ++i) text_[i] = t[i];
+            for (uint16_t i = 0; i < size_; ++i) set_text(i, t[i]);
             fill_color(c);
             if (m) set_all_mask8bit(); else clear_all_mask8bit();
         } 
@@ -273,16 +273,16 @@ namespace g80 {
 
     public:
 
-        inline auto set_text(const uint16_t &ix, const text t) -> void {
-            text_[ix] = t;
+        inline auto set_text(const uint16_t &i, const text t) -> void {
+            set_text(i, t);
         }
         
         inline auto set_text(const int16_t x, const int16_t y, const text t) -> void {
             set_text(ix(x, y), t);
         }
 
-        inline auto get_text(const uint16_t ix) const -> text {
-            return text_[ix];
+        inline auto get_text(const uint16_t i) const -> text {
+            return text_[i];
         }
         
         inline auto get_text(const int16_t x, const int16_t y) const -> text {
@@ -293,8 +293,8 @@ namespace g80 {
             std::fill_n(&text_[0], size_, t);      
         }
 
-        inline auto set_color(const uint16_t ix, const color c) -> void {
-            color_[ix] = c;
+        inline auto set_color(const uint16_t i, const color c) -> void {
+            set_color(i, c);
         }
 
         inline auto set_color(const int16_t x, const int16_t y, const color c) -> void {
@@ -313,12 +313,14 @@ namespace g80 {
             std::fill_n(&color_[0], size_, c);      
         }
 
-        inline auto set_mask(const uint16_t ix, mask_bit m) -> void {
-            uint16_t offset = ix % 8;
-            mask8bit and_mask = ~(1 << offset);
-            mask8bit or_mask = m << offset;
-            mask8bit_[ix / 8] &= and_mask;
-            mask8bit_[ix / 8] |= or_mask;
+        inline auto set_mask(const uint16_t i, mask_bit m) -> void {
+            {
+                uint16_t offset = i % 8;
+                mask8bit and_mask = ~(1 << offset);
+                mask8bit or_mask = m << offset;
+                mask8bit_[i / 8] &= and_mask;
+                mask8bit_[i / 8] |= or_mask;
+            }
         }
         
         inline auto set_mask(const int16_t x, const int16_t y, mask_bit m) -> void {
@@ -492,13 +494,13 @@ namespace g80 {
             else if (shift == 0) return;
 
             if (tia & TEXT) {
-                for (uint16_t i = 0; i < size_ - shift; ++i) text_[i] = text_[i + shift];
-                for (uint16_t i = size_ - shift; i < size_; ++i) text_[i] = default_text;
+                for (uint16_t i = 0; i < size_ - shift; ++i) set_text(i, text_[i + shift]);
+                for (uint16_t i = size_ - shift; i < size_; ++i) set_text(i, default_text);
             }
 
             if (tia & COLOR) {
-                for (uint16_t i = 0; i < size_ - shift; ++i) color_[i] = color_[i + shift];
-                for (uint16_t i = size_ - shift; i < size_; ++i) color_[i] = default_color;
+                for (uint16_t i = 0; i < size_ - shift; ++i) set_color(i, color_[i + shift]);
+                for (uint16_t i = size_ - shift; i < size_; ++i) set_color(i, default_color);
             }
 
             if (tia & MASK) {
@@ -513,13 +515,13 @@ namespace g80 {
             else if (shift == 0) return;
 
             if (tia & TEXT) {
-                for (uint16_t i = size_ - 1; i >= shift; --i) text_[i] = text_[i - shift];
-                for (uint16_t i = 0; i < shift; ++i) text_[i] = default_text;
+                for (uint16_t i = size_ - 1; i >= shift; --i) set_text(i, text_[i - shift]);
+                for (uint16_t i = 0; i < shift; ++i) set_text(i, default_text);
             }
 
             if (tia & COLOR) {
-                for (uint16_t i = size_ - 1; i >= shift; --i) color_[i] = color_[i - shift];
-                for (uint16_t i = 0; i < shift; ++i) color_[i] = default_color;
+                for (uint16_t i = size_ - 1; i >= shift; --i) set_color(i, color_[i - shift]);
+                for (uint16_t i = 0; i < shift; ++i) set_color(i, default_color);
             }
 
             if (tia & MASK) {
@@ -627,9 +629,9 @@ namespace g80 {
 
         auto gfx_point(const int16_t x, const int16_t y, const text t, const color c, const mask_bit m) -> void {
             uint16_t i = ix(x, y);
-            if (i < size_) {
-                text_[i] = t;
-                color_[i] = c;
+            {
+                set_text(i, t);
+                set_color(i, c);
                 set_mask(i, m);
             }         
         }
@@ -665,17 +667,17 @@ namespace g80 {
     public:
 
         auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color c) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_color(i, c);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text t) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_text(i, t);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_mask(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const mask_bit m) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_mask(i, m);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
@@ -733,17 +735,17 @@ namespace g80 {
     public:
         
         auto gfx_circle_color(const int16_t cx, const int16_t cy, const int16_t r, const color c) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_color(i, c);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
         
         auto gfx_circle_text(const int16_t cx, const int16_t cy, const int16_t r, const text t) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_text(i, t);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
         auto gfx_circle_mask(const int16_t cx, const int16_t cy, const int16_t r, const mask_bit m) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_mask(i, m);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
@@ -761,7 +763,7 @@ namespace g80 {
     private:
 
         auto gfx_arc_loop(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const std::function<auto (const uint16_t) -> void> &set_tia) -> void {
-            int16_t center_point = ix(cx, cy);
+            uint16_t center_point = ix(cx, cy);
 
             int16_t x = r;
             int16_t y = 0;
@@ -864,8 +866,8 @@ namespace g80 {
             auto draw_arc = [&](const octa_bound &ob) -> void { 
                 if (*ob.xy * ob.xy_mul >= ob.sx && 
                     *ob.xy * ob.xy_mul <= ob.ex) {
-                    int16_t i = center_point + (*ob.xy * ob.xy_mul) + (*ob.bxy * ob.bxy_mul);
-                    if (i >=0 && i < size_) set_tia(i);
+                    uint16_t i = center_point + (*ob.xy * ob.xy_mul) + (*ob.bxy * ob.bxy_mul);
+                    set_tia(i);
                 }
             };
 
@@ -890,17 +892,17 @@ namespace g80 {
     public:
 
         auto gfx_arc_color(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const color c) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_color(i, c);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
         
         auto gfx_arc_text(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const text t) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_text(i, t);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
         auto gfx_arc_mask(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const mask_bit m) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {set_mask(i, m);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
@@ -935,28 +937,28 @@ namespace g80 {
     public:
 
         auto gfx_fill_color(const int16_t x, const int16_t y, const color c) -> void {
-            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {set_color(i, c);};
             static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return color_[i] == c;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
         auto gfx_fill_text(const int16_t x, const int16_t y, const text t) -> void {
-            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {set_text(i, t);};
             static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return text_[i] == t;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
         auto gfx_fill_mask(const int16_t x, const int16_t y, const mask_bit m) -> void {
-            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {set_mask(i, m);};
             static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return get_mask(i) == m;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
         auto gfx_fill_with_text_border(const int16_t x, const int16_t y, const color c, const text t, const mask_bit m) -> void {
             static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {
-                if (i < size_) {
-                    color_[i] = c;
-                    text_[i] = t;
+                {
+                    set_color(i, c);
+                    set_text(i, t);
                     set_mask(i, m);
                 }
             };
