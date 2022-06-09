@@ -433,22 +433,22 @@ namespace g80 {
     public:
 
         auto put_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            const auto conditional = [&](uint16_t, uint16_t, const text_image &) -> bool {return true;};
+            static const auto conditional = [&](uint16_t, uint16_t, const text_image &) -> bool {return true;};
             bit_image(x, y, timg, conditional);
         }
 
         auto and_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            const auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) & timg.get_mask(six)) == ON;};
+            static const auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) & timg.get_mask(six)) == ON;};
             bit_image(x, y, timg, conditional);
         }
 
         auto or_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            const auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) | timg.get_mask(six)) == ON;};
+            static const auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) | timg.get_mask(six)) == ON;};
             bit_image(x, y, timg, conditional);
         }
 
         auto xor_image(const int16_t x, const int16_t y, const text_image &timg) -> void {
-            const auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) ^ timg.get_mask(six)) == ON;};
+            static const auto conditional = [&](uint16_t tix, uint16_t six, const text_image &timg) -> bool {return (get_mask(tix) ^ timg.get_mask(six)) == ON;};
             bit_image(x, y, timg, conditional);
         }
 
@@ -638,17 +638,17 @@ namespace g80 {
     public:
 
         auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color c) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text t) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_mask(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const mask_bit m) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
@@ -706,17 +706,17 @@ namespace g80 {
     public:
         
         auto gfx_circle_color(const int16_t cx, const int16_t cy, const int16_t r, const color c) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
         
         auto gfx_circle_text(const int16_t cx, const int16_t cy, const int16_t r, const text t) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
         auto gfx_circle_mask(const int16_t cx, const int16_t cy, const int16_t r, const mask_bit m) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
@@ -732,6 +732,7 @@ namespace g80 {
      */
 
     private:
+
         auto gfx_arc_loop(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const std::function<auto (const uint16_t) -> void> &set_tia) -> void {
             int16_t center_point = ix(cx, cy);
 
@@ -859,18 +860,20 @@ namespace g80 {
             }    
         }
 
+    public:
+    
         auto gfx_arc_color(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const color c) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
         
         auto gfx_arc_text(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const text t) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
         auto gfx_arc_mask(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const mask_bit m) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
