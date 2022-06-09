@@ -33,6 +33,8 @@
 
 namespace g80 {
 
+    #define UNSAFE_OPTIM
+
     using color = uint8_t;
     using text = uint8_t;
     using mask8bit = uint8_t;
@@ -274,7 +276,11 @@ namespace g80 {
     public:
 
         inline auto set_text(const uint16_t &i, const text t) -> void {
-            set_text(i, t);
+            #ifdef UNSAFE_OPTIM     
+            text_[i] = t;
+            #else
+            if (i < size_) text_[i] = t;
+            #endif
         }
         
         inline auto set_text(const int16_t x, const int16_t y, const text t) -> void {
@@ -294,7 +300,11 @@ namespace g80 {
         }
 
         inline auto set_color(const uint16_t i, const color c) -> void {
-            set_color(i, c);
+            #ifdef UNSAFE_OPTIM     
+            color_[i] = c;
+            #else
+            if (i < size_) color_[i] = c;
+            #endif
         }
 
         inline auto set_color(const int16_t x, const int16_t y, const color c) -> void {
@@ -314,13 +324,21 @@ namespace g80 {
         }
 
         inline auto set_mask(const uint16_t i, mask_bit m) -> void {
-            {
+            #ifdef UNSAFE_OPTIM     
                 uint16_t offset = i % 8;
                 mask8bit and_mask = ~(1 << offset);
                 mask8bit or_mask = m << offset;
                 mask8bit_[i / 8] &= and_mask;
                 mask8bit_[i / 8] |= or_mask;
-            }
+            #else 
+                if (i < size_) {
+                    uint16_t offset = i % 8;
+                    mask8bit and_mask = ~(1 << offset);
+                    mask8bit or_mask = m << offset;
+                    mask8bit_[i / 8] &= and_mask;
+                    mask8bit_[i / 8] |= or_mask;
+                }
+            #endif 
         }
         
         inline auto set_mask(const int16_t x, const int16_t y, mask_bit m) -> void {
