@@ -373,6 +373,32 @@ namespace g80 {
      * 
      */
 
+    private:
+
+        auto get_mask8bit_value(const uint16_t ix, const uint16_t size, const uint16_t init_offset = 0) const -> mask8bit {
+            if (size == 0 || size > 8) return 0;
+
+            uint16_t ix8 = ix / 8;
+            uint16_t nix8 = (ix + size - 1) / 8;
+            uint16_t offset = ix % 8 - init_offset;
+
+            mask8bit value;
+            if (offset >= 0) {
+                value = mask8bit_[ix8] >> offset;
+                value &= ~((1 << init_offset) - 1);
+                if (nix8 > ix8 && nix8 < size_of_mask8bit_)
+                    value |= mask8bit_[nix8] << (8 - offset);
+                value &= (1 << (size + init_offset)) - 1;
+            } else {
+                value = mask8bit_[ix8];
+                value = mask8bit_[ix8] << -offset;
+                value &= ~((1 << init_offset) - 1);
+                value &= (1 << (size + init_offset)) - 1;
+            } 
+
+            return value;
+        }
+
     public:
 
         auto get_image(const int16_t x, const int16_t y, const uint16_t w, const uint16_t h) const -> text_image {
@@ -861,7 +887,7 @@ namespace g80 {
         }
 
     public:
-    
+
         auto gfx_arc_color(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const color c) -> void {
             static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
@@ -955,34 +981,6 @@ namespace g80 {
         uint16_t size_of_mask8bit_{0};
         uptr_mask8bit mask8bit_{nullptr};
 
-    private:
-
-        auto get_mask8bit_value(const uint16_t ix, const uint16_t size, const uint16_t init_offset = 0) const -> mask8bit {
-            if (size == 0 || size > 8) return 0;
-
-            uint16_t ix8 = ix / 8;
-            uint16_t nix8 = (ix + size - 1) / 8;
-            uint16_t offset = ix % 8 - init_offset;
-
-            mask8bit value;
-            if (offset >= 0) {
-                value = mask8bit_[ix8] >> offset;
-                value &= ~((1 << init_offset) - 1);
-                if (nix8 > ix8 && nix8 < size_of_mask8bit_)
-                    value |= mask8bit_[nix8] << (8 - offset);
-                value &= (1 << (size + init_offset)) - 1;
-            } else {
-                value = mask8bit_[ix8];
-                value = mask8bit_[ix8] << -offset;
-                value &= ~((1 << init_offset) - 1);
-                value &= (1 << (size + init_offset)) - 1;
-            } 
-
-            return value;
-        }
-
-        //     auto gfx_arc_loop(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &set_tia) -> void;
-        //     auto gfx_fill_loop(const Point &point, std::function<void(const int16_t &)> &set_tia, std::function<bool(const int16_t &)> &border_check) -> void;
     };
 }
 
