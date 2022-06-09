@@ -27,7 +27,7 @@
 #include <optional>
 #include <functional>
 #include <sstream>
-
+#include <unordered_map>
 
 
 namespace g80 {
@@ -724,11 +724,143 @@ namespace g80 {
             gfx_circle_mask(cx, cy, r, m);
         }
 
+    /**
+     * Text Graphics: Arc
+     * 
+     */
 
-        //     auto gfx_arc(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-        //     auto gfx_arc_text(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, const Text &text) -> void;
-        //     auto gfx_arc_color(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, const Color &color) -> void;
-        //     auto gfx_arc_mask(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, const MASK_BIT &mask_bit) -> void;
+    private:
+        auto gfx_arc_loop(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, std::function<auto (const int16_t) -> void> &set_tia) -> void {
+            int16_t center_point = ix(cx, cy);
+
+            int16_t x = r;
+            int16_t y = 0;
+            
+            int16_t bx = x * w_;
+            int16_t by = y * w_;
+
+            int16_t dx = 1 - (r << 1);
+            int16_t dy = 1;
+            int16_t re = 0;
+
+            int16_t n_sa, n_ea;
+            if (sa > ea) {n_sa = ea; n_ea = sa;} 
+            else {n_sa = sa; n_ea = ea;}
+
+            // Reduce to n_sa < 360 only
+            if (n_sa > 360 && n_ea > 360) {
+                int16_t t = n_sa / 360;
+                n_sa -= 360 * t;
+                n_ea -= 360 * t;
+            }
+
+            int16_t extended_sa, extended_ea;
+            if (n_ea > 360) {extended_sa = 0; extended_ea = n_ea % 360;} 
+            else {extended_sa = -1; extended_ea = -1;}
+
+            struct octa_bound {int16_t sx, ex, *xy, xy_mul, *bxy, bxy_mul, type; };
+            std::unordered_map<int16_t, octa_bound> octa_bounds;
+
+            int16_t t_sa = n_sa;
+            int16_t t_ea = n_ea;
+            for (int16_t j = 0; j <= 8; j += 8) {
+                for (int16_t i = j, a = 0; i < j + 8; ++i, a += 45) {
+                    octa_bound ob;
+                    
+                    // 0: n_sa ----| a  ------ a45 | ------- n_ea 
+                    if (a >= t_sa && a + 45 <= t_ea) {
+                        ob.sx = static_cast<int16_t>(cos(a * M_PI / 180) * r);
+                        ob.ex = static_cast<int16_t>(cos((a + 45) * M_PI / 180) * r);
+                        ob.type = 0;
+                    
+                    // 1: a ----| n_sa  ------ n_ea | ------- a45 
+                    } else if (t_sa >= a && t_ea <= a + 45) {
+                        ob.sx = static_cast<int16_t>(cos(t_sa * M_PI / 180) * r);
+                        ob.ex = static_cast<int16_t>(cos(t_ea * M_PI / 180) * r);
+                        ob.type = 1;
+                    
+                    // 2: a ----| n_sa  ------ a45 | ------- n_ea 
+                    } else if (t_sa >= a && t_sa <= a + 45) {
+                        ob.sx = static_cast<int16_t>(cos(t_sa * M_PI / 180) * r);
+                        ob.ex = static_cast<int16_t>(cos((a + 45) * M_PI / 180) * r);
+                        ob.type = 2;
+                    
+                    // 3: n_sa ---- | a ---- n_ea  ------ | a45 
+                    } else if (t_ea > a && t_ea <= a + 45) {
+                        ob.sx = static_cast<int16_t>(cos(a * M_PI / 180) * r);
+                        ob.ex = static_cast<int16_t>(cos(t_ea * M_PI / 180) * r);
+                        ob.type = 3;
+                    
+                    // Beyond scope of octant
+                    } else {
+                        continue;
+                    }
+
+                    int16_t ix = i % 8;
+                    if (ix < 4) {
+                        ob.bxy_mul = -1;
+                        std::swap(ob.sx, ob.ex);
+                    } else {
+                        ob.bxy_mul = +1;
+                    }
+
+                    if (ix == 0 || ix == 1 || ix == 6 || ix == 7) ob.xy_mul = +1;
+                    else ob.xy_mul = -1;
+
+                    if (ix == 0 || ix == 3 || ix == 4 || ix == 7) {
+                        ob.xy = &x;
+                        ob.bxy = &by;
+                    } else {
+                        ob.xy = &y;
+                        ob.bxy = &bx;
+                    }
+
+                    auto f = octa_bounds.find(ix);
+                    if (f == octa_bounds.end()) {
+                        octa_bounds.insert({ix, ob});
+                    } else {
+                        if (f->second.type == 1 || f->second.type == 2) {
+                            octa_bounds.insert({i, ob});
+                            break;
+                        }
+                    }
+                }
+
+                if (extended_sa < 0) break;
+                t_sa = extended_sa;
+                t_ea = extended_ea;
+            }
+
+            auto draw_arc = [&](const octa_bound &ob) -> void { 
+                if (*ob.xy * ob.xy_mul >= ob.sx && 
+                    *ob.xy * ob.xy_mul <= ob.ex) {
+                    int16_t i = center_point + (*ob.xy * ob.xy_mul) + (*ob.bxy * ob.bxy_mul);
+                    if (i >=0 && i < size_) set_tia(i);
+                }
+            };
+
+            while (x >= y)
+            {
+                for (auto &o : octa_bounds) draw_arc(o.second);
+
+                ++y;
+                re += dy;
+                dy += 2;
+                if ((re << 1) + dx > 0)
+                {
+                    --x;
+                    bx -= w_;
+                    re += dx;
+                    dx += 2;
+                }
+                by += w_;
+            }    
+        }
+
+        //     auto gfx_arc(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
+        //     auto gfx_arc_text(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const Text &text) -> void;
+        //     auto gfx_arc_color(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const Color &color) -> void;
+        //     auto gfx_arc_mask(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, const MASK_BIT &mask_bit) -> void;
             
         //     auto gfx_fill_with_text_border(const Point &point, const Text &text) -> void;
         //     auto gfx_fill_color_border(const Point &point, const Color &color) -> void;
@@ -830,7 +962,7 @@ namespace g80 {
             return value;
         }
 
-        //     auto gfx_arc_loop(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &set_tia) -> void;
+        //     auto gfx_arc_loop(const Point &point, const int16_t &r, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &set_tia) -> void;
         //     auto gfx_fill_loop(const Point &point, std::function<void(const int16_t &)> &set_tia, std::function<bool(const int16_t &)> &border_check) -> void;
     };
 }
