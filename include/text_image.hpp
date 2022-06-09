@@ -548,7 +548,6 @@ namespace g80 {
         }
         
         auto xlat_flip_vertical(const text_image_attrib tia) -> void {
-            
             if (tia & TEXT) {
                 uint16_t i = 0;
                 uint16_t j = h_ - 1;
@@ -589,10 +588,25 @@ namespace g80 {
             }            
         }
 
-        //     // Graphics
-        //     auto gfx_point(const Point &point, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-            
-            
+
+    /**
+     * Text Graphics Functions
+     * 
+     */
+
+    public:
+
+        auto gfx_point(const int16_t x, const int16_t y, const text &t, const color &c, const mask_bit &m) -> void {
+            uint16_t i = ix(x, y);
+            text_[i] = t;
+            color_[i] = c;
+            set_mask(i, m);            
+        }
+
+    private:
+    
+        auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const int16_t &)> &tia_set) -> void;
+        //      
         //     auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
         //     auto gfx_line_text(const Point &point1, const Point &point2, const Text &text) -> void;
         //     auto gfx_line_color(const Point &point1, const Point &point2, const Color &color) -> void;
