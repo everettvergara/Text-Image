@@ -34,6 +34,8 @@
 namespace g80 {
 
     /**
+     * Type shortcuts
+     * 
      * Uncomment #define UNSAFE_OPTIM
      * if you are sure that your program doesn't 
      * go beyond the boundaries of your canvass
@@ -41,7 +43,6 @@ namespace g80 {
      * #define UNSAFE_OPTIM
      * 
      */
-
 
     using color = uint8_t;
     using text = uint8_t;
@@ -54,6 +55,14 @@ namespace g80 {
     enum mask_bit {OFF = 0x00, ON = 0x01};
     enum text_image_attrib {TEXT = 1, COLOR = 2, MASK = 4, ALL = 7}; 
 
+    /**
+     * validator_if_less_than
+     * A template validator for function parameters if 
+     * less than a certain number.
+     * 
+     * T, type 
+     * less_than, value 
+     */
 
     template<typename T, T less_than>
     class validator_if_less_than {
@@ -63,6 +72,14 @@ namespace g80 {
     private:
         T n_;
     };
+
+    /**
+     * text_image
+     * A class to handle the console graphics. 
+     * 
+     * int_type, the type of int to be used
+     * uint_type, type type of uint to be used
+     */
 
     template<typename int_type, typename uint_type>
     class text_image {
