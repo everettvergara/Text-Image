@@ -53,6 +53,7 @@ namespace g80 {
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
     // todo: throw exception on construction if w_, h_ == 0
+    // todo: decide whether or not to guarantee and use uint in ix
     // todo: TEST ALL functions
 
     /**
@@ -604,11 +605,40 @@ namespace g80 {
         }
 
     private:
-    
-        auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const int16_t &)> &tia_set) -> void;
-        //      
-        //     auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-        //     auto gfx_line_text(const Point &point1, const Point &point2, const Text &text) -> void;
+
+        auto gfx_line_loop(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2,  const std::function<void(const int16_t &)> &tia_set) -> void {
+            int16_t dx = x2 - x1;
+            int16_t dy = y2 - y1;
+            int16_t sdx = dx < 0 ? -1 : 1;
+            int16_t sdy = dy < 0 ? -w_ : w_;
+            int16_t adx = dx < 0 ? dx * -1 : dx;
+            int16_t ady = dy < 0 ? dy * -1 : dy;
+            int16_t curr_point = ix(x1, y1);
+
+            auto draw_line = [&](const int16_t adg, const int16_t sdg, const int16_t adl, const int16_t sdl) -> void {
+                for (int16_t i = 0, t = adl; i <= adg; ++i, t += adl) {
+                    tia_set(curr_point);
+                    if (t >= adg) {
+                        curr_point += sdl;
+                        t -= adg;
+                    }
+                    curr_point +=sdg;
+                }
+            };
+
+            if (adx >= ady) draw_line(adx, sdx, ady, sdy);  
+            else draw_line(ady, sdy, adx, sdx);  
+        }
+
+    public:
+
+        auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2,  const text &t -> void {
+            
+        }
+        // auto gfx_line(const Point &point1, const Point &point2, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void {
+
+        // }
+
         //     auto gfx_line_color(const Point &point1, const Point &point2, const Color &color) -> void;
         //     auto gfx_line_mask(const Point &point1, const Point &point2, const MASK_BIT &mask_bit) -> void;
             
