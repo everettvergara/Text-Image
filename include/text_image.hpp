@@ -644,7 +644,46 @@ namespace g80 {
             const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {set_mask(i, m);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
-            
+    
+    private:
+        auto gfx_circle_loop(const int16_t cx, const int16_t cy, const int16_t &r, const std::function<auto (const uint16_t &) -> void> &set_tia) -> void {
+            uint16_t center_point = ix(cx, cy);
+
+            int16_t x = r;
+            int16_t y = 0;
+
+            int16_t bx = x * w_;
+            int16_t by = y * w_;
+
+            int16_t dx = 1 - (r << 1);
+            int16_t dy = 1;
+            int16_t re = 0;
+
+            while (x >= y)
+            {
+                set_tia(center_point + x - by);
+                set_tia(center_point + y - bx);
+                set_tia(center_point - y - bx);
+                set_tia(center_point - x - by);
+                set_tia(center_point + x + by);
+                set_tia(center_point + y + bx);
+                set_tia(center_point - y + bx);
+                set_tia(center_point - x + by);
+
+                ++y;
+                re += dy;
+                dy += 2;
+                if ((re << 1) + dx > 0)
+                {
+                    --x;
+                    bx -= w_;
+                    re += dx;
+                    dx += 2;
+                }
+                by += w_;
+            }            
+        }
+        
         //     auto gfx_circle(const Point &point, const int16_t &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
         //     auto gfx_circle_text(const Point &point, const int16_t &radius, const Text &text) -> void;
         //     auto gfx_circle_color(const Point &point, const int16_t &radius, const Color &color) -> void;
@@ -730,6 +769,7 @@ namespace g80 {
         uptr_mask8bit mask8bit_{nullptr};
 
     private:
+
         auto get_mask8bit_value(const uint16_t ix, const uint16_t size, const uint16_t init_offset = 0) const -> mask8bit {
             if (size == 0 || size > 8) return 0;
 
@@ -754,8 +794,6 @@ namespace g80 {
             return value;
         }
 
-        //     auto gfx_circle_loop(const Point &point, const int16_t &radius, std::function<void(const int16_t &)> &set_tia) -> void;
-        //     auto gfx_line_loop(const Point &point1, const Point &point2, std::function<void(const int16_t &)> &set_tia) -> void;
         //     auto gfx_arc_loop(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, std::function<void(const int16_t &)> &set_tia) -> void;
         //     auto gfx_fill_loop(const Point &point, std::function<void(const int16_t &)> &set_tia, std::function<bool(const int16_t &)> &border_check) -> void;
     };
