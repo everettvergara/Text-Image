@@ -44,8 +44,9 @@ namespace g80 {
 
     public:
 
-        text_video_anim(const uint_type w, const uint_type h, const color c = 7, const text t = ' ', const mask_bit m = ON) :
-            timg_(w, h, c, t, m) {}
+        text_video_anim(const uint_type w, const uint_type h, uint_type fps, const color c = 7, const text t = ' ', const mask_bit m = ON) :
+            txt_img_(w, h, c, t, m),
+            MSPF_(1000 / validator<uint_type, 1>(fps)) {}
 
         virtual ~text_video_anim() = default;
 
@@ -57,11 +58,11 @@ namespace g80 {
     public:
 
         inline auto data() -> text_image<int_type, uint_type> & {
-            return timg_;
+            return txt_img_;
         }
 
         inline auto cdata() const -> const text_image<int_type, uint_type> & {
-            return timg_;
+            return txt_img_;
         }
 
     /**
@@ -96,13 +97,8 @@ namespace g80 {
             
             do {
                 time_point<system_clock> start {system_clock::now()};
-                
-                timg_.show();
-
-                if (event()) {
-                    update(); 
-                    delayer(start);
-                }
+                txt_img_.show();
+                if (event()) {update(); delayer(start);}
             } while(is_running_);
 
             return true;
@@ -112,12 +108,11 @@ namespace g80 {
 
     protected:
 
-    // TODO: consoder using literal suffix for width and height
-    // i.e. 10d d -> double the width for conversion factor
-        uint_type FPS_, MSPF_;
+        // TODO: consoder using literal suffix for width and height
+        // i.e. 10d d -> double the width for conversion factor
+        uint_type MSPF_;
         bool is_running_{false};
-        text_image<int_type, uint_type> timg_;
-        
+        text_image<int_type, uint_type> txt_img_;
     };
 }
 
