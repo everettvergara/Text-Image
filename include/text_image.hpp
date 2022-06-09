@@ -591,7 +591,7 @@ namespace g80 {
 
 
     /**
-     * Text Graphics Functions
+     * Text Graphics: Point
      * 
      */
 
@@ -603,6 +603,11 @@ namespace g80 {
             color_[i] = c;
             set_mask(i, m);            
         }
+
+    /**
+     * Text Graphics: Line
+     * 
+     */
 
     private:
 
@@ -630,13 +635,13 @@ namespace g80 {
 
     public:
 
-        auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text &t) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {text_[i] = t;};
+        auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color &c) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {color_[i] = c;};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
-        auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color &c) -> void {
-            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {color_[i] = c;};
+        auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text &t) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {text_[i] = t;};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
@@ -644,9 +649,22 @@ namespace g80 {
             const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {set_mask(i, m);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
-    
+
+        auto gfx_line(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color &c, const text &t, const mask_bit &m) -> void {
+            gfx_line_color(x1, y1, x2, y2, c);
+            gfx_line_text(x1, y1, x2, y2, t);
+            gfx_line_mask(x1, y1, x2, y2, m);
+        }
+
+    /**
+     * Text Graphics: Circle
+     * 
+     */
+
     private:
-        auto gfx_circle_loop(const int16_t cx, const int16_t cy, const int16_t &r, const std::function<auto (const uint16_t &) -> void> &set_tia) -> void {
+
+        auto gfx_circle_loop(const int16_t cx, const int16_t cy, const int16_t r, const std::function<auto (const uint16_t &) -> void> &set_tia) -> void {
+            
             uint16_t center_point = ix(cx, cy);
 
             int16_t x = r;
@@ -659,8 +677,8 @@ namespace g80 {
             int16_t dy = 1;
             int16_t re = 0;
 
-            while (x >= y)
-            {
+            while (x >= y) {
+
                 set_tia(center_point + x - by);
                 set_tia(center_point + y - bx);
                 set_tia(center_point - y - bx);
@@ -673,8 +691,7 @@ namespace g80 {
                 ++y;
                 re += dy;
                 dy += 2;
-                if ((re << 1) + dx > 0)
-                {
+                if ((re << 1) + dx > 0) {
                     --x;
                     bx -= w_;
                     re += dx;
@@ -683,11 +700,30 @@ namespace g80 {
                 by += w_;
             }            
         }
+    
+    public:
         
-        //     auto gfx_circle(const Point &point, const int16_t &radius, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
-        //     auto gfx_circle_text(const Point &point, const int16_t &radius, const Text &text) -> void;
-        //     auto gfx_circle_color(const Point &point, const int16_t &radius, const Color &color) -> void;
-        //     auto gfx_circle_mask(const Point &point, const int16_t &radius, const MASK_BIT &mask_bit) -> void;
+        auto gfx_circle_color(const int16_t cx, const int16_t cy, const int16_t r, const color c) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {color_[i] = c;};
+            gfx_circle_loop(cx, cy, r, set_tia);
+        }
+        
+        auto gfx_circle_text(const int16_t cx, const int16_t cy, const int16_t r, const text t) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {text_[i] = t;};
+            gfx_circle_loop(cx, cy, r, set_tia);
+        }
+
+        auto gfx_circle_mask(const int16_t cx, const int16_t cy, const int16_t r, const mask_bit m) -> void {
+            const static std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t &i) -> void {set_mask(i, m);};
+            gfx_circle_loop(cx, cy, r, set_tia);
+        }
+
+        auto gfx_circle(const int16_t cx, const int16_t cy, const int16_t r, const color &c, const text &t, const mask_bit &m) -> void {
+            gfx_circle_color(cx, cy, r, c);
+            gfx_circle_text(cx, cy, r, t);
+            gfx_circle_mask(cx, cy, r, m);
+        }
+
 
         //     auto gfx_arc(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, const Text &text, const Color &color, const MASK_BIT &mask_bit) -> void;
         //     auto gfx_arc_text(const Point &point, const int16_t &radius, const int16_t &sa, const int16_t &ea, const Text &text) -> void;
