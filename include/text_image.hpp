@@ -1,5 +1,5 @@
 /*
- *  TextImage Class for console out buffering
+ *  text_image.hpp A class for console text graphics
  *  Copyright (C) 2022 Everett Gaius S. Vergara
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,8 @@
 #include <functional>
 #include <sstream>
 #include <unordered_map>
-
+#include <tuple>
+#include <vector>
 
 namespace g80 {
 
@@ -908,14 +909,31 @@ namespace g80 {
             gfx_arc_text(cx, cy, r, sa, ea, t);
             gfx_arc_mask(cx, cy, r, sa, ea, m);
         }
-
-        //     auto gfx_fill_with_text_border(const Point &point, const Text &text) -> void;
-        //     auto gfx_fill_color_border(const Point &point, const Color &color) -> void;
-        //     auto gfx_fill_with_mask_border(const Point &point, const MASK_BIT &mask_bit) -> void;
-            
     
     /**
-     * Helper functions
+     * Text Graphics: Fill
+     * 
+     */
+
+    private:
+
+        auto gfx_fill_loop(const int16_t sx, const int16_t sy, const std::function<auto (const uint16_t) -> void> &set_tia, std::function<auto (const uint16_t) -> bool> &border_check) -> void {
+            std::vector<std::tuple<int16_t, int16_t>> points(size_);
+            int16_t si = -1;
+            if (!border_check(ix(sx, sy))) points[++si] = {sx, sy};
+            while (si >= 0) {
+                auto [x, y] = points[si--];
+                uint16_t i = ix(x, y);
+                set_tia(i);
+                if (y - 1 >= 0 && !border_check(ix(x, y - 1))) points[++si] = {x, y - 1};
+                if (y + 1 < h_ && !border_check(ix(x, y + 1))) points[++si] = {x, y + 1};
+                if (x - 1 >= 0 && !border_check(ix(x - 1, y))) points[++si] = {x - 1, y};
+                if (x + 1 < w_ && !border_check(ix(x + 1, y))) points[++si] = {x + 1, y};
+            }
+        }
+
+    /**
+     * Misc Helper functions
      * 
      */
 
