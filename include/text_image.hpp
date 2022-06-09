@@ -49,7 +49,7 @@ namespace g80 {
     class text_image {
             
     // todo: use template instead of int16_t
-    // todo: all ix must be uint
+    // * todo: all ix must be uint
     // todo: fix warnings uint16_t vs. uint16_t in for loops
     // TODO, remove reference if parameter type is primitive 
     // TODO, remove on return type unless necessary 
@@ -365,9 +365,8 @@ namespace g80 {
             uint16_t start = ix(x, y);
             for (uint16_t i = 0; i < t.size(); ++i) {
                 uint16_t j = (start + i);
-                if (j >= size_) j %= size_;
-                text_[j] = t[i];
-                color_[j] = c;
+                set_text(j, t[i]);
+                set_color(j, c);
             }
         }
         
@@ -451,8 +450,8 @@ namespace g80 {
                 uint16_t tix = ix(x, y + r); 
                 for (uint16_t six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
                     if (conditional(tix, six, timg)) {
-                        text_[tix] = timg.craw_text().get()[six];
-                        color_[tix] = timg.craw_color().get()[six];
+                        set_text(tix, timg.craw_text().get()[six]);
+                        set_color(tix, timg.craw_color().get()[six]);
                     }
                     ++tix;
                 }
