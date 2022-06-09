@@ -627,7 +627,7 @@ namespace g80 {
 
         auto gfx_point(const int16_t x, const int16_t y, const text t, const color c, const mask_bit m) -> void {
             uint16_t i = ix(x, y);
-            if (i >= 0 && i < size_) {
+            if (i < size_) {
                 text_[i] = t;
                 color_[i] = c;
                 set_mask(i, m);
@@ -665,17 +665,17 @@ namespace g80 {
     public:
 
         auto gfx_line_color(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const color c) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_text(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const text t) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_mask(const int16_t x1, const int16_t y1, const int16_t x2, const int16_t y2, const mask_bit m) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
@@ -733,17 +733,17 @@ namespace g80 {
     public:
         
         auto gfx_circle_color(const int16_t cx, const int16_t cy, const int16_t r, const color c) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
         
         auto gfx_circle_text(const int16_t cx, const int16_t cy, const int16_t r, const text t) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
         auto gfx_circle_mask(const int16_t cx, const int16_t cy, const int16_t r, const mask_bit m) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
@@ -890,17 +890,17 @@ namespace g80 {
     public:
 
         auto gfx_arc_color(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const color c) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) color_[i] = c;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
         
         auto gfx_arc_text(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const text t) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) text_[i] = t;};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
         auto gfx_arc_mask(const int16_t cx, const int16_t cy, const int16_t r, const int16_t sa, const int16_t ea, const mask_bit m) -> void {
-            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i >= 0 && i < size_) set_mask(i, m);};
+            static const std::function<auto (const int16_t &) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
@@ -917,19 +917,51 @@ namespace g80 {
 
     private:
 
-        auto gfx_fill_loop(const int16_t sx, const int16_t sy, const std::function<auto (const uint16_t) -> void> &set_tia, std::function<auto (const uint16_t) -> bool> &border_check) -> void {
+        auto gfx_fill_loop(const int16_t sx, const int16_t sy, const std::function<auto (const uint16_t) -> void> &set_tia, const std::function<auto (const uint16_t) -> bool> &is_border) -> void {
             std::vector<std::tuple<int16_t, int16_t>> points(size_);
             int16_t si = -1;
-            if (!border_check(ix(sx, sy))) points[++si] = {sx, sy};
+            if (!is_border(ix(sx, sy))) points[++si] = {sx, sy};
             while (si >= 0) {
                 auto [x, y] = points[si--];
                 uint16_t i = ix(x, y);
                 set_tia(i);
-                if (y - 1 >= 0 && !border_check(ix(x, y - 1))) points[++si] = {x, y - 1};
-                if (y + 1 < h_ && !border_check(ix(x, y + 1))) points[++si] = {x, y + 1};
-                if (x - 1 >= 0 && !border_check(ix(x - 1, y))) points[++si] = {x - 1, y};
-                if (x + 1 < w_ && !border_check(ix(x + 1, y))) points[++si] = {x + 1, y};
+                if (y - 1 >= 0 && !is_border(ix(x, y - 1))) points[++si] = {x, y - 1};
+                if (y + 1 < h_ && !is_border(ix(x, y + 1))) points[++si] = {x, y + 1};
+                if (x - 1 >= 0 && !is_border(ix(x - 1, y))) points[++si] = {x - 1, y};
+                if (x + 1 < w_ && !is_border(ix(x + 1, y))) points[++si] = {x + 1, y};
             }
+        }
+    
+    public:
+
+        auto gfx_fill_color(const int16_t x, const int16_t y, const color c) -> void {
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) color_[i] = c;};
+            static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return color_[i] == c;};
+            gfx_fill_loop(x, y, set_tia, is_border);
+        }
+
+        auto gfx_fill_text(const int16_t x, const int16_t y, const text t) -> void {
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) text_[i] = t;};
+            static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return text_[i] == t;};
+            gfx_fill_loop(x, y, set_tia, is_border);
+        }
+
+        auto gfx_fill_mask(const int16_t x, const int16_t y, const mask_bit m) -> void {
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {if (i < size_) set_mask(i, m);};
+            static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return get_mask(i) == m;};
+            gfx_fill_loop(x, y, set_tia, is_border);
+        }
+
+        auto gfx_fill_with_text_border(const int16_t x, const int16_t y, const color c, const text t, const mask_bit m) -> void {
+            static const std::function<auto (const uint16_t) -> void> set_tia = [&](const uint16_t i) -> void {
+                if (i < size_) {
+                    color_[i] = c;
+                    text_[i] = t;
+                    set_mask(i, m);
+                }
+            };
+            static const std::function<auto (const uint16_t) -> bool> is_border = [&](const uint16_t i) -> bool {if (i >= size_) return true; return text_[i] == t;};
+            gfx_fill_loop(x, y, set_tia, is_border);
         }
 
     /**
