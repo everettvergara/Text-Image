@@ -44,9 +44,9 @@ namespace g80 {
 
     public:
 
-        text_video_anim(const uint_type w, const uint_type h, uint_type fps, const color c = 7, const text t = ' ', const mask_bit m = ON) :
+        text_video_anim(const uint_type w, const uint_type h, const uint_type fps, const color c = 7, const text t = ' ', const mask_bit m = ON) :
             txt_img_(w, h, c, t, m),
-            MSPF_(1000 / validator<uint_type, 1>(fps)) {}
+            MSPF_(1000 / validator_if_less_than<uint_type, 1>(fps)) {}
 
         virtual ~text_video_anim() = default;
 
@@ -110,9 +110,10 @@ namespace g80 {
 
         // TODO: consoder using literal suffix for width and height
         // i.e. 10d d -> double the width for conversion factor
+        text_image<int_type, uint_type> txt_img_;
         uint_type MSPF_;
         bool is_running_{false};
-        text_image<int_type, uint_type> txt_img_;
+        
     };
 }
 

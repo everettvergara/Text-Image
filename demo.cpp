@@ -16,7 +16,7 @@ auto main(const int argc, const char *argv[]) -> int {
     // // ti.gfx_fill_text(70, 15, '*');
     // ti.show();
 
-    text_video_anim<int16_t, uint16_t> tva(130, 40);
+    text_video_anim<int16_t, uint16_t> tva(130, 40, 15);
 
     tva.preprocess();
     tva.run();
