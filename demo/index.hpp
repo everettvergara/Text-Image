@@ -20,6 +20,7 @@
  * ix                       ^
  * 
  * bin_loc:     ?    ?   1  ?                2
+ * 
  */
 
 namespace g80 {
