@@ -729,17 +729,17 @@ namespace g80 {
     public:
 
         auto gfx_line_color(const int_type x1, const int_type y1, const int_type x2, const int_type y2, const color c) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_text(const int_type x1, const int_type y1, const int_type x2, const int_type y2, const text t) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
         auto gfx_line_mask(const int_type x1, const int_type y1, const int_type x2, const int_type y2, const mask_bit m) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
             gfx_line_loop(x1, y1, x2, y2, set_tia);
         }
 
@@ -797,17 +797,17 @@ namespace g80 {
     public:
         
         auto gfx_circle_color(const int_type cx, const int_type cy, const int_type r, const color c) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
         
         auto gfx_circle_text(const int_type cx, const int_type cy, const int_type r, const text t) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
         auto gfx_circle_mask(const int_type cx, const int_type cy, const int_type r, const mask_bit m) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
             gfx_circle_loop(cx, cy, r, set_tia);
         }
 
@@ -954,17 +954,17 @@ namespace g80 {
     public:
 
         auto gfx_arc_color(const int_type cx, const int_type cy, const int_type r, const int_type sa, const int_type ea, const color c) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
         
         auto gfx_arc_text(const int_type cx, const int_type cy, const int_type r, const int_type sa, const int_type ea, const text t) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
         auto gfx_arc_mask(const int_type cx, const int_type cy, const int_type r, const int_type sa, const int_type ea, const mask_bit m) -> void {
-            static const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
+            const std::function<auto (const int_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
             gfx_arc_loop(cx, cy, r, sa, ea, set_tia);
         }
 
@@ -999,32 +999,32 @@ namespace g80 {
     public:
 
         auto gfx_fill_color(const int_type x, const int_type y, const color c) -> void {
-            static const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
-            static const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return color_[i] == c;};
+            const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {set_color(i, c);};
+            const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return color_[i] == c;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
         auto gfx_fill_text(const int_type x, const int_type y, const text t) -> void {
-            static const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
-            static const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return text_[i] == t;};
+            const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {set_text(i, t);};
+            const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return text_[i] == t;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
         auto gfx_fill_mask(const int_type x, const int_type y, const mask_bit m) -> void {
-            static const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
-            static const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return get_mask(i) == m;};
+            const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {set_mask(i, m);};
+            const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return get_mask(i) == m;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
         auto gfx_fill_with_text_border(const int_type x, const int_type y, const color c, const text t, const mask_bit m) -> void {
-            static const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {
+            const std::function<auto (const uint_type) -> void> set_tia = [&](const uint_type i) -> void {
                 {
                     set_color(i, c);
                     set_text(i, t);
                     set_mask(i, m);
                 }
             };
-            static const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return text_[i] == t;};
+            const std::function<auto (const uint_type) -> bool> is_border = [&](const uint_type i) -> bool {if (i >= size_) return true; return text_[i] == t;};
             gfx_fill_loop(x, y, set_tia, is_border);
         }
 
