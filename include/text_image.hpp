@@ -75,12 +75,10 @@ namespace g80 {
         std::is_same<uint_type, uint32_t>::value || std::is_same<uint_type, uint64_t>::value, 
         "uint_type must be one of: uint8_t, uint_type, uint32_t, uint64_t");
 
-    /**
-     * Constructors, Assignments and 
-     * Destructors 
-     * 
-     */
-
+    
+    // Constructors, Assignments and 
+    // Destructors 
+    
     public:
     
         text_image() = default;
@@ -167,10 +165,7 @@ namespace g80 {
         
         ~text_image() = default;
 
-    /**
-     * Protected Property Getters
-     * 
-     */
+    // Protected property getters
 
     public:
 
@@ -215,10 +210,7 @@ namespace g80 {
         }
 
 
-    /** 
-     * Debuggers
-     * 
-     */
+    // Debuggers
 
     public:
 
@@ -282,11 +274,8 @@ namespace g80 {
         }
 
 
-    /**
-     * Text, Color and Mask 
-     * Getters and Setters
-     * 
-     */
+    // Getters for 
+    // Colors, Texts and Masks    
 
     public:
 
@@ -522,10 +511,8 @@ namespace g80 {
             bit_image(x, y, timg, conditional);
         }
 
-    /**
-     * Image translations
-     * 
-     */
+
+    // Text Image Transactions 
 
     public:
 
@@ -661,10 +648,7 @@ namespace g80 {
         }
 
 
-    /**
-     * Text Graphics: Point
-     * 
-     */
+    // Point
 
     public:
 
@@ -677,10 +661,7 @@ namespace g80 {
             }         
         }
 
-    /**
-     * Text Graphics: Line
-     * 
-     */
+    // Draw Line using color, text or mask
 
     private:
 
@@ -728,10 +709,7 @@ namespace g80 {
             gfx_line_mask(x1, y1, x2, y2, m);
         }
 
-    /**
-     * Text Graphics: Circle
-     * 
-     */
+    // Draw Circle using color, text or mask
 
     private:
 
@@ -796,10 +774,7 @@ namespace g80 {
             gfx_circle_mask(cx, cy, r, m);
         }
 
-    /**
-     * Text Graphics: Arc
-     * 
-     */
+    // Draw Arc using color, text or mask
 
     private:
 
@@ -953,10 +928,7 @@ namespace g80 {
             gfx_arc_mask(cx, cy, r, sa, ea, m);
         }
     
-    /**
-     * Text Graphics: Fill
-     * 
-     */
+    // Fill an area using color, text or mask
 
     private:
 
@@ -1061,10 +1033,7 @@ namespace g80 {
             std::cout << output.str();            
         }
         
-    /**
-     *  Protected Properties
-     * 
-     */
+    // Protected variables and objects
 
     protected:
 

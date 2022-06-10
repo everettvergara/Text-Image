@@ -59,11 +59,7 @@ namespace g80 {
     template<typename int_type, typename uint_type>
     class text_video_anim {
     
-    /**
-     * Constructors, Assignments and 
-     * Destructors 
-     * 
-     */
+    // Constructors and destructors
 
     public:
 
@@ -73,11 +69,8 @@ namespace g80 {
 
         virtual ~text_video_anim() = default;
 
-    /**
-     * Getters
-     * 
-     */
-    
+    // Getters
+
     public:
 
         inline auto data() -> text_image<int_type, uint_type> & {
@@ -88,10 +81,7 @@ namespace g80 {
             return screen_;
         }
 
-    /**
-     * User overridable functions 
-     * 
-     */
+    // Overridable functions
 
     protected:
 
@@ -130,7 +120,6 @@ namespace g80 {
 
 
     protected:
-
         // TODO: consoder using literal suffix for width and height
         // i.e. 10d d -> double the width for conversion factor
         text_image<int_type, uint_type> screen_;
