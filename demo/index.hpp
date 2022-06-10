@@ -31,7 +31,7 @@ namespace g80 {
 
         auto reset() -> void {
             bin_ptr_ = {invalid_ptr_};
-            memset(bin_loc_.data(), invalid_ptr_, sizeof(uint_type) * N);
+            memset(bin_loc_.data(), ~0, sizeof(uint_type) * N);
         }
 
         auto add_to_bin(uint_type ix) -> bool {
@@ -39,6 +39,12 @@ namespace g80 {
             bin_loc[ix] = bin_ptr_;
             return bin_ptr_ != invalid_ptr_;
         }
+
+        auto remove_from_bin(uint_type ix) -> void {
+            std::swap(ix_bin_[bin_loc_[ix]], ix_bin_[bin_ptr_--]);
+            bin_loc_[ix] = invalid_ptr_;
+        }
+
     
         auto remove_to_bin
 
