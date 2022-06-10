@@ -333,6 +333,13 @@ namespace g80 {
             std::fill_n(&text_[0], size_, t);      
         }
 
+        auto fill_text(const std:string &s) -> void {
+            for (uint_type i = 0, j = 0; i < size_; ++i, ++j) {
+                if (j == statis_cast<uint_type>(s.size())) j = 0;
+                text_[i] = s[j];
+            }
+        } 
+
         inline auto set_color(const uint_type i, const color c) -> void {
             #ifdef UNSAFE_OPTIM     
             color_[i] = c;
