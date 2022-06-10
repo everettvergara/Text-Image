@@ -1,3 +1,27 @@
+/**
+ * @file text_video_anim.hpp
+ * @author Everett Gaius S. Vergara (me@everettgaius.com)
+ * @brief A simple C++17 class to handle console animation using the text_image class.
+ * @version 0.1
+ * @date 2022-06-10
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ */
+
 #ifndef TEXT_VIDEO_ANIM_HPP
 #define TEXT_VIDEO_ANIM_HPP
 
@@ -5,7 +29,6 @@
 #include <thread>
 #include "text_image.hpp"
 
-// Includes for is_key_pressed
 #include <cstdio>
 #include <sys/select.h>
 #include <sys/ioctl.h>

@@ -1,20 +1,25 @@
-/*
- *  text_image.hpp A class for console text graphics
- *  Copyright (C) 2022 Everett Gaius S. Vergara
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+/**
+ * @file text_image.hpp
+ * @author Everett Gaius S. Vergara (me@everettgaius.com)
+ * @brief A simple C++17 class to handle console text graphics on Mac, Windows and Linux.
+ * @version 0.1
+ * @date 2022-06-10
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *	
+ * 
  */
 
 #ifndef TEXT_IMAGE_HPP
@@ -33,18 +38,9 @@
 
 namespace g80 {
 
-    /**
-     * Type shortcuts
-     * 
-     * Uncomment #define UNSAFE_OPTIM
-     * if you are sure that your program doesn't 
-     * go beyond the boundaries of your canvass
-     * 
-     * #define UNSAFE_OPTIM
-     * 
-     */
-
-    #define UNSAFE_OPTIM
+    // Uncomment #define UNSAFE_OPTIM if you are sure that your 
+    // program doesn't go beyond the boundaries of your canvass
+    // #define UNSAFE_OPTIM
 
     using color = uint8_t;
     using text = uint8_t;
@@ -57,15 +53,6 @@ namespace g80 {
     enum mask_bit {OFF = 0x00, ON = 0x01};
     enum text_image_attrib {TEXT = 1, COLOR = 2, MASK = 4, ALL = 7}; 
 
-    /**
-     * validator_if_less_than
-     * A template validator for function parameters if 
-     * less than a certain number.
-     * 
-     * T, type 
-     * less_than, value 
-     */
-
     template<typename T, T less_than>
     class validator_if_less_than {
     public:
@@ -74,14 +61,6 @@ namespace g80 {
     private:
         T n_;
     };
-
-    /**
-     * text_image
-     * A class to handle the console graphics. 
-     * 
-     * int_type, the type of int to be used
-     * uint_type, type type of uint to be used
-     */
 
     template<typename int_type, typename uint_type>
     class text_image {
