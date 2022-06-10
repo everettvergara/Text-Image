@@ -50,6 +50,7 @@ constexpr uint_type FPS = 15;
 // Creature List: 
 // Use array instead of unordered_list for optimization purposes
 
+// todo: generalize ixs
 using creature_ids = std::array<uint_type, SCREEN_SIZE>;
 using creature_id_exists = std::bitset<SCREEN_SIZE>;
 using creature_ids_ix = std::array<int_type, 9>;
