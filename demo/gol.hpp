@@ -110,7 +110,7 @@ public:
         memset(neigh_counts_ix.data(), ~0, sizeof(int_type) * 9);
         
         std::vector<uint_type> all_shuffled_creatureids = preprocess_random_creatures();
-        
+        for (uint_type i = 0; i < N_; ++i) creature_ids_.set(all_shuffled_creatureids[i], true);
     }
 
     auto update() -> bool {
