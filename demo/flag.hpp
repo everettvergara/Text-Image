@@ -91,6 +91,7 @@ public:
     }
 
 private:
+
     text_image<int_type, uint_type> pinoy_flag_;
     std::array<int_type, flag_width> wave_y_;
     std::array<uint_type, flag_width> wave_yn_;
