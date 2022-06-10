@@ -30,11 +30,12 @@ public:
 
     auto preprocess() -> bool {
 
-        // for (float a = 0; a < waves * M_PI; a += inc) {
-        //     y[x] = (wave_height / 2.0) - sin(a) * (wave_height / 2.0 - 1) - 1;
-        //     yn[x] = +1;
-        //     ++x;
-        // }
+        uint_type x = 0;
+        for (float_type a = 0; a < waves * M_PI; a += inc) {
+            wave_y_[x] = (wave_height / 2.0) - sin(a) * (wave_height / 2.0 - 1) - 1;
+            wave_yn_[x] = +1;
+            ++x;
+        }
 
         // pinoy_flag_.fill_text("BayangmagiliwPerlasngSilangananAlabngpusoSadibdibmoybuhayLupangHinirangDuyankangmagitingSamanlulupigDikapasisiilSadagatatbundokSsimoyatsalangitmongbughawMaydilagangtulaAtawitsapaglayangminamahalAngkislapngwatawatmoyTagumpaynanagniningningAngbituinatarawniyaKailanpamaydimagdidilimLupangarawngluwalhatitpagsintaBuhayaylangitsapilingmoAmingligayana'pagmaymangaapiAngmamatayngdahilsaiyo");
         // for (uint_type i = 0; i < 15; ++i) {
@@ -70,8 +71,8 @@ public:
 
 private:
     text_image<int_type, uint_type> pinoy_flag_;
-    std::array<int_type, flag_width> wave_y;
-    std::array<uint_type, flag_width> wave_yn;
+    std::array<int_type, flag_width> wave_y_;
+    std::array<uint_type, flag_width> wave_yn_;
 };
 
 #endif
