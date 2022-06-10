@@ -45,7 +45,7 @@ namespace g80 {
     public:
 
         text_video_anim(const uint_type w, const uint_type h, const uint_type fps, const color c = 7, const text t = ' ', const mask_bit m = ON) :
-            txt_img_(w, h, c, t, m),
+            screen_(w, h, c, t, m),
             MSPF_(1000 / validator_if_less_than<uint_type, 1>(fps)) {}
 
         virtual ~text_video_anim() = default;
@@ -58,11 +58,11 @@ namespace g80 {
     public:
 
         inline auto data() -> text_image<int_type, uint_type> & {
-            return txt_img_;
+            return screen_;
         }
 
         inline auto cdata() const -> const text_image<int_type, uint_type> & {
-            return txt_img_;
+            return screen_;
         }
 
     /**
@@ -94,10 +94,10 @@ namespace g80 {
         virtual auto preprocess() -> bool {return true;}
         
         virtual auto run() -> bool {
-            
+            is_running_ = true;
             do {
                 time_point<system_clock> start {system_clock::now()};
-                txt_img_.show();
+                screen_.show();
                 if (event()) {update(); delayer(start);}
             } while(is_running_);
 
@@ -110,7 +110,7 @@ namespace g80 {
 
         // TODO: consoder using literal suffix for width and height
         // i.e. 10d d -> double the width for conversion factor
-        text_image<int_type, uint_type> txt_img_;
+        text_image<int_type, uint_type> screen_;
         uint_type MSPF_;
         bool is_running_{false};
         
