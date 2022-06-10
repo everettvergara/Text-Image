@@ -30,7 +30,7 @@
 #include <vector>
 #include <array>
 #include <tuple>
-// #include <bitset>
+#include <bitset>
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
@@ -51,6 +51,7 @@ constexpr uint_type FPS = 15;
 
 // Creature, Count (could be merged to Creature List)
 // Creature: [creature_id, count]: {0, 1}
+using creature_ids = std::bitset<SCREEN_SIZE>;
 using creature_ids_neigh_count = std::array<uint_type, SCREEN_SIZE>;
 
 // // Org creatures list by count (9 possible counts: 0 - 8)
@@ -79,11 +80,11 @@ public:
 private: 
 
     auto preprocess_random_creatures() -> std::vector<uint_type> {
-        std::vector<uint_type> all_creature_id;
-        all_creature_id.reserve(screen_.size());
-        for (uint_type i = 0; i < screen_.size(); ++i) all_creature_id[i] = i;
-        for (uint_type i = 0; i < screen_.size(); ++i) std::swap(all_creature_id[i], all_creature_id[rand() % screen_.size()]);
-        return all_creature_id;
+        std::vector<uint_type> all_creature_ids;
+        all_creature_ids.reserve(screen_.size());
+        for (uint_type i = 0; i < screen_.size(); ++i) all_creature_ids[i] = i;
+        for (uint_type i = 0; i < screen_.size(); ++i) std::swap(all_creature_ids[i], all_creature_ids[rand() % screen_.size()]);
+        return all_creature_ids;
     }
 
     auto update_creature(uint_type creature_id, uint_type neigh_count) -> void {
@@ -103,16 +104,13 @@ public:
 
     auto preprocess() -> bool {
 
-        // Generate random creatures 
-        std::vector<uint_type> all_shuffled_creatureids = preprocess_random_creatures();
-        
+        creature_ids_.reset();
         memset(creature_ids_neigh_count_.data(), 0, sizeof(uint_type) * SCREEN_SIZE);
         memset(neigh_counts_creature_ids_.data(), 0, sizeof(uint_type) * SCREEN_SIZE);
         memset(neigh_counts_ix.data(), ~0, sizeof(int_type) * 9);
         
-        for (auto &c : neigh_counts_ix) std::cout << c << "\n";
-        exit(0);
-
+        std::vector<uint_type> all_shuffled_creatureids = preprocess_random_creatures();
+        
     }
 
     auto update() -> bool {
@@ -123,6 +121,7 @@ public:
 
 private:
     uint_type N_;
+    creature_ids creature_ids_;
     creature_ids_neigh_count creature_ids_neigh_count_;
     neigh_counts_creature_ids neigh_counts_creature_ids_;
     neigh_counts_ix neigh_counts_ix;
