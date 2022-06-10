@@ -45,8 +45,14 @@ namespace g80 {
             bin_loc_[ix] = invalid_ptr_;
         }
 
-    
-        auto remove_to_bin
+        inline auto size() -> uint_type {
+            return bin_ptr_ + 1;
+        }
+
+        inline auto get_ix_bin() const -> const std::array<uint_type, N> {return ix_bin_;}
+        inline auto bin_loc() const -> const std::array<uint_type, N> {return bin_loc_;}
+
+        // TODO: Add forward iterator for list of available indexes in the bin
 
     private:
         uint_type invalid_ptr_{~static_cast<uint_type>(0);};
