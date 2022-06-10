@@ -28,15 +28,16 @@ public:
     
     ~flag() = default;
 
-    auto preprocess() -> bool {
-
+    auto preprocess_wave_values() -> void {
         uint_type x = 0;
         for (float_type a = 0; a < waves * M_PI; a += inc) {
             wave_y_[x] = (wave_height / 2.0) - sin(a) * (wave_height / 2.0 - 1) - 1;
             wave_yn_[x] = +1;
             ++x;
         }
+    }
 
+    auto preprocess_flag_drawing() -> void {
         // pinoy_flag_.fill_text("BayangmagiliwPerlasngSilangananAlabngpusoSadibdibmoybuhayLupangHinirangDuyankangmagitingSamanlulupigDikapasisiilSadagatatbundokSsimoyatsalangitmongbughawMaydilagangtulaAtawitsapaglayangminamahalAngkislapngwatawatmoyTagumpaynanagniningningAngbituinatarawniyaKailanpamaydimagdidilimLupangarawngluwalhatitpagsintaBuhayaylangitsapilingmoAmingligayana'pagmaymangaapiAngmamatayngdahilsaiyo");
         // for (uint_type i = 0; i < 15; ++i) {
         //     for (uint_type j = 1 + i * 3; j < flag_width; ++j) {
@@ -60,7 +61,11 @@ public:
         // pinoy_flag_.gfx_line_color({3, flag_height - 5 - 1}, {5, flag_height - 3 - 1}, 3);
         // pinoy_flag_.gfx_line_color({33,14}, {35, 16}, 3);
         // pinoy_flag_.gfx_line_color({33,16}, {35, 14}, 3);
+    }
 
+    auto preprocess() -> bool {
+        preprocess_wave_values();
+        preprocess_flag_drawing();
         return true;
     }
 
