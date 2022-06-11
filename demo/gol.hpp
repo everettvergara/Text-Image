@@ -136,14 +136,19 @@ public:
 
     auto preprocess() -> bool {
 
-        // creature_id_exists_.reset();
-        // memset(neigh_counts_ix.data(), ~0, sizeof(int_type) * 9);
-        // memset(neigh_counts_ix.data(), ~0, sizeof(int_type) * 9);
-        
-        // std::vector<uint_type> all_shuffled_creatureids = preprocess_random_creatures();
-        // for (uint_type i = 0; i < N_; ++i) {
-        //     creature_id_exists_[all_shuffled_creatureids[i]] = true;
-        // }
+        // All counts must be 0 and add all creatures to group 0 since they are unused
+        std::fill_n(creatures_count_.data(), creatures_count_.size(), 0);
+        for (uint_type i{0}; i < SCREEN_SIZE; ++i) grouped_creatures_[0].use(i);
+
+        // Shuffle creatures to be considered in the demo 
+        std::array<uint_type, SCREEN_SIZE> random_creatures;
+        for (uint_type i{0}; i < SCREEN_SIZE; ++i) std::swap(random_creatures[0], random_creatures[rand() % SCREEN_SIZE]);
+
+        // Get only the first N
+        for (uint_type i{0}; i < size_; ++i) {
+            creatures_.use(random_creatures[i]);
+        }
+
 
         return true;
     }
