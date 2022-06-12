@@ -25,7 +25,6 @@
 #include "gol.hpp"
 
 auto main(const int argc, const char *argv[]) -> int {
-
     gol game_of_life; 
     game_of_life.preprocess();
     game_of_life.run();

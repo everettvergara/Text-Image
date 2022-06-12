@@ -27,6 +27,7 @@
 
 #include <functional>
 #include <unordered_set>
+#include <tuple>
 
 #include "common.hpp"
 #include "gol_bounds.hpp"
@@ -34,11 +35,12 @@
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
+using uoset_ix = std::unordered_set<uint_type>;
 
-constexpr uint_type SCREEN_WIDTH = 140;
-constexpr uint_type SCREEN_HEIGHT = 40;
+constexpr uint_type SCREEN_WIDTH = 130;
+constexpr uint_type SCREEN_HEIGHT = 30;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
-constexpr uint_type FPS = 15;
+constexpr uint_type FPS = 10;
 
 gol_bounds<int_type, uint_type, SCREEN_WIDTH, SCREEN_HEIGHT> SCR_BND;
 
@@ -57,8 +59,8 @@ public:
 
 private: 
 
-    auto preprocess_random_creatures(const uint_type n) -> std::unordered_set<uint_type> {
-        std::unordered_set<uint_type> random_creatures;
+    auto preprocess_random_creatures(const uint_type n) -> uoset_ix {
+        uoset_ix random_creatures;
         std::vector<uint_type> live_creatures;
         live_creatures.reserve(screen_.size());
         for (uint_type i = 0; i < screen_.size(); ++i) live_creatures.emplace_back(i);
@@ -70,8 +72,8 @@ private:
 public:
 
     auto preprocess() -> bool {
-        std::unordered_set<uint_type> live = preprocess_random_creatures(1000);
-        std::unordered_set<uint_type> potential;
+        uoset_ix live = preprocess_random_creatures(2500);
+        uoset_ix potential;
 
         uint_type count;
         using fparameter_bool = std::function<auto (const uint_type ix) -> bool>;
@@ -100,43 +102,56 @@ public:
             screen_.set_text(c.first, ' ');
     }
 
-    auto update_execute_rules() -> void {
+    auto update_execute_rules_get_vars() -> std::tuple<uoset_ix, uoset_ix, uoset_ix> {
+        
+        uoset_ix to_get_neighbors;
+        uoset_ix to_update_count;
+        uoset_ix to_spawn;
 
-        std::unordered_set<uint_type> to_get_neighbors;
-        std::unordered_set<uint_type> to_update;
-        std::unordered_set<uint_type> to_spawn;
-
-        // Execute the rules
         for (uint_type group{0}; group <= 8; ++group) {
             
-            // Spaces with 3 neighbors will be spawned
-            if (i == 3) {
-                for (auto &ix : potential_creatures_.get_grouped_creatures(i)) {
+            // Spaces with 3 neighbors 
+            // will be spawned
+            if (group == 3) {
+                for (auto ix : potential_creatures_.get_grouped_creatures(group)) {
                     to_spawn.insert(ix);
                     to_get_neighbors.insert(ix);
                 }
-
                 potential_creatures_.kill_group(group);
             
-            // Under population (0, 1) and over population (4, 5, 6, 7, 8) will be killed
-            } else if (i != 2) {
+            // Creatures with 2 neighbors will remain
+            // but the count needs to get updated
+            } else if (group == 2) {
+                for (auto &ix : live_creatures_.get_grouped_creatures(group)) 
+                    to_update_count.insert(ix);
+
+
+            // Under population (0, 1) and 
+            // over population (4, 5, 6, 7, 8) will be killed
+            } else {
                 for (auto &ix : live_creatures_.get_grouped_creatures(group)) 
                     to_get_neighbors.insert(ix);
-                live_creatures_.kill_group(group);
-            
-            // creatures with 2 neighbors will remain
-            } else {
-                for (auto &ix : potential_creatures_.get_grouped_creatures(group)) 
-                    to_update.insert(ix);
-            }
 
+                live_creatures_.kill_group(group);
+            }
         }
+
+        return {to_get_neighbors, to_update_count, to_spawn};
+    }
+
+    auto update_execute_rules() -> void {
+
+        std::tuple<uoset_ix, uoset_ix, uoset_ix> vars = update_execute_rules_get_vars();
+        uoset_ix &to_get_neighbors = std::get<0>(vars);
+        uoset_ix &to_update_count = std::get<1>(vars);
+        uoset_ix &to_spawn = std::get<2>(vars);
 
         // Recalc neighbors
         uint_type count;
+        uoset_ix additional_to_update_count;
         std::function<auto (const uint_type) -> bool> if_always_true = [](const uint_type) {return true;};
         std::function<auto (const uint_type) -> bool> if_bound_exists = [&](const uint_type ix) {return live_creatures_.exists(ix);};
-        std::function<auto (const uint_type) -> void> then_add_to_update = [&](const uint_type ix) {to_update.insert(ix);};
+        std::function<auto (const uint_type) -> void> then_add_to_update_count = [&](const uint_type ix) {to_update_count.insert(ix);};
         std::function<auto (const uint_type) -> void> then_inc_count = [&](const uint_type ix) {++count;};
         
         for (auto &s : to_spawn) {
@@ -146,9 +161,12 @@ public:
         }
         
         for (auto &n : to_get_neighbors) 
-            SCR_BND.iterate(n, if_always_true, then_add_to_update, nullptr);
+            SCR_BND.iterate(n, if_always_true, then_add_to_update_count, nullptr);
         
-        for (auto &ix : to_update) {
+        for (auto &n : additional_to_update_count) 
+            to_update_count.insert(n);
+        
+        for (auto &ix : to_update_count) {
             count = 0;
             SCR_BND.iterate(ix, if_bound_exists, then_inc_count, nullptr);
 
@@ -159,12 +177,17 @@ public:
             }
         } 
     }
+    auto update_render_creatures() -> void {
+        for (auto &c : live_creatures_.get_creature_count()) {
+            screen_.set_color(c.first, 1 + c.second % 7);
+            screen_.set_text(c.first, '0' + c.second);
+        }
+    }
 
     auto update() -> bool {
-
         update_erase_creatures();
         update_execute_rules();
-
+        update_render_creatures();
         return true;
     }
 
