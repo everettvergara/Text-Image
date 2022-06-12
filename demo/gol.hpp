@@ -62,27 +62,19 @@ struct bounds {
 
     auto iterate_bounds(
         const uint_type ix, 
-        const std::function<auto (uint_type) -> bool> &condition,
-        const std::function<auto (uint_type) -> void> &if_action,
-        const std::function<auto (uint_type) -> void> &else_action) {
+        const std::function<auto (const uint_type) -> bool> &condition,
+        const std::function<auto (const uint_type) -> void> &if_action,
+        const std::function<auto (const uint_type) -> void> &else_action) {
         
         for (auto &r : ref) {
             uint_type p = ix + r; 
-            if (condition(p)) if_action(p); else else_action(p);
+            if (condition(p)) if_action(p); 
+            else else_action(p);
         }
     }
-
-    // inline auto get_top(const uint_type ix) -> uint_type {return ix - w;}
-    // inline auto get_upper_left(const uint_type ix) -> uint_type {return ix - w - 1;}
-    // inline auto get_upper_right(const uint_type ix) -> uint_type {return ix - w + 1;}    
-    // inline auto get_left(const uint_type ix) -> uint_type {return ix - 1;}    
-    // inline auto get_right(const uint_type ix) -> uint_type {return ix + 1;}    
-    // inline auto get_bottom(const uint_type ix) -> uint_type {return ix + w;}    
-    // inline auto get_bottom_left(const uint_type ix) -> uint_type {return ix + w - 1;}    
-    // inline auto get_bottom_right(const uint_type ix) -> uint_type {return ix + w + 1;}
 };
 
-bounds<uint_type, int_type, SCREEN_WIDTH, SCREEN_HEIGHT> screen_bounds;
+bounds<uint_type, int_type, SCREEN_WIDTH, SCREEN_HEIGHT> SCR_BND;
 
 template<typename uint_type>
 class creatures {
@@ -98,6 +90,8 @@ public:
     auto get_existing_neighbor_count(const uint_type ix) -> uint_type {
         uint_type count {0};
 
+
+        // SCR_BND.iterate_bounds(ix, nullptr, nullptr, nullptr);
         // if (exists(screen_bounds.get_top(ix))) ++count;
         // if (exists(screen_bounds.get_upper_left(ix))) ++count;
         // if (exists(screen_bounds.get_upper_right(ix))) ++count;
@@ -169,26 +163,17 @@ public:
         std::unordered_set<uint_type> live = preprocess_random_creatures(1000);
         std::unordered_set<uint_type> potential;
 
-        // auto exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f < live.end();}
+        uint_type count;
+        std::function<auto (const uint_type ix) -> bool> if_exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f != live.end();};
+        std::function<auto (const uint_type ix) -> void> then_inc_count = [&](const uint_type ix) -> void {++count;};
+        std::function<auto (const uint_type ix) -> void> else_add_to_potential = [&](const uint_type ix) -> void {potential.insert(ix);};
 
-        // auto count;
-        // auto inc_creature_count_and_get_potential_creatures = [&](const uint_type ix) -> void {
-        //     if (exists(ix)) ++count;
-        //     else potential_creatures.insert(ix);
-        // } 
+        for (auto &ix : live) {
+            count = 0;
+            SCR_BND.iterate_bounds(ix, if_exists, then_inc_count, else_add_to_potential);
+            live_creatures_.update(ix, count);
+        }
 
-        // for (auto &c : live_creatures) {
-        //     uint_type count = 0;
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_top(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_left(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_right(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_left(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_right(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_left(c));
-        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_right(c));
-        //     live_creatures_.insert(c, count);
-        // }
 
         // for (auto &c : potential_creatures) {
         //     count = 0;
