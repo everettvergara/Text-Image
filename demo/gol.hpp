@@ -139,7 +139,7 @@ public:
         for (uint_type i{0}; i < size_; ++i) {
             auto ix {random_creatures[i]};
             creatures_.use(ix);
-            auto count = {neighbor_count(ix)};
+            auto count {neighbor_count(ix)};
             if (count > 0) {
                 creatures_count_[ix] = count;
                 grouped_creatures_[0].unuse(ix);
@@ -149,11 +149,18 @@ public:
 
         return true;
     }
+    auto update_erase_creatures() -> void {
+
+    }
 
     auto update() -> bool {
 
 
         return true;
+    }
+
+    inline auto ix(uint_type x, uint_type y) -> uint_type {
+        return y * screen_.width() + x;
     }
 
 private:
