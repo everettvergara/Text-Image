@@ -4,6 +4,11 @@ Text Image is a simple C++17 class to handle console text graphics. Applications
 
 This repo includes the Text Video Animation Class, which is supplementary to Text Image if you need to quickly code video animations and games. 
 
+![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/PinoyFlag.png)
+
+# Documentation
+
+This section is a work-in-progress.
 
 ```c++
 To use it for animation and/or games:
@@ -20,12 +25,6 @@ To use it for animation and/or games:
     https://github.com/everettvergara/Text-Image/blob/main/demo/gol_demo.cpp
 
 ```
-
-![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/PinoyFlag.png)
-
-# Documentation
-
-This section is a work-in-progress.
 
 Text Image Function List:
 
@@ -169,32 +168,3 @@ namespace g80 {
         auto show() const -> void;
     };
 }
-
-```
-
-How to use it:
----
-
-This section is a work-in-progress. In the meantime, please check /demo folder to check how to utilize text_image and text_video_anim classes in your projects. I've provided two (2) demo programs for you to follow.
-
-```c++
-
-- Game of Life
-- PH Flag Animation
-
-```
-
-```c++
-/*
-
-1. Choose the right integral type for your project:
---
-
-Since we're working with text graphics, a screen text resolution of 130 x 40 would already occupy most the normal
-screens. Therefore, a smaller integral type like int16_t or uint16_t would suffice. Unless you're working with large
-text graphics you may choose 32 - 64 bit integers.
-
-*/
-
-```
-
