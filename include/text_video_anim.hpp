@@ -120,8 +120,6 @@ namespace g80 {
 
 
     protected:
-        // TODO: consoder using literal suffix for width and height
-        // i.e. 10d d -> double the width for conversion factor
         text_image<int_type, uint_type> screen_;
         uint_type MSPF_;
         bool is_running_{false};

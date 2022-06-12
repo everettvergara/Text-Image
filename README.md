@@ -150,6 +150,8 @@ namespace g80 {
 How to use it:
 ---
 
+This section is a work-in-progress.
+
 ```c++
 /*
 
@@ -157,8 +159,8 @@ How to use it:
 --
 
 Since we're working with text graphics, a screen text resolution of 130 x 40 would already occupy most the normal
-screens. Therefore a smaller integral type like int16_t or uint16_t would suffice. Unless you're working with large
-
+screens. Therefore, a smaller integral type like int16_t or uint16_t would suffice. Unless you're working with large
+text graphics you may choose 32 - 64 bit integers.
 
 */
 
