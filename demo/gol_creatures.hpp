@@ -63,12 +63,7 @@ public:
         return f != creature_count_.end();
     }
 
-    auto get_existing_neighbor_count(const uint_type ix) const -> uint_type {
-        uint_type count {0};
-        return count;
-    }
-
-    auto size() const -> uint_type {
+    inline auto size() const -> uint_type {
         return static_cast<uint_type>(creature_count_.size());
     }
 
