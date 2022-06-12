@@ -114,27 +114,18 @@ private:
 
 
     auto update_creature(uint_type creature_id) -> void {
+        auto current_count = creatures_count_[creature_id];
+        grouped_creatures_[current_count].unuse(creature_id);
 
-        // creature_ids_neigh_count_ = neighbor_c
-        // if (!creatures_.is_used(creature_id]) {
-        //     creatures_.is_used(creature_id] = true;
-        // } else {
-
-        // }
-        // auto f = creature_id_neigh_count_.find(creature_id);
-        // if (f == creature_id_neigh_count_.end()) {
-        //     creature_id_neigh_count_.insert(creature_id, neigh_count);
-        // } else {
-        //     auto prev_neigh_count = f->second;
-        //     f->second = neigh_count;
-
-
-        // }
+        auto new_count = neighbor_count(creature_id);
+        creatures_count_[creature_id] = new_count;
+        grouped_creatures_[new_count].use(creature_id);
     }
 
 public:
 
     auto preprocess() -> bool {
+        
         // All counts must be 0 and add all creatures to group 0 since they are unused
         std::fill_n(creatures_count_.data(), creatures_count_.size(), 0);
         for (uint_type i{0}; i < SCREEN_SIZE; ++i) grouped_creatures_[0].use(i);
@@ -166,22 +157,11 @@ public:
     }
 
 private:
+
     uint_type size_;
     creatures creatures_;
     creatures_count creatures_count_;
     grouped_creatures grouped_creatures_;
-
-
-
-
-    // creature_ids creature_ids_;
-    // creature_ids_ix creature_ids_ix_;
-    // creature_id_exists creature_id_exists_;
-    // creature_ids_neigh_count creature_ids_neigh_count_;
-    // neigh_counts_creature_ids neigh_counts_creature_ids_;
-    // neigh_counts_ix neigh_counts_ix;
-
-
 };
 
 #endif
