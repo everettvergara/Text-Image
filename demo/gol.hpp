@@ -25,17 +25,15 @@
 #ifndef GOL_HPP
 #define GOL_HPP
 
-#include <functional>
-#include <unordered_set>
+
 #include <tuple>
 
-#include "common.hpp"
+#include "gol_common.hpp"
 #include "gol_bounds.hpp"
 #include "gol_creatures.hpp"
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
-using uoset_ix = std::unordered_set<uint_type>;
 
 constexpr uint_type SCREEN_WIDTH = 130;
 constexpr uint_type SCREEN_HEIGHT = 30;

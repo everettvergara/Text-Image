@@ -22,12 +22,16 @@
  * 
  */
 
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef GOL_COMMON_HPP
+#define GOL_COMMON_HPP
 
 #include <cstdint>
+#include <unordered_set>
 
 using int_type = int16_t;
 using uint_type = uint16_t;
+
+using uoset_ix = std::unordered_set<uint_type>;
+
 
 #endif

@@ -25,7 +25,12 @@
 #ifndef GOL_BOUNDS_HPP
 #define GOL_BOUNDS_HPP
 
-#include "common.hpp"
+
+#include <functional>
+#include "gol_common.hpp"
+
+using fparameter_bool = std::function<auto (const uint_type) -> bool>;
+using fparameter_void = std::function<auto (const uint_type) -> void>;
 
 template<typename int_type, typename uint_type, uint_type w, uint_type h>
 class gol_bounds {
@@ -52,9 +57,9 @@ public:
 
     auto iterate(
         const uint_type ix, 
-        const std::function<auto (const uint_type) -> bool> &condition,
-        const std::function<auto (const uint_type) -> void> &if_action,
-        const std::function<auto (const uint_type) -> void> &else_action) -> void {
+        const fparameter_bool &condition,
+        const fparameter_void &if_action,
+        const fparameter_void &else_action) -> void {
         
         if (!if_action) return;
         for (auto &r : ref_) {

@@ -28,7 +28,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <array>
-#include "common.hpp"
+#include "gol_common.hpp"
 
 template<typename uint_type>
 class gol_creatures {
