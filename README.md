@@ -1,8 +1,6 @@
 # Text Image
 
-Text Image is a simple C++17 class to handle console text graphics. Applications of which ranges from text console games and other software that requires text console animation.
-
-This repo includes the Text Video Animation Class, which is supplementary to Text Image if you need to quickly code video animations and games. 
+Text Image (text_image) is a simple C++17 class to handle console text graphics. Applications of which range from text console games, command line utility programs, and animations. This repo also includes the Text Video Animation (text_video_anim) Class, supplementary to Text Image if you need to code video animations and games quickly.
 
 ![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/PinoyFlag.png)
 
