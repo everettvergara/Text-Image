@@ -27,7 +27,7 @@
 
 #include "common.hpp"
 
-template<typename uint_type, typename int_type, uint_type w, uint_type h>
+template<typename int_type, typename uint_type, uint_type w, uint_type h>
 class gol_bounds {
 
 protected:

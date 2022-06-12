@@ -26,10 +26,8 @@
 
 auto main(const int argc, const char *argv[]) -> int {
 
-    // std::function<auto () -> void> f = [&]() -> void {std::cout << "hello\n";};
-
     gol game_of_life; 
     game_of_life.preprocess();
-    // game_of_life.run();
+    game_of_life.run();
 }
 
