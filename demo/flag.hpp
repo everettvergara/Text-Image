@@ -34,7 +34,7 @@ using int_type = int16_t;
 using uint_type = uint16_t;
 using float_type = float;
 
-constexpr uint_type flag_width = 120;
+constexpr uint_type flag_width = 130;
 constexpr uint_type flag_height = 30;
 constexpr uint_type wave_height = 6;
 constexpr uint_type screen_height_allowance = 5;

@@ -25,25 +25,49 @@
 #ifndef GOL_HPP
 #define GOL_HPP
 
-
+#include <ctime>
 #include <tuple>
-
 #include "gol_common.hpp"
 #include "gol_bounds.hpp"
 #include "gol_creatures.hpp"
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
+
+/**
+ * Demo of Game of Life!
+ * Modify the video animation settings here:
+ * 
+ */
+
 constexpr uint_type SCREEN_WIDTH = 130;
 constexpr uint_type SCREEN_HEIGHT = 30;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
 constexpr uint_type FPS = 5;
-constexpr uint_type STARTING_CREATURES = 2500;
+constexpr uint_type STARTING_CREATURES = 2000;
 
 using SCR_BND = gol_bounds<int_type, uint_type, SCREEN_WIDTH, SCREEN_HEIGHT>;
 
+/**
+ * Game of Life Class Proper
+ * to handle the creatures processing 
+ * and animation. 
+ * 
+ */
 
 class gol : public text_video_anim<int_type, uint_type> {
+
+/**
+ * Constructors, Destructors and 
+ * GOL instance variables
+ * 
+ */
+
+private:
+
+    gol_creatures<uint_type> live_creatures_;
+    gol_creatures<uint_type> potential_creatures_;
+
 public:
     
     gol() : 
@@ -55,10 +79,16 @@ public:
     
     ~gol() = default;
 
+/**
+ * Text Video Animation 
+ * virtual class overrides
+ * 
+ */
 
 private: 
 
     auto preprocess_random_creatures(const uint_type n) -> uoset_ix {
+        srand(time(NULL));
         uoset_ix random_creatures;
         std::vector<uint_type> live_creatures;
         live_creatures.reserve(screen_.size());
@@ -68,33 +98,6 @@ private:
         return random_creatures;
     }
 
-public:
-
-    auto preprocess() -> bool {
-        uoset_ix live = preprocess_random_creatures(STARTING_CREATURES);
-        uoset_ix potential;
-
-        uint_type count;
-        using fparameter_bool = std::function<auto (const uint_type ix) -> bool>;
-        using fparameter_void = std::function<auto (const uint_type ix) -> void>;
-        fparameter_bool if_exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f != live.end();};
-        fparameter_void then_inc_count = [&](const uint_type ix) -> void {++count;};
-        fparameter_void else_add_to_potential = [&](const uint_type ix) -> void {potential.insert(ix);};
-
-        for (auto &ix : live) {
-            count = 0;
-            SCR_BND::get_instance().iterate(ix, if_exists, then_inc_count, else_add_to_potential);
-            live_creatures_.update(ix, count);
-        }
-
-        for (auto &ix : potential) {
-            count = 0;
-            if (ix < screen_.size()) SCR_BND::get_instance().iterate(ix, if_exists, then_inc_count, nullptr);
-            if (count == 3) potential_creatures_.update(ix, count);
-        }
-
-        return true;
-    }
 
     auto update_erase_creatures() -> void {
         for (auto &c : live_creatures_.get_creature_count()) 
@@ -176,11 +179,40 @@ public:
             }
         } 
     }
+    
     auto update_render_creatures() -> void {
         for (auto &c : live_creatures_.get_creature_count()) {
             screen_.set_color(c.first, 1 + c.second % 7);
             screen_.set_text(c.first, '0' + c.second);
         }
+    }
+
+public:
+
+    auto preprocess() -> bool {
+        uoset_ix live = preprocess_random_creatures(STARTING_CREATURES);
+        uoset_ix potential;
+
+        uint_type count;
+        using fparameter_bool = std::function<auto (const uint_type ix) -> bool>;
+        using fparameter_void = std::function<auto (const uint_type ix) -> void>;
+        fparameter_bool if_exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f != live.end();};
+        fparameter_void then_inc_count = [&](const uint_type ix) -> void {++count;};
+        fparameter_void else_add_to_potential = [&](const uint_type ix) -> void {potential.insert(ix);};
+
+        for (auto &ix : live) {
+            count = 0;
+            SCR_BND::get_instance().iterate(ix, if_exists, then_inc_count, else_add_to_potential);
+            live_creatures_.update(ix, count);
+        }
+
+        for (auto &ix : potential) {
+            count = 0;
+            if (ix < screen_.size()) SCR_BND::get_instance().iterate(ix, if_exists, then_inc_count, nullptr);
+            if (count == 3) potential_creatures_.update(ix, count);
+        }
+
+        return true;
     }
 
     auto update() -> bool {
@@ -189,15 +221,6 @@ public:
         update_render_creatures();
         return true;
     }
-
-
-private:
-
-    // Contains all the live creatures for display
-    gol_creatures<uint_type> live_creatures_;
-
-    // Contains all spaces with 3 neighbors
-    gol_creatures<uint_type> potential_creatures_;
 };
 
 #endif

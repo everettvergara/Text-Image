@@ -77,7 +77,15 @@ namespace g80 {
 
     
     // Constructors, Assignments and 
-    // Destructors 
+    // Destructors and instance vars
+
+    protected:
+
+        uint_type w_, h_, size_;
+        uptr_color color_{nullptr};
+        uptr_text text_{nullptr};
+        uint_type size_of_mask8bit_{0};
+        uptr_mask8bit mask8bit_{nullptr};     
     
     public:
     
@@ -166,7 +174,6 @@ namespace g80 {
         ~text_image() = default;
 
     // Protected property getters
-
     public:
 
         inline auto width() const -> uint_type {
@@ -209,9 +216,7 @@ namespace g80 {
             return mask8bit_;
         }
 
-
     // Debuggers
-
     public:
 
         auto show_color() const -> void {
@@ -405,7 +410,6 @@ namespace g80 {
      */
 
     private:
-
         auto get_mask8bit_value(const uint_type ix, const uint_type size, const uint_type init_offset = 0) const -> mask8bit {
             if (size == 0 || size > 8) return 0;
 
@@ -654,11 +658,9 @@ namespace g80 {
 
         auto gfx_point(const int_type x, const int_type y, const text t, const color c, const mask_bit m) -> void {
             uint_type i = ix(x, y);
-            {
-                set_text(i, t);
-                set_color(i, c);
-                set_mask(i, m);
-            }         
+            set_text(i, t);
+            set_color(i, c);
+            set_mask(i, m);
         }
 
     // Draw Line using color, text or mask
@@ -1032,17 +1034,6 @@ namespace g80 {
             output << "\033[0m\n";
             std::cout << output.str();            
         }
-        
-    // Protected variables and objects
-
-    protected:
-
-        uint_type w_, h_, size_;
-        uptr_color color_{nullptr};
-        uptr_text text_{nullptr};
-        uint_type size_of_mask8bit_{0};
-        uptr_mask8bit mask8bit_{nullptr};
-
     };
 }
 
