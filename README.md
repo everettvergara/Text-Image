@@ -2,7 +2,7 @@
 
 Text Image is a simple C++17 class to handle console text graphics. Applications of which ranges from text console games and other software that requires text console animation.
 
-This repo also has a Text Video Animation, which is a supplementary class to Text Image if you need to perform animations and games. 
+This repo also has a Text Video Animation Class, which is supplementary to Text Image if you need to quickly perform video animations and games. 
 
 ```c++
 namespace g80 {
@@ -150,7 +150,7 @@ namespace g80 {
 How to use it:
 ---
 
-This section is a work-in-progress.
+This section is a work-in-progress. In the meantime, please check /demo folder to check how to utilize text_image and text_video_anim classes in your projects. I've provided two (2) demo programs for you to follow.
 
 ```c++
 /*
