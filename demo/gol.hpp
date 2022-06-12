@@ -38,6 +38,7 @@ constexpr uint_type SCREEN_WIDTH = 130;
 constexpr uint_type SCREEN_HEIGHT = 30;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
 constexpr uint_type FPS = 5;
+constexpr uint_type STARTING_CREATURES = 2500;
 
 using SCR_BND = gol_bounds<int_type, uint_type, SCREEN_WIDTH, SCREEN_HEIGHT>;
 
@@ -70,7 +71,7 @@ private:
 public:
 
     auto preprocess() -> bool {
-        uoset_ix live = preprocess_random_creatures(2500);
+        uoset_ix live = preprocess_random_creatures(STARTING_CREATURES);
         uoset_ix potential;
 
         uint_type count;

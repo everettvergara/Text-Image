@@ -26,11 +26,13 @@
 #define GOL_COMMON_HPP
 
 #include <cstdint>
+#include <unordered_map>
 #include <unordered_set>
 
 using int_type = int16_t;
 using uint_type = uint16_t;
 
 using uoset_ix = std::unordered_set<uint_type>;
+using uomap_ix_ctr = std::unordered_map<uint_type, uint_type>;
 
 #endif

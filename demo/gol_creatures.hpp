@@ -25,16 +25,38 @@
 #ifndef GOL_CREATURES_HPP
 #define GOL_CREATURES_HPP
 
-#include <unordered_map>
-#include <unordered_set>
 #include <array>
 #include "gol_common.hpp"
 
+/**
+ * Creature Manager for 
+ * Game of Life
+ * 
+ */
+
 template<typename uint_type>
 class gol_creatures {
+
+/**
+ * Constructor and class vars
+ * 
+ */
+private:
+
+    uint_type w_, h_, size_;
+    uomap_ix_ctr creature_count_;
+    std::array<uoset_ix, 9> grouped_creatures_;
+
 public:
 
     gol_creatures(const uint_type w, const uint_type h) : w_(w), h_(h), size_(w * h) {}
+
+/**
+ * Public Interfaces
+ * 
+ */
+
+public:
 
     auto exists(const uint_type ix) -> bool {
         auto f = creature_count_.find(ix);
@@ -67,20 +89,13 @@ public:
         grouped_creatures_[group].clear();
     }
 
-    inline auto get_creature_count() -> std::unordered_map<uint_type, uint_type> & {
+    inline auto get_creature_count() -> uomap_ix_ctr & {
         return creature_count_;
     }
 
     inline auto get_grouped_creatures(uint_type group) -> uoset_ix & {
         return grouped_creatures_[group];
     }
-
-private:
-
-    uint_type w_, h_, size_;
-    std::unordered_map<uint_type, uint_type> creature_count_;
-    std::array<uoset_ix, 9> grouped_creatures_;
 };
-
 
 #endif
