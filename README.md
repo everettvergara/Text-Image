@@ -2,7 +2,32 @@
 
 Text Image is a simple C++17 class to handle console text graphics. Applications of which ranges from text console games and other software that requires text console animation.
 
-This repo also has a Text Video Animation Class, which is supplementary to Text Image if you need to quickly perform video animations and games. 
+This repo includes the Text Video Animation Class, which is supplementary to Text Image if you need to quickly code video animations and games. 
+
+
+```c++
+To use it for animation and/or games:
+
+    - Derive the text_video_anim class
+    - overide the virtual functions: preprocessor(), update() and event() 
+    - Include your new class in your main program
+
+    Or simply follow these two (2) demos:
+
+    Flag Animation:
+    https://github.com/everettvergara/Text-Image/blob/main/demo/flag_demo.cpp
+    Game of Life:
+    https://github.com/everettvergara/Text-Image/blob/main/demo/gol_demo.cpp
+
+```
+
+![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/PinoyFlag.png)
+
+# Documentation
+
+This section is a work-in-progress.
+
+Text Image Function List:
 
 ```c++
 namespace g80 {
@@ -153,6 +178,13 @@ How to use it:
 This section is a work-in-progress. In the meantime, please check /demo folder to check how to utilize text_image and text_video_anim classes in your projects. I've provided two (2) demo programs for you to follow.
 
 ```c++
+
+- Game of Life
+- PH Flag Animation
+
+```
+
+```c++
 /*
 
 1. Choose the right integral type for your project:
@@ -166,13 +198,3 @@ text graphics you may choose 32 - 64 bit integers.
 
 ```
 
-Some things you can do with TextImage Class
----
-
-Game of Life Simulation
----
-![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/Game%20of%20life.png)
-
-Waving Flag Animation
----
-![alt text](https://github.com/everettvergara/TextImage/blob/main/assets/PinoyFlag.png)
