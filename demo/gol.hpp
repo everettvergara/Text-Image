@@ -30,52 +30,18 @@
 #include <array>
 #include <algorithm>
 
+#include "common.hpp"
+#include "gol_bounds.hpp"
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
-
-using int_type = int16_t;
-using uint_type = uint16_t;
 
 constexpr uint_type SCREEN_WIDTH = 140;
 constexpr uint_type SCREEN_HEIGHT = 40;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
 constexpr uint_type FPS = 15;
 
-template<typename uint_type, typename int_type, uint_type w, uint_type h>
-struct bounds {
-
-    uint_type size;
-    std::array<int_type, 8> ref;
-    bounds() : size(w * h) {
-        ref[0] = - w;
-        ref[1] = - w - 1;
-        ref[2] = - w + 1;
-        ref[3] = - 1;
-        ref[4] = + 1;
-        ref[5] = + w;
-        ref[6] = + w - 1;
-        ref[7] = + w + 1;
-    }
-
-    auto out_of_bounds(const uint_type ix) -> bool {return ix >= size;}
-
-    auto iterate(
-        const uint_type ix, 
-        const std::function<auto (const uint_type) -> bool> &condition,
-        const std::function<auto (const uint_type) -> void> &if_action,
-        const std::function<auto (const uint_type) -> void> &else_action) -> void {
-        
-        if (!if_action) return;
-        for (auto &r : ref) {
-            uint_type i = ix + r; 
-            if (condition(i)) if_action(i); 
-            else if (else_action) else_action(i);
-        }
-    }
-};
-
-bounds<uint_type, int_type, SCREEN_WIDTH, SCREEN_HEIGHT> SCR_BND;
+gol_bounds<uint_type, int_type, SCREEN_WIDTH, SCREEN_HEIGHT> SCR_BND;
 
 template<typename uint_type>
 class creatures {
