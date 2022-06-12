@@ -104,18 +104,6 @@ public:
         grouped_creature_[count].insert(ix);
     }
 
-    auto init_update(const std::unordered_set<uint_type> &ixs, uint_type n) -> void {
-        creature_count_.clear();
-        for (auto &g : grouped_creature_) g.clear();
-
-        // for (uint_type i{0}, m {std::min<uint_type>(n, ixs.size())}; i < m; ++i);
-        //     creature_count_.insert({ixs[0], 0});
-        
-        // for (auto &c : creature_count_) {
-        //     c.second = get_existing_neighbor_count(c.first);
-        // }
-    }
-
 private:
 
     uint_type w_, h_, size_;
@@ -143,11 +131,11 @@ private:
     auto preprocess_random_creatures(const uint_type n) -> std::unordered_set<uint_type> {
         std::unordered_set<uint_type> random_creatures;
         
-        std::vector<uint_type> all_creature_ids;
-        all_creature_ids.reserve(screen_.size());
-        for (uint_type i = 0; i < screen_.size(); ++i) all_creature_ids.emplace_back(i);
-        for (uint_type i = 0; i < screen_.size(); ++i) std::swap(all_creature_ids[i], all_creature_ids[rand() % screen_.size()]);
-        for (uint_type i = 0; i < n; ++i) random_creatures.insert(all_creature_ids[i]);
+        std::vector<uint_type> live_creatures;
+        live_creatures.reserve(screen_.size());
+        for (uint_type i = 0; i < screen_.size(); ++i) live_creatures.emplace_back(i);
+        for (uint_type i = 0; i < screen_.size(); ++i) std::swap(live_creatures[i], live_creatures[rand() % screen_.size()]);
+        for (uint_type i = 0; i < n; ++i) random_creatures.insert(live_creatures[i]);
         
         return random_creatures;
     }
@@ -156,8 +144,37 @@ public:
 
     auto preprocess() -> bool {
 
-        std::unordered_set<uint_type> all_creature_ids = preprocess_random_creatures(1000);
-        // live_creatures_.init_update(all_creature_ids, 1000);
+        std::unordered_set<uint_type> live_creatures = preprocess_random_creatures(1000);
+        std::unordered_set<uint_type> potential_creatures;
+
+        auto exists = [&](const uint_type ix) -> bool {
+            auto f = live_creatures.find(ix);
+            return f < live_creatures.end();
+        }
+
+        auto count;
+        auto inc_creature_count_and_get_potential_creatures = [&](const uint_type ix) -> void {
+            if (exists(ix)) ++count;
+            else potential_creatures.insert(ix);
+        } 
+
+        for (auto &c : live_creatures) {
+            count = 0;
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_top(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_left(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_right(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_left(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_right(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_left(c));
+            inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_right(c));
+            live_creatures_.insert(c, count);
+        }
+
+        for (auto &c : potential_creatures_) {
+            count = 0;
+            live_creatures_.insert(c, count);
+        }
 
         return true;
     }
