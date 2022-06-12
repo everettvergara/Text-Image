@@ -71,7 +71,7 @@ public:
         return creature_count_;
     }
 
-    inline auto get_grouped_creatures(uint_type group) -> std::unordered_set<uint_type> & {
+    inline auto get_grouped_creatures(uint_type group) -> uoset_ix & {
         return grouped_creatures_[group];
     }
 
@@ -79,7 +79,7 @@ private:
 
     uint_type w_, h_, size_;
     std::unordered_map<uint_type, uint_type> creature_count_;
-    std::array<std::unordered_set<uint_type>, 9> grouped_creatures_;
+    std::array<uoset_ix, 9> grouped_creatures_;
 };
 
 

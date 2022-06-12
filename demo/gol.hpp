@@ -34,13 +34,13 @@
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
-
 constexpr uint_type SCREEN_WIDTH = 130;
 constexpr uint_type SCREEN_HEIGHT = 30;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
 constexpr uint_type FPS = 10;
 
-gol_bounds<int_type, uint_type, SCREEN_WIDTH, SCREEN_HEIGHT> SCR_BND;
+using SCR_BND = gol_bounds<int_type, uint_type, SCREEN_WIDTH, SCREEN_HEIGHT>;
+
 
 class gol : public text_video_anim<int_type, uint_type> {
 public:
@@ -82,13 +82,13 @@ public:
 
         for (auto &ix : live) {
             count = 0;
-            SCR_BND.iterate(ix, if_exists, then_inc_count, else_add_to_potential);
+            SCR_BND::get_instance().iterate(ix, if_exists, then_inc_count, else_add_to_potential);
             live_creatures_.update(ix, count);
         }
 
         for (auto &ix : potential) {
             count = 0;
-            if (ix < screen_.size()) SCR_BND.iterate(ix, if_exists, then_inc_count, nullptr);
+            if (ix < screen_.size()) SCR_BND::get_instance().iterate(ix, if_exists, then_inc_count, nullptr);
             if (count == 3) potential_creatures_.update(ix, count);
         }
 
@@ -154,19 +154,19 @@ public:
         
         for (auto &s : to_spawn) {
             count = 0;
-            SCR_BND.iterate(s, if_bound_exists, then_inc_count, nullptr);
+            SCR_BND::get_instance().iterate(s, if_bound_exists, then_inc_count, nullptr);
             live_creatures_.update(s, count);
         }
         
         for (auto &n : to_get_neighbors) 
-            SCR_BND.iterate(n, if_always_true, then_add_to_update_count, nullptr);
+            SCR_BND::get_instance().iterate(n, if_always_true, then_add_to_update_count, nullptr);
         
         for (auto &n : additional_to_update_count) 
             to_update_count.insert(n);
         
         for (auto &ix : to_update_count) {
             count = 0;
-            SCR_BND.iterate(ix, if_bound_exists, then_inc_count, nullptr);
+            SCR_BND::get_instance().iterate(ix, if_bound_exists, then_inc_count, nullptr);
 
             if (live_creatures_.exists(ix)) {
                 live_creatures_.update(ix, count);

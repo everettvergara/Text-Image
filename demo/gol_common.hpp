@@ -33,5 +33,4 @@ using uint_type = uint16_t;
 
 using uoset_ix = std::unordered_set<uint_type>;
 
-
 #endif
