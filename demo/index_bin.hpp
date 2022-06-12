@@ -198,7 +198,11 @@ namespace g80 {
 
     public:
 
-        auto use(uint_type ix_to_use) -> bool {
+        auto is_used(const uint_type ix_to_check) -> bool {
+            return mapper_[ix_to_check] < start_of_unused_ix_;
+        }
+
+        auto use(const uint_type ix_to_use) -> bool {
             if (ix_to_use >= size_) return false;
             if (mapper_[ix_to_use] < start_of_unused_ix_) return false;
             
@@ -209,7 +213,7 @@ namespace g80 {
             return true;
         }
 
-        auto unuse(uint_type ix_to_unuse) -> bool {
+        auto unuse(const uint_type ix_to_unuse) -> bool {
             if (ix_to_unuse >= size_) return false;
             if (mapper_[ix_to_unuse] >= start_of_unused_ix_) return false;
             

@@ -89,25 +89,25 @@ private:
 
     auto neighbor_count(const uint_type creature_id) -> uint_type {
         
-        uint_type neighbor = 0;
+        uint_type neighbor {0};
 
-        // uint_type top = creature_id - screen_.width();
-        // uint_type upper_left = top - 1;
-        // uint_type upper_right = top + 1;
-        // uint_type left = creature_id - 1;
-        // uint_type right = creature_id + 1;
-        // uint_type bottom = creature_id + screen_.width();
-        // uint_type bottom_left = bottom - 1;
-        // uint_type bottom_right = bottom + 1;    
+        uint_type top = creature_id - screen_.width();
+        uint_type upper_left = top - 1;
+        uint_type upper_right = top + 1;
+        uint_type left = creature_id - 1;
+        uint_type right = creature_id + 1;
+        uint_type bottom = creature_id + screen_.width();
+        uint_type bottom_left = bottom - 1;
+        uint_type bottom_right = bottom + 1;    
 
-        // if (creature_id_exists_[top]) ++neighbor;
-        // if (creature_id_exists_[upper_left]) ++neighbor;
-        // if (creature_id_exists_[upper_right]) ++neighbor;
-        // if (creature_id_exists_[left]) ++neighbor;
-        // if (creature_id_exists_[right]) ++neighbor;
-        // if (creature_id_exists_[bottom]) ++neighbor;
-        // if (creature_id_exists_[bottom_left]) ++neighbor;
-        // if (creature_id_exists_[bottom_right]) ++neighbor;
+        if (creatures_.is_used(top)) ++neighbor;
+        if (creatures_.is_used(upper_left)) ++neighbor;
+        if (creatures_.is_used(upper_right)) ++neighbor;
+        if (creatures_.is_used(left)) ++neighbor;
+        if (creatures_.is_used(right)) ++neighbor;
+        if (creatures_.is_used(bottom)) ++neighbor;
+        if (creatures_.is_used(bottom_left)) ++neighbor;
+        if (creatures_.is_used(bottom_right)) ++neighbor;
 
         return neighbor;
     }
@@ -116,8 +116,8 @@ private:
     auto update_creature(uint_type creature_id) -> void {
 
         // creature_ids_neigh_count_ = neighbor_c
-        // if (!creature_id_exists_[creature_id]) {
-        //     creature_id_exists_[creature_id] = true;
+        // if (!creatures_.is_used(creature_id]) {
+        //     creatures_.is_used(creature_id] = true;
         // } else {
 
         // }
@@ -135,20 +135,26 @@ private:
 public:
 
     auto preprocess() -> bool {
-
         // All counts must be 0 and add all creatures to group 0 since they are unused
         std::fill_n(creatures_count_.data(), creatures_count_.size(), 0);
         for (uint_type i{0}; i < SCREEN_SIZE; ++i) grouped_creatures_[0].use(i);
 
         // Shuffle creatures to be considered in the demo 
         std::array<uint_type, SCREEN_SIZE> random_creatures;
-        for (uint_type i{0}; i < SCREEN_SIZE; ++i) std::swap(random_creatures[0], random_creatures[rand() % SCREEN_SIZE]);
+        for (uint_type i{0}; i < SCREEN_SIZE; ++i) 
+            std::swap(random_creatures[0], random_creatures[rand() % SCREEN_SIZE]);
 
         // Get only the first N
         for (uint_type i{0}; i < size_; ++i) {
-            creatures_.use(random_creatures[i]);
+            auto ix {random_creatures[i]};
+            creatures_.use(ix);
+            auto count = {neighbor_count(ix)};
+            if (count > 0) {
+                creatures_count_[ix] = count;
+                grouped_creatures_[0].unuse(ix);
+                grouped_creatures_[count].use(ix);
+            }
         }
-
 
         return true;
     }
