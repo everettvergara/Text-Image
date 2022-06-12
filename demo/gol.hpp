@@ -25,19 +25,12 @@
 #ifndef GOL_HPP
 #define GOL_HPP
 
-#include <cstdint>
-#include <algorithm>
-#include <array>
-
-#include "index_bin.hpp"
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
 
 using int_type = int16_t;
 using uint_type = uint16_t;
-using creature = uint_type;
-using count = uint_type;
 
 constexpr uint_type SCREEN_WIDTH = 140;
 constexpr uint_type SCREEN_HEIGHT = 40;
@@ -48,9 +41,6 @@ constexpr uint_type FPS = 15;
 // Creature List: 
 // Use array instead of unordered_list for optimization purposes
 
-using creatures = index_bin<uint_type>;
-using creatures_count = std::array<uint_type, SCREEN_SIZE>;
-using grouped_creatures = std::array<index_bin<uint_type>, 9>;
 
 
 
@@ -68,9 +58,7 @@ public:
     
     gol() : 
         text_video_anim<int_type, uint_type>(SCREEN_WIDTH, SCREEN_HEIGHT, FPS),
-        creatures_{SCREEN_SIZE},
-        creatures_count_{0},
-        grouped_creatures_{SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE, SCREEN_SIZE} {
+        size_(SCREEN_SIZE) {
 
         }
     
@@ -89,69 +77,60 @@ private:
 
     auto neighbor_count(const uint_type creature_id) -> uint_type {
         
-        uint_type neighbor {0};
+        // uint_type neighbor {0};
 
-        uint_type top = creature_id - screen_.width();
-        uint_type upper_left = top - 1;
-        uint_type upper_right = top + 1;
-        uint_type left = creature_id - 1;
-        uint_type right = creature_id + 1;
-        uint_type bottom = creature_id + screen_.width();
-        uint_type bottom_left = bottom - 1;
-        uint_type bottom_right = bottom + 1;    
+        // uint_type top = creature_id - screen_.width();
+        // uint_type upper_left = top - 1;
+        // uint_type upper_right = top + 1;
+        // uint_type left = creature_id - 1;
+        // uint_type right = creature_id + 1;
+        // uint_type bottom = creature_id + screen_.width();
+        // uint_type bottom_left = bottom - 1;
+        // uint_type bottom_right = bottom + 1;    
 
-        if (creatures_.is_used(top)) ++neighbor;
-        if (creatures_.is_used(upper_left)) ++neighbor;
-        if (creatures_.is_used(upper_right)) ++neighbor;
-        if (creatures_.is_used(left)) ++neighbor;
-        if (creatures_.is_used(right)) ++neighbor;
-        if (creatures_.is_used(bottom)) ++neighbor;
-        if (creatures_.is_used(bottom_left)) ++neighbor;
-        if (creatures_.is_used(bottom_right)) ++neighbor;
+        // if (top >= size_) top %= size_;
+        // if (upper_left >= size_) upper_left %= size_;
+        // if (upper_right >= size_) upper_right %= size_;
+        // if (left >= size_) left %= size_;
+        // if (right >= size_) right %= size_;
+        // if (bottom >= size_) bottom %= size_;
+        // if (bottom_left >= size_) bottom_left %= size_;
+        // if (bottom_right >= size_) bottom_right %= size_;
+
+        // if (creatures_.is_used(top)) ++neighbor;
+        // if (creatures_.is_used(upper_left)) ++neighbor;
+        // if (creatures_.is_used(upper_right)) ++neighbor;
+        // if (creatures_.is_used(left)) ++neighbor;
+        // if (creatures_.is_used(right)) ++neighbor;
+        // if (creatures_.is_used(bottom)) ++neighbor;
+        // if (creatures_.is_used(bottom_left)) ++neighbor;
+        // if (creatures_.is_used(bottom_right)) ++neighbor;
 
         return neighbor;
     }
 
 
     auto update_creature(uint_type creature_id) -> void {
-        auto current_count = creatures_count_[creature_id];
-        grouped_creatures_[current_count].unuse(creature_id);
 
-        auto new_count = neighbor_count(creature_id);
-        creatures_count_[creature_id] = new_count;
-        grouped_creatures_[new_count].use(creature_id);
     }
 
 public:
 
     auto preprocess() -> bool {
-        
-        // All counts must be 0 and add all creatures to group 0 since they are unused
-        std::fill_n(creatures_count_.data(), creatures_count_.size(), 0);
-        for (uint_type i{0}; i < SCREEN_SIZE; ++i) grouped_creatures_[0].use(i);
 
-        // Shuffle creatures to be considered in the demo 
-        std::array<uint_type, SCREEN_SIZE> random_creatures;
-        for (uint_type i{0}; i < SCREEN_SIZE; ++i) 
-            std::swap(random_creatures[0], random_creatures[rand() % SCREEN_SIZE]);
-
-        // Get only the first N
-        for (uint_type i{0}; i < size_; ++i) {
-            auto ix {random_creatures[i]};
-            creatures_.use(ix);
-            auto count {neighbor_count(ix)};
-            if (count > 0) {
-                creatures_count_[ix] = count;
-                grouped_creatures_[0].unuse(ix);
-                grouped_creatures_[count].use(ix);
-            }
-        }
 
         return true;
     }
+
     auto update_erase_creatures() -> void {
 
     }
+    
+
+
+    auto update_execute_rules() -> void {
+
+    }   
 
     auto update() -> bool {
 
@@ -159,16 +138,11 @@ public:
         return true;
     }
 
-    inline auto ix(uint_type x, uint_type y) -> uint_type {
-        return y * screen_.width() + x;
-    }
 
 private:
 
     uint_type size_;
-    creatures creatures_;
-    creatures_count creatures_count_;
-    grouped_creatures grouped_creatures_;
+
 };
 
 #endif

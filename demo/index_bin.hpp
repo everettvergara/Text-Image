@@ -126,13 +126,16 @@ namespace g80 {
     public:
 
         auto reset(const uint_type size) {
-            size_ = (size);
+            size_ = {size};
             start_of_unused_ix_ = {0};
             del_bin_and_mapper();
             reset_mapper_();
         }
 
-        
+        inline auto reset_start_of_unused_ix() {
+            start_of_unused_ix_ = {0};
+        }
+
     /**
      * Constructor, Destructor and 
      * Assignment Functions
@@ -198,9 +201,7 @@ namespace g80 {
 
     public:
 
-        auto is_used(const uint_type ix_to_check) -> bool {
-            return mapper_[ix_to_check] < start_of_unused_ix_;
-        }
+
 
         auto use(const uint_type ix_to_use) -> bool {
             if (ix_to_use >= size_) return false;
@@ -223,6 +224,11 @@ namespace g80 {
             
             return true;
         }
+
+        auto is_used(const uint_type ix_to_check) -> bool {
+            return ix_to_check < start_of_unused_ix_;
+        }
+        
 
         inline auto size() const -> uint_type {
             return size_;
