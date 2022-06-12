@@ -183,6 +183,9 @@ public:
             potential_creatures_.update(ix, count);
         }
 
+        std::cout << "live: " << live_creatures_.size() << "\n";
+        std::cout << "potential: " << potential_creatures_.size() << "\n";
+
         return true;
     }
 
