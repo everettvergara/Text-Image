@@ -25,6 +25,10 @@
 #ifndef GOL_HPP
 #define GOL_HPP
 
+#include <unordered_map>
+#include <unordered_set>
+#include <optional>
+
 #include "../include/text_video_anim.hpp"
 
 using namespace g80;
@@ -40,12 +44,70 @@ constexpr uint_type FPS = 15;
 
 // Creature List: 
 // Use array instead of unordered_list for optimization purposes
+// using creature_count = std::unordered_map<uint_type, uint_type>;
+// using neighbor_space_count = std::unordered_map<uint_type, uint_type>;
 
+template<typename uint_type>
+class creatures {
+public:
 
+    creatures(const uint_type w, const uint_type h) : w_(w), h_(h), size_(w * h) {}
 
+    inline auto get_top(const uint_type ix) -> uint_type {return ix - w_;}
+    inline auto get_upper_left(const uint_type ix) -> uint_type {return ix - w_ - 1;}
+    inline auto get_upper_right(const uint_type ix) -> uint_type {return ix - w_ + 1;}    
+    inline auto get_left(const uint_type ix) -> uint_type {return ix - 1;}    
+    inline auto get_right(const uint_type ix) -> uint_type {return ix + 1;}    
+    inline auto get_bottom(const uint_type ix) -> uint_type {return ix + w_;}    
+    inline auto get_bottom_left(const uint_type ix) -> uint_type {return ix + w_ - 1;}    
+    inline auto get_bottom_right(const uint_type ix) -> uint_type {return ix + w_ + 1;}
+    
+    auto exists(const uint_type ix) -> bool {
+        auto f = creature_count_.find(ix);
+        return f < creature_count_.end();
+    }
 
-// // Adj neighbors? could be merged with creatures count?
-// using adjacent_neighbors = std::array<uint_type, 8>;
+    auto out_of_bounds(const uint_type ix) -> bool {
+        return ix >= size_;
+    }
+
+    auto get_existing_neighbor_count(const uint_type ix) -> uint_type {
+        uint_type count {0};
+
+        if (exists(get_top(ix))) ++count;
+        if (exists(get_upper_left(ix))) ++count;
+        if (exists(get_upper_right(ix))) ++count;
+        if (exists(get_left(ix))) ++count;
+        if (exists(get_right(ix))) ++count;
+        if (exists(get_bottom(ix))) ++count;
+        if (exists(get_bottom_left(ix))) ++count;
+        if (exists(get_bottom_right(ix))) ++count;
+
+        return count;
+    }
+
+    auto size() -> uint_type {
+        return static_cast<uint_type>(creature_count_.size());
+    }
+
+    auto update(const uint_type ix, const uint_type count) -> void {
+        auto f = creature_count_.find(ix);
+        if (f == creature_count_.end()) {
+            creature_count_.insert({ix, count});
+        } else {
+            auto pcount = f->second;
+            grouped_creature_.erase(pcount);
+            f->second = count;
+        }
+        grouped_creature_[count].insert(ix);
+    }
+
+private:
+
+    uint_type w_, h_, size_;
+    std::unordered_map<uint_type, uint_type> creature_count_;
+    std::array<std::unordered_set<uint_type>, 9> grouped_creature_;
+};
 
 // // creatures_count, count_creatures
 // using creatures_count_tuple = std::tuple<creatures_count, count_creatures>;
@@ -77,7 +139,7 @@ private:
 
     auto neighbor_count(const uint_type creature_id) -> uint_type {
         
-        // uint_type neighbor {0};
+        uint_type neighbor {0};
 
         // uint_type top = creature_id - screen_.width();
         // uint_type upper_left = top - 1;
