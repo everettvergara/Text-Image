@@ -60,16 +60,17 @@ struct bounds {
 
     auto out_of_bounds(const uint_type ix) -> bool {return ix >= size;}
 
-    auto iterate_bounds(
+    auto iterate(
         const uint_type ix, 
         const std::function<auto (const uint_type) -> bool> &condition,
         const std::function<auto (const uint_type) -> void> &if_action,
-        const std::function<auto (const uint_type) -> void> &else_action) {
+        const std::function<auto (const uint_type) -> void> &else_action) -> void {
         
+        if (!if_action) return;
         for (auto &r : ref) {
-            uint_type p = ix + r; 
-            if (condition(p)) if_action(p); 
-            else else_action(p);
+            uint_type i = ix + r; 
+            if (condition(i)) if_action(i); 
+            else if (else_action) else_action(i);
         }
     }
 };
@@ -91,7 +92,7 @@ public:
         uint_type count {0};
 
 
-        // SCR_BND.iterate_bounds(ix, nullptr, nullptr, nullptr);
+        // SCR_BND.iterate(ix, nullptr, nullptr, nullptr);
         // if (exists(screen_bounds.get_top(ix))) ++count;
         // if (exists(screen_bounds.get_upper_left(ix))) ++count;
         // if (exists(screen_bounds.get_upper_right(ix))) ++count;
@@ -164,22 +165,23 @@ public:
         std::unordered_set<uint_type> potential;
 
         uint_type count;
-        std::function<auto (const uint_type ix) -> bool> if_exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f != live.end();};
-        std::function<auto (const uint_type ix) -> void> then_inc_count = [&](const uint_type ix) -> void {++count;};
-        std::function<auto (const uint_type ix) -> void> else_add_to_potential = [&](const uint_type ix) -> void {potential.insert(ix);};
+        using fparameter_bool = std::function<auto (const uint_type ix) -> bool>;
+        using fparameter_void = std::function<auto (const uint_type ix) -> void>;
+        fparameter_bool if_exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f != live.end();};
+        fparameter_void then_inc_count = [&](const uint_type ix) -> void {++count;};
+        fparameter_void else_add_to_potential = [&](const uint_type ix) -> void {potential.insert(ix);};
 
         for (auto &ix : live) {
             count = 0;
-            SCR_BND.iterate_bounds(ix, if_exists, then_inc_count, else_add_to_potential);
+            SCR_BND.iterate(ix, if_exists, then_inc_count, else_add_to_potential);
             live_creatures_.update(ix, count);
         }
 
-
-        // for (auto &c : potential_creatures) {
-        //     count = 0;
-        //     if (exists(screen_bounds.get_top(c))) ++count;
-        //     potential_creatures(c, count);
-        // }
+        for (auto &ix : potential) {
+            count = 0;
+            if (ix < screen_.size()) SCR_BND.iterate(ix, if_exists, then_inc_count, nullptr);
+            potential_creatures_.update(ix, count);
+        }
 
         return true;
     }
