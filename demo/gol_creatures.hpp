@@ -58,17 +58,17 @@ public:
 
 public:
 
-    auto exists(const uint_type ix) -> bool {
+    auto exists(const uint_type ix) const -> bool {
         auto f = creature_count_.find(ix);
         return f != creature_count_.end();
     }
 
-    auto get_existing_neighbor_count(const uint_type ix) -> uint_type {
+    auto get_existing_neighbor_count(const uint_type ix) const -> uint_type {
         uint_type count {0};
         return count;
     }
 
-    auto size() -> uint_type {
+    auto size() const -> uint_type {
         return static_cast<uint_type>(creature_count_.size());
     }
 
@@ -84,16 +84,16 @@ public:
         grouped_creatures_[count].insert(ix);
     }
 
-    auto kill_group(uint_type group) {
+    auto kill_group(const uint_type group) {
         for (auto ix : grouped_creatures_[group]) creature_count_.erase(ix);
         grouped_creatures_[group].clear();
     }
 
-    inline auto get_creature_count() -> uomap_ix_ctr & {
+    inline auto get_creature_count() const -> const uomap_ix_ctr & {
         return creature_count_;
     }
 
-    inline auto get_grouped_creatures(uint_type group) -> uoset_ix & {
+    inline auto get_grouped_creatures(const uint_type group) const -> const uoset_ix & {
         return grouped_creatures_[group];
     }
 };
