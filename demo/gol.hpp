@@ -42,25 +42,47 @@ constexpr uint_type SCREEN_HEIGHT = 40;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
 constexpr uint_type FPS = 15;
 
-template<typename uint_type, uint_type w, uint_type h>
+template<typename uint_type, typename int_type, uint_type w, uint_type h>
 struct bounds {
 
-    auto out_of_bounds(const uint_type ix) -> bool {
-        static uint_type size = w * h;
-        return ix >= size;
+    uint_type size;
+    std::array<int_type, 8> ref;
+    bounds() : size(w * h) {
+        ref[0] = - w;
+        ref[1] = - w - 1;
+        ref[2] = - w + 1;
+        ref[3] = - 1;
+        ref[4] = + 1;
+        ref[5] = + w;
+        ref[6] = + w - 1;
+        ref[7] = + w + 1;
     }
 
-    inline auto get_top(const uint_type ix) -> uint_type {return ix - w;}
-    inline auto get_upper_left(const uint_type ix) -> uint_type {return ix - w - 1;}
-    inline auto get_upper_right(const uint_type ix) -> uint_type {return ix - w + 1;}    
-    inline auto get_left(const uint_type ix) -> uint_type {return ix - 1;}    
-    inline auto get_right(const uint_type ix) -> uint_type {return ix + 1;}    
-    inline auto get_bottom(const uint_type ix) -> uint_type {return ix + w;}    
-    inline auto get_bottom_left(const uint_type ix) -> uint_type {return ix + w - 1;}    
-    inline auto get_bottom_right(const uint_type ix) -> uint_type {return ix + w + 1;}
+    auto out_of_bounds(const uint_type ix) -> bool {return ix >= size;}
+
+    auto iterate_bounds(
+        const uint_type ix, 
+        const std::function<auto (uint_type) -> bool> &condition,
+        const std::function<auto (uint_type) -> void> &if_action,
+        const std::function<auto (uint_type) -> void> &else_action) {
+        
+        for (auto &r : ref) {
+            uint_type p = ix + r; 
+            if (condition(p)) if_action(p); else else_action(p);
+        }
+    }
+
+    // inline auto get_top(const uint_type ix) -> uint_type {return ix - w;}
+    // inline auto get_upper_left(const uint_type ix) -> uint_type {return ix - w - 1;}
+    // inline auto get_upper_right(const uint_type ix) -> uint_type {return ix - w + 1;}    
+    // inline auto get_left(const uint_type ix) -> uint_type {return ix - 1;}    
+    // inline auto get_right(const uint_type ix) -> uint_type {return ix + 1;}    
+    // inline auto get_bottom(const uint_type ix) -> uint_type {return ix + w;}    
+    // inline auto get_bottom_left(const uint_type ix) -> uint_type {return ix + w - 1;}    
+    // inline auto get_bottom_right(const uint_type ix) -> uint_type {return ix + w + 1;}
 };
 
-bounds<uint_type, SCREEN_WIDTH, SCREEN_HEIGHT> screen_bounds;
+bounds<uint_type, int_type, SCREEN_WIDTH, SCREEN_HEIGHT> screen_bounds;
 
 template<typename uint_type>
 class creatures {
@@ -76,14 +98,14 @@ public:
     auto get_existing_neighbor_count(const uint_type ix) -> uint_type {
         uint_type count {0};
 
-        if (exists(screen_bounds.get_top(ix))) ++count;
-        if (exists(screen_bounds.get_upper_left(ix))) ++count;
-        if (exists(screen_bounds.get_upper_right(ix))) ++count;
-        if (exists(screen_bounds.get_left(ix))) ++count;
-        if (exists(screen_bounds.get_right(ix))) ++count;
-        if (exists(screen_bounds.get_bottom(ix))) ++count;
-        if (exists(screen_bounds.get_bottom_left(ix))) ++count;
-        if (exists(screen_bounds.get_bottom_right(ix))) ++count;
+        // if (exists(screen_bounds.get_top(ix))) ++count;
+        // if (exists(screen_bounds.get_upper_left(ix))) ++count;
+        // if (exists(screen_bounds.get_upper_right(ix))) ++count;
+        // if (exists(screen_bounds.get_left(ix))) ++count;
+        // if (exists(screen_bounds.get_right(ix))) ++count;
+        // if (exists(screen_bounds.get_bottom(ix))) ++count;
+        // if (exists(screen_bounds.get_bottom_left(ix))) ++count;
+        // if (exists(screen_bounds.get_bottom_right(ix))) ++count;
 
         return count;
     }
@@ -144,37 +166,35 @@ public:
 
     auto preprocess() -> bool {
 
-        std::unordered_set<uint_type> live_creatures = preprocess_random_creatures(1000);
-        std::unordered_set<uint_type> potential_creatures;
+        std::unordered_set<uint_type> live = preprocess_random_creatures(1000);
+        std::unordered_set<uint_type> potential;
 
-        auto exists = [&](const uint_type ix) -> bool {
-            auto f = live_creatures.find(ix);
-            return f < live_creatures.end();
-        }
+        // auto exists = [&](const uint_type ix) -> bool {auto f = live.find(ix); return f < live.end();}
 
-        auto count;
-        auto inc_creature_count_and_get_potential_creatures = [&](const uint_type ix) -> void {
-            if (exists(ix)) ++count;
-            else potential_creatures.insert(ix);
-        } 
+        // auto count;
+        // auto inc_creature_count_and_get_potential_creatures = [&](const uint_type ix) -> void {
+        //     if (exists(ix)) ++count;
+        //     else potential_creatures.insert(ix);
+        // } 
 
-        for (auto &c : live_creatures) {
-            count = 0;
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_top(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_left(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_right(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_left(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_right(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_left(c));
-            inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_right(c));
-            live_creatures_.insert(c, count);
-        }
+        // for (auto &c : live_creatures) {
+        //     uint_type count = 0;
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_top(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_left(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_top_right(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_left(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_right(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_left(c));
+        //     inc_creature_count_and_get_potential_creatures(screen_bounds.get_bottom_right(c));
+        //     live_creatures_.insert(c, count);
+        // }
 
-        for (auto &c : potential_creatures_) {
-            count = 0;
-            live_creatures_.insert(c, count);
-        }
+        // for (auto &c : potential_creatures) {
+        //     count = 0;
+        //     if (exists(screen_bounds.get_top(c))) ++count;
+        //     potential_creatures(c, count);
+        // }
 
         return true;
     }
