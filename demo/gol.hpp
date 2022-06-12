@@ -27,7 +27,8 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <optional>
+#include <array>
+#include <algorithm>
 
 #include "../include/text_video_anim.hpp"
 
@@ -39,13 +40,7 @@ using uint_type = uint16_t;
 constexpr uint_type SCREEN_WIDTH = 140;
 constexpr uint_type SCREEN_HEIGHT = 40;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
-
 constexpr uint_type FPS = 15;
-
-// Creature List: 
-// Use array instead of unordered_list for optimization purposes
-// using creature_count = std::unordered_map<uint_type, uint_type>;
-// using neighbor_space_count = std::unordered_map<uint_type, uint_type>;
 
 template<typename uint_type>
 class creatures {
@@ -96,10 +91,22 @@ public:
             creature_count_.insert({ix, count});
         } else {
             auto pcount = f->second;
-            grouped_creature_.erase(pcount);
+            grouped_creature_[pcount].erase(ix);
             f->second = count;
         }
         grouped_creature_[count].insert(ix);
+    }
+
+    auto init_update(const std::unordered_set<uint_type> &ixs, uint_type n) -> void {
+        creature_count_.clear();
+        for (auto &g : grouped_creature_) g.clear();
+
+        // for (uint_type i{0}, m {std::min<uint_type>(n, ixs.size())}; i < m; ++i);
+        //     creature_count_.insert({ixs[0], 0});
+        
+        // for (auto &c : creature_count_) {
+        //     c.second = get_existing_neighbor_count(c.first);
+        // }
     }
 
 private:
@@ -109,10 +116,6 @@ private:
     std::array<std::unordered_set<uint_type>, 9> grouped_creature_;
 };
 
-// // creatures_count, count_creatures
-// using creatures_count_tuple = std::tuple<creatures_count, count_creatures>;
-
-
 
 class gol : public text_video_anim<int_type, uint_type> {
 
@@ -120,7 +123,8 @@ public:
     
     gol() : 
         text_video_anim<int_type, uint_type>(SCREEN_WIDTH, SCREEN_HEIGHT, FPS),
-        size_(SCREEN_SIZE) {
+        live_creatures_(SCREEN_WIDTH, SCREEN_HEIGHT),
+        potential_creatures_(SCREEN_WIDTH, SCREEN_HEIGHT) {
 
         }
     
@@ -129,57 +133,25 @@ public:
 
 private: 
 
-    // auto preprocess_random_creatures() -> std::vector<uint_type> {
-    //     // std::vector<uint_type> all_creature_ids;
-    //     // all_creature_ids.reserve(screen_.size());
-    //     // for (uint_type i = 0; i < screen_.size(); ++i) all_creature_ids[i] = i;
-    //     // for (uint_type i = 0; i < screen_.size(); ++i) std::swap(all_creature_ids[i], all_creature_ids[rand() % screen_.size()]);
-    //     // return all_creature_ids;
-    // }
-
-    auto neighbor_count(const uint_type creature_id) -> uint_type {
+    auto preprocess_random_creatures() -> std::unordered_set<uint_type> {
+        std::unordered_set<uint_type> random_creatures;
         
-        uint_type neighbor {0};
-
-        // uint_type top = creature_id - screen_.width();
-        // uint_type upper_left = top - 1;
-        // uint_type upper_right = top + 1;
-        // uint_type left = creature_id - 1;
-        // uint_type right = creature_id + 1;
-        // uint_type bottom = creature_id + screen_.width();
-        // uint_type bottom_left = bottom - 1;
-        // uint_type bottom_right = bottom + 1;    
-
-        // if (top >= size_) top %= size_;
-        // if (upper_left >= size_) upper_left %= size_;
-        // if (upper_right >= size_) upper_right %= size_;
-        // if (left >= size_) left %= size_;
-        // if (right >= size_) right %= size_;
-        // if (bottom >= size_) bottom %= size_;
-        // if (bottom_left >= size_) bottom_left %= size_;
-        // if (bottom_right >= size_) bottom_right %= size_;
-
-        // if (creatures_.is_used(top)) ++neighbor;
-        // if (creatures_.is_used(upper_left)) ++neighbor;
-        // if (creatures_.is_used(upper_right)) ++neighbor;
-        // if (creatures_.is_used(left)) ++neighbor;
-        // if (creatures_.is_used(right)) ++neighbor;
-        // if (creatures_.is_used(bottom)) ++neighbor;
-        // if (creatures_.is_used(bottom_left)) ++neighbor;
-        // if (creatures_.is_used(bottom_right)) ++neighbor;
-
-        return neighbor;
-    }
-
-
-    auto update_creature(uint_type creature_id) -> void {
-
+        std::vector<uint_type> all_creature_ids;
+        all_creature_ids.reserve(screen_.size());
+        for (uint_type i = 0; i < screen_.size(); ++i) all_creature_ids.emplace_back(i);
+        for (uint_type i = 0; i < screen_.size(); ++i) std::swap(all_creature_ids[i], all_creature_ids[rand() % screen_.size()]);
+        
+        for (uint_type i = 0; i < 1000; ++i) random_creatures.insert(all_creature_ids[i]);
+        
+        return random_creatures;
     }
 
 public:
 
     auto preprocess() -> bool {
 
+        std::unordered_set<uint_type> all_creature_ids = preprocess_random_creatures();
+        live_creatures_.init_update(all_creature_ids, 1000);
 
         return true;
     }
@@ -203,8 +175,8 @@ public:
 
 private:
 
-    uint_type size_;
-
+    creatures<uint_type> live_creatures_;
+    creatures<uint_type> potential_creatures_;
 };
 
 #endif
