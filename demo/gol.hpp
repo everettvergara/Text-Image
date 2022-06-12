@@ -42,41 +42,48 @@ constexpr uint_type SCREEN_HEIGHT = 40;
 constexpr uint_type SCREEN_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT;
 constexpr uint_type FPS = 15;
 
+template<typename uint_type, uint_type w, uint_type h>
+struct bounds {
+
+    auto out_of_bounds(const uint_type ix) -> bool {
+        static uint_type size = w * h;
+        return ix >= size;
+    }
+
+    inline auto get_top(const uint_type ix) -> uint_type {return ix - w;}
+    inline auto get_upper_left(const uint_type ix) -> uint_type {return ix - w - 1;}
+    inline auto get_upper_right(const uint_type ix) -> uint_type {return ix - w + 1;}    
+    inline auto get_left(const uint_type ix) -> uint_type {return ix - 1;}    
+    inline auto get_right(const uint_type ix) -> uint_type {return ix + 1;}    
+    inline auto get_bottom(const uint_type ix) -> uint_type {return ix + w;}    
+    inline auto get_bottom_left(const uint_type ix) -> uint_type {return ix + w - 1;}    
+    inline auto get_bottom_right(const uint_type ix) -> uint_type {return ix + w + 1;}
+};
+
+bounds<uint_type, SCREEN_WIDTH, SCREEN_HEIGHT> screen_bounds;
+
 template<typename uint_type>
 class creatures {
 public:
 
     creatures(const uint_type w, const uint_type h) : w_(w), h_(h), size_(w * h) {}
 
-    inline auto get_top(const uint_type ix) -> uint_type {return ix - w_;}
-    inline auto get_upper_left(const uint_type ix) -> uint_type {return ix - w_ - 1;}
-    inline auto get_upper_right(const uint_type ix) -> uint_type {return ix - w_ + 1;}    
-    inline auto get_left(const uint_type ix) -> uint_type {return ix - 1;}    
-    inline auto get_right(const uint_type ix) -> uint_type {return ix + 1;}    
-    inline auto get_bottom(const uint_type ix) -> uint_type {return ix + w_;}    
-    inline auto get_bottom_left(const uint_type ix) -> uint_type {return ix + w_ - 1;}    
-    inline auto get_bottom_right(const uint_type ix) -> uint_type {return ix + w_ + 1;}
-    
     auto exists(const uint_type ix) -> bool {
         auto f = creature_count_.find(ix);
         return f < creature_count_.end();
     }
 
-    auto out_of_bounds(const uint_type ix) -> bool {
-        return ix >= size_;
-    }
-
     auto get_existing_neighbor_count(const uint_type ix) -> uint_type {
         uint_type count {0};
 
-        if (exists(get_top(ix))) ++count;
-        if (exists(get_upper_left(ix))) ++count;
-        if (exists(get_upper_right(ix))) ++count;
-        if (exists(get_left(ix))) ++count;
-        if (exists(get_right(ix))) ++count;
-        if (exists(get_bottom(ix))) ++count;
-        if (exists(get_bottom_left(ix))) ++count;
-        if (exists(get_bottom_right(ix))) ++count;
+        if (exists(screen_bounds.get_top(ix))) ++count;
+        if (exists(screen_bounds.get_upper_left(ix))) ++count;
+        if (exists(screen_bounds.get_upper_right(ix))) ++count;
+        if (exists(screen_bounds.get_left(ix))) ++count;
+        if (exists(screen_bounds.get_right(ix))) ++count;
+        if (exists(screen_bounds.get_bottom(ix))) ++count;
+        if (exists(screen_bounds.get_bottom_left(ix))) ++count;
+        if (exists(screen_bounds.get_bottom_right(ix))) ++count;
 
         return count;
     }
@@ -133,15 +140,14 @@ public:
 
 private: 
 
-    auto preprocess_random_creatures() -> std::unordered_set<uint_type> {
+    auto preprocess_random_creatures(const uint_type n) -> std::unordered_set<uint_type> {
         std::unordered_set<uint_type> random_creatures;
         
         std::vector<uint_type> all_creature_ids;
         all_creature_ids.reserve(screen_.size());
         for (uint_type i = 0; i < screen_.size(); ++i) all_creature_ids.emplace_back(i);
         for (uint_type i = 0; i < screen_.size(); ++i) std::swap(all_creature_ids[i], all_creature_ids[rand() % screen_.size()]);
-        
-        for (uint_type i = 0; i < 1000; ++i) random_creatures.insert(all_creature_ids[i]);
+        for (uint_type i = 0; i < n; ++i) random_creatures.insert(all_creature_ids[i]);
         
         return random_creatures;
     }
@@ -150,8 +156,8 @@ public:
 
     auto preprocess() -> bool {
 
-        std::unordered_set<uint_type> all_creature_ids = preprocess_random_creatures();
-        live_creatures_.init_update(all_creature_ids, 1000);
+        std::unordered_set<uint_type> all_creature_ids = preprocess_random_creatures(1000);
+        // live_creatures_.init_update(all_creature_ids, 1000);
 
         return true;
     }
