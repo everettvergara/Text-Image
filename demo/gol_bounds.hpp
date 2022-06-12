@@ -32,23 +32,24 @@ using fparameter_bool = std::function<auto (const uint_type) -> bool>;
 using fparameter_void = std::function<auto (const uint_type) -> void>;
 
 /**
- * @brief gol_bounds
- * A singleton template for processing indexes and its boundaries
- * 
- * @tparam int_type 
- * @tparam uint_type 
- * @tparam w 
- * @tparam h 
+ * A singleton template for 
+ * processing indexes and its boundaries
  * 
  */
 
 template<typename int_type, typename uint_type, uint_type w, uint_type h>
 class gol_bounds {
 
+/**
+ * Constructors, Assignments and 
+ * Instance
+ * 
+ */
+
 private:
 
     static uint_type size_;
-    static std::array<int_type, 8> ref_;
+    static std::array<int_type, 8> ref_bounds_;
 
 private:
 
@@ -64,6 +65,14 @@ public:
         return instance;
     }
 
+
+/**
+ * Public Interface
+ * 
+ */
+
+public: 
+
     auto is_out_of_bounds(const uint_type ix) -> bool {return ix >= size_;}
 
     auto iterate(
@@ -73,7 +82,7 @@ public:
         const fparameter_void &else_action) -> void {
         
         if (!if_action) return;
-        for (auto &r : ref_) {
+        for (auto &r : ref_bounds_) {
             uint_type i = ix + r; 
             if (condition(i)) if_action(i); 
             else if (else_action) else_action(i);
@@ -81,10 +90,16 @@ public:
     }
 };
 
+/**
+ * Static vars instantiation
+ * per template
+ * 
+ */
+
 template<typename int_type, typename uint_type, uint_type w, uint_type h>
 uint_type gol_bounds<int_type, uint_type, w, h>::size_ = w * h;
 
 template<typename int_type, typename uint_type, uint_type w, uint_type h>
-std::array<int_type, 8> gol_bounds<int_type, uint_type, w, h>::ref_ = {- w, - w - 1, - w + 1, - 1, + 1, + w, + w - 1, + w + 1};
+std::array<int_type, 8> gol_bounds<int_type, uint_type, w, h>::ref_bounds_ = {- w, - w - 1, - w + 1, - 1, + 1, + w, + w - 1, + w + 1};
 
 #endif
