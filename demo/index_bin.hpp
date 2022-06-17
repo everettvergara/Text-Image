@@ -258,11 +258,6 @@ namespace g80 {
             return &bin_[0] + size_;
         }
 
-    /**
-     * Iterator functions
-     * 
-     */
-
     public:
 
     /**

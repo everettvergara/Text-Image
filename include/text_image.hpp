@@ -131,11 +131,11 @@ namespace g80 {
         text_image(text_image &&rhs) :
             w_(rhs.w_), h_(rhs.h_), size_(w_ * h_),
             size_of_mask8bit_(rhs.size_of_mask8bit_) {
-            color_.reset(rhs.raw_color().get());
+            color_.reset(rhs.raw_color_ptr().get());
             rhs.color_.release();
-            text_.reset(rhs.raw_text().get());
+            text_.reset(rhs.raw_text_ptr().get());
             rhs.text_.release();
-            mask8bit_.reset(rhs.raw_mask8bit().get());
+            mask8bit_.reset(rhs.raw_mask8bit_ptr().get());
             rhs.mask8bit_.release();
         }
 
@@ -173,6 +173,11 @@ namespace g80 {
         
         ~text_image() = default;
 
+    /**
+     * Iterator Functions
+     * 
+     */
+
     // Protected property getters
     public:
 
@@ -192,27 +197,27 @@ namespace g80 {
             return size_of_mask8bit_;
         }        
 
-        inline auto raw_color() -> uptr_color & {
+        inline auto raw_color_ptr() -> uptr_color & {
             return color_;
         }
 
-        inline auto craw_color() const -> const uptr_color & {
+        inline auto craw_color_ptr() const -> const uptr_color & {
             return color_;
         }
 
-        inline auto raw_text() -> uptr_text & {
+        inline auto raw_text_ptr() -> uptr_text & {
             return text_;
         }
 
-        inline auto craw_text() const -> const uptr_text & {
+        inline auto craw_text_ptr() const -> const uptr_text & {
             return text_;
         }
 
-        inline auto raw_mask8bit() -> uptr_mask8bit & {
+        inline auto raw_mask8bit_ptr() -> uptr_mask8bit & {
             return mask8bit_;
         }
         
-        inline auto craw_mask8bit() const -> const uptr_mask8bit & {
+        inline auto craw_mask8bit_ptr() const -> const uptr_mask8bit & {
             return mask8bit_;
         }
 
@@ -441,8 +446,8 @@ namespace g80 {
             if (w == 0 || h == 0) return text_image();
 
             text_image dest_text_image(w, h, 7, ' ', OFF);
-            text *text_ptr = dest_text_image.raw_text().get();
-            color *color_ptr = dest_text_image.raw_color().get();
+            text *text_ptr = dest_text_image.raw_text_ptr().get();
+            color *color_ptr = dest_text_image.raw_color_ptr().get();
 
             uint_type start = ix(x, y);
             for (uint_type row = 0; row < h; ++row) {
@@ -457,7 +462,7 @@ namespace g80 {
             // which is faster by a factor of 3 than 
             // copying mask bit by bit
 
-            mask8bit *mask8bit_ptr = dest_text_image.raw_mask8bit().get();
+            mask8bit *mask8bit_ptr = dest_text_image.raw_mask8bit_ptr().get();
             uint_type total_copied = 0;
             for (uint_type row = 0; row < h; ++row) {
                 uint_type ix = (start + row * w_) % size_;
@@ -485,8 +490,8 @@ namespace g80 {
                 uint_type tix = ix(x, y + r); 
                 for (uint_type six = timg.ix(0, r), sixm = six + timg.w_; six < sixm; ++six) {           
                     if (conditional(tix, six, timg)) {
-                        set_text(tix, timg.craw_text().get()[six]);
-                        set_color(tix, timg.craw_color().get()[six]);
+                        set_text(tix, timg.craw_text_ptr().get()[six]);
+                        set_color(tix, timg.craw_color_ptr().get()[six]);
                     }
                     ++tix;
                 }
