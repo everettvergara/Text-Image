@@ -173,11 +173,6 @@ namespace g80 {
         
         ~text_image() = default;
 
-    /**
-     * Iterator Functions
-     * 
-     */
-
     // Protected property getters
     public:
 
